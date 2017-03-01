@@ -2,19 +2,15 @@
 #include <vga.h>
 #include <memory.h>
 
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
-#define VGA_BUFFER 0xB8000
+uint8_t tty_color;
 
-static size_t tty_row;
-static size_t tty_color;
-
-extern void write(char* src, int x, int y, uint8_t color);
-extern void print(char* src, int y, uint8_t color);
+size_t tty_x, tty_y;
+uint8_t tty_color;
 
 void tty_init()
 {
-	tty_row = 0;
+	tty_x = 0;
+	tty_y = 0;
 	tty_color = vga_entry_color(VC_LIGHT_GREY,VC_BLACK);
 }
 
@@ -23,9 +19,31 @@ void tty_setcolor(uint8_t color)
 	tty_color = color;
 }
 
-void tty_print(char* src)
+void tty_putc(char a)
 {
-	memset(VGA_BUFFER+VGA_WIDTH*2*tty_row,0,VGA_WIDTH*2);
-	print(src, tty_row, tty_color);
-	tty_row = (tty_row+1)%VGA_HEIGHT;
+	if(a = '\n') tty_y++;
+	else vga_putc(a, tty_color, tty_x, tty_y);
+
+	if(tty_x > VGA_WIDTH)
+	{
+		tty_x = 0;
+		tty_y++;
+	}
+
+	if(tty_y > VGA_HEIGHT - 1)
+	{
+		tty_x = 0;
+		tty_y = VGA_HEIGHT - 1;
+		vga_scroll_row();
+	}
+}
+
+void tty_puts(char* src)
+{
+	char* c = src;
+	while(*c != 0)
+	{
+		tty_putc(*c);
+		*c++;
+	}
 }

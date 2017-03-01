@@ -22,12 +22,20 @@ enum vga_color {
 	VC_WHITE = 15,
 };
 
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
-	return fg | bg << 4;
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+
+static inline uint8_t vga_color(enum vga_color fg, enum vga_color bg) {
+	return fg | (bg << 4);
 }
  
 static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
+
+void vga_init();
+void vga_scroll_row();
+void vga_set_cursor(int x, int y);
+void vga_putc(char c, uint8_t color, int x, int y);
 
 #endif

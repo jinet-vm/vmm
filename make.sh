@@ -20,6 +20,8 @@ gcc -m32 -o0 -c src/stack.c -o obj/stack.o -Iinclude -ffreestanding -nostdlib -l
 gcc -m32 -o0 -c src/paging.c -o obj/paging.c.o -Iinclude -ffreestanding -nostdlib -lgcc -w
 gcc -m32 -o0 -c src/gdt.c -o obj/gdt.o -Iinclude -ffreestanding -nostdlib -lgcc -w
 gcc -m32 -o0 -c src/tss.c -o obj/tss.o -Iinclude -ffreestanding -nostdlib -lgcc -w
+gcc -m32 -o0 -c src/vga.c -o obj/vga.o -Iinclude -ffreestanding -nostdlib -lgcc -w
+gcc -m32 -o0 -c src/io.c -o obj/io.o -Iinclude -ffreestanding -nostdlib -lgcc -w
 echo ">>> linking boot & init"
 $(cp linker.ld obj; cd obj; ld -T linker.ld -melf_i386 *.o)
 printf "${CYAN}>> SYS_ROUTINE <<${NC}\n"
