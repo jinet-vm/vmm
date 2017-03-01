@@ -1,9 +1,9 @@
-#include <tss.h>
-#include <gdt.h>
+#include <kernel/tss.h>
+#include <kernel/gdt.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <debug.h>
-#include <memory.h>
+#include <kernel/debug.h>
+#include <kernel/memory.h>
 
 #define MAIN_TSS 0
 #define SS0 0x10

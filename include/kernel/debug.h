@@ -1,8 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <tty.h>
-#include <vga.h>
+#include <kernel/tty.h>
+#include <kernel/vga.h>
 
 #define DEBUG
 

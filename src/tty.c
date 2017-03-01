@@ -1,6 +1,6 @@
-#include <tty.h>
-#include <vga.h>
-#include <memory.h>
+#include <kernel/tty.h>
+#include <kernel/vga.h>
+#include <kernel/memory.h>
 
 uint8_t tty_color;
 
@@ -11,7 +11,7 @@ void tty_init()
 {
 	tty_x = 0;
 	tty_y = 0;
-	tty_color = vga_entry_color(VC_LIGHT_GREY,VC_BLACK);
+	tty_color = vga_color(VC_LIGHT_GREY,VC_BLACK);
 }
 
 void tty_setcolor(uint8_t color)
@@ -21,8 +21,12 @@ void tty_setcolor(uint8_t color)
 
 void tty_putc(char a)
 {
-	if(a = '\n') tty_y++;
-	else vga_putc(a, tty_color, tty_x, tty_y);
+	if(a == '\n') tty_y++, tty_x = 0;
+	else
+	{
+		tty_x++;
+		vga_putc(a, tty_color, tty_x, tty_y);
+	}
 
 	if(tty_x > VGA_WIDTH)
 	{
@@ -40,7 +44,7 @@ void tty_putc(char a)
 
 void tty_puts(char* src)
 {
-	char* c = src;
+	volatile char* c = src;
 	while(*c != 0)
 	{
 		tty_putc(*c);

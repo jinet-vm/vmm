@@ -1,7 +1,7 @@
-#include <memtab.h>
-#include <memory.h>
-#include <gdt.h>
-#include <tss.h>
+#include <kernel/memtab.h>
+#include <kernel/memory.h>
+#include <kernel/gdt.h>
+#include <kernel/tss.h>
 
 void mem_setup()
 {

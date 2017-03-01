@@ -1,8 +1,8 @@
-#include <paging.h>
-#include <stack.h>
+#include <kernel/paging.h>
+#include <kernel/stack.h>
 #include <stddef.h>
-#include <vga.h>
-#include <memory.h>
+#include <kernel/vga.h>
+#include <kernel/memory.h>
 
 extern void hex_f(int n, char *s);
 extern void enable_paging(void* dst);

@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#include <tty.h>
-#include <debug.h>
-#include <stack.h>
-#include <paging.h>
-#include <gdt.h>
-#include <tss.h>
-#include <memtab.h>
+#include <kernel/tty.h>
+#include <kernel/debug.h>
+#include <kernel/stack.h>
+#include <kernel/paging.h>
+#include <kernel/gdt.h>
+#include <kernel/tss.h>
+#include <kernel/vga.h>
+#include <kernel/memtab.h>
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -38,6 +39,7 @@ size_t p_init();
 
 void kernel_start()
 {
+	/*
 	size_t memory_size = p_init();
 	uint32_t l, h;
 	mem_setup();
@@ -45,10 +47,17 @@ void kernel_start()
 	msr_set(0x175,0x0,0x7c00);
 	msr_set(0x176,0x0,SYSR_LADDR);
 	enable_tss(5);
-	char* out = "sys_write demo";
+	
 	mbp;
 	sys_write(out);
 	sys_write(out);
+	*/
+	//char* out = "sys_write demo";
+	//tty_puts(out);
+	mbp;
+	vga_init();
+	tty_init();
+	tty_puts("HELLO WORLD @\n");
 }
 
 size_t p_init()

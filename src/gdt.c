@@ -1,4 +1,4 @@
-#include <gdt.h>
+#include <kernel/gdt.h>
 #include <stdint.h>
 extern char* getGDTR();
 extern char* setGDTR();
