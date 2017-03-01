@@ -1,0 +1,23 @@
+#ifndef TERMINAL_H
+#define TERMINAL_H
+
+#include <stdint.h>
+
+enum vga_color {
+	VC_BLACK = 0,
+	VC_BLUE = 1,
+	VC_GREEN = 2,
+	VC_CYAN = 3,
+	VC_RED = 4,
+	VC_MAGENTA = 5,
+	VC_BROWN = 6,
+	VC_LIGHT_GREY = 7,
+	VC_DARK_GREY = 8,
+	VC_LIGHT_BLUE = 9,
+	VC_LIGHT_GREEN = 10,
+	VC_LIGHT_CYAN = 11,
+	VC_LIGHT_RED = 12,
+	VC_LIGHT_MAGENTA = 13,
+	VC_LIGHT_BROWN = 14,
+	VC_WHITE = 15,
+};
