@@ -34,25 +34,24 @@ start:
 	int 0x10
 	pop cx, ax, bx, dx
 
-	mbp
-	; loading entry_pm to RAM
-	mov ah, 0x02    ; Read Disk Sectors
-	mov al, 19    ; Read one sector only (512 bytes per sector)
-	mov ch, 0x00    ; Track 0
-	mov cl, 0x02    ; Sector 2
-	mov dh, 0x00    ; Head 0
-	mov dl, 0x00    ; Drive 0 (Floppy 1)
-	mov bx, cs
-	mov es, bx   ; Segment 0x2000
-	mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
-	int 13h
-	mbp
-	; mov si, DAP
-	; mov ah, 42h
-	; mov dl, 0x0 ; Floppy
-	; int 0x13
 	; mbp
-	; jc
+	; ; loading entry_pm to RAM
+	; mov ah, 0x02    ; Read Disk Sectors
+	; mov al, 19    ; Read one sector only (512 bytes per sector)
+	; mov ch, 0x00    ; Track 0
+	; mov cl, 0x02    ; Sector 2
+	; mov dh, 0x00    ; Head 0
+	; mov dl, 0x00    ; Drive 0 (Floppy 1)
+	; mov bx, cs
+	; mov es, bx   ; Segment 0x2000
+	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
+	; int 13h
+	mbp
+	mov si, DAP
+	mov ah, 0x42
+	mov dl, 0x80 ; Floppy
+	int 0x13
+	mbp
 	; memory map
 memory_map:
 	xor ebx, ebx
@@ -98,7 +97,7 @@ memory_map:
 DAP:
 	.size:	db 10h
 	.zero:	db 0
-	.num:	dw 16
+	.num:	dw 100
 	.addr:	dw 0x7e00
 			dw 0
 	.lba:	dd 1

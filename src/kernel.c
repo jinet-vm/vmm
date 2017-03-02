@@ -57,7 +57,7 @@ void kernel_start()
 	mbp;
 	vga_init();
 	tty_init();
-	tty_puts("HELLO WORLD @\n");
+	tty_puts("Kernel loaded");
 }
 
 size_t p_init()
