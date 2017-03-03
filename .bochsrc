@@ -1,7 +1,8 @@
+megs: 32
 floppya: 1_44=final.img, status=inserted
-boot: floppy
+ata0-master: type=disk, mode=flat, path=final.img, cylinders=2, heads=1, spt=9
+boot: disk
 magic_break: enabled=1
 clock:           sync=realtime, time0=local
 cpu:             count=1, ips=1000000
 display_library: sdl, options="gui_debug"
-memory: guest=1024, host=1024

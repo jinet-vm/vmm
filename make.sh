@@ -23,10 +23,10 @@ gcc -m32 -o0 -c src/tss.c -o obj/tss.o -Iinclude -ffreestanding -nostdlib -lgcc 
 gcc -m32 -o0 -c src/vga.c -o obj/vga.o -Iinclude -ffreestanding -nostdlib -lgcc -w
 gcc -m32 -o0 -c src/io.c -o obj/io.o -Iinclude -ffreestanding -nostdlib -lgcc -w
 echo ">>> linking boot & init"
-$(cp linker.ld obj; cd obj; ld -T linker.ld -melf_i386 *.o)
+$(cp kernel.ld obj; cd obj; ld -T kernel.ld -melf_i386 *.o)
 printf "${CYAN}>> SYS_ROUTINE <<${NC}\n"
 mkdir obj/sysr
-fasm src/sys_routine.asm obj/sysr/sys_routine.o # flat binary _now_
+fasm src/sys_routine.asm obj/sysr/sys_routine.o
 $(cp sysr.ld obj; cd obj; ld -T sysr.ld -melf_i386 sysr/sys_routine.o)
 # cat obj/sysr.bin >> obj/final.img
 if [ -f obj/final.img ]; then

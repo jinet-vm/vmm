@@ -23,8 +23,9 @@ void vga_scroll_row()
 		}
 }
 
-void vga_set_cursor(int row, int col) {
-    int position = (row * VGA_WIDTH) + col;
+void vga_set_cursor(int row, int col)
+{
+    unsigned short position = (row * VGA_WIDTH) + col;
 
     outb(0x3D4, 0x0F);
     outb(0x3D5, (unsigned char)(position&0xFF));

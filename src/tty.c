@@ -24,8 +24,8 @@ void tty_putc(char a)
 	if(a == '\n') tty_y++, tty_x = 0;
 	else
 	{
-		tty_x++;
 		vga_putc(a, tty_color, tty_x, tty_y);
+		tty_x++;
 	}
 
 	if(tty_x > VGA_WIDTH)

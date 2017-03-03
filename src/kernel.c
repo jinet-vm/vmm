@@ -54,10 +54,9 @@ void kernel_start()
 	*/
 	//char* out = "sys_write demo";
 	//tty_puts(out);
-	mbp;
 	vga_init();
 	tty_init();
-	tty_puts("Kernel loaded");
+	tty_puts("Kernel loaded\n");
 }
 
 size_t p_init()
