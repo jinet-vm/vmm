@@ -39,13 +39,18 @@ size_t p_init();
 
 void kernel_start()
 {
-	/*
+	
 	size_t memory_size = p_init();
 	uint32_t l, h;
 	mem_setup();
 	msr_set(0x174,0x0,SEG(1));
 	msr_set(0x175,0x0,0x7c00);
 	msr_set(0x176,0x0,SYSR_LADDR);
+
+	vga_init();
+	tty_init();
+	tty_puts("Kernel loaded\n");
+	/*
 	enable_tss(5);
 	
 	mbp;
@@ -54,9 +59,6 @@ void kernel_start()
 	*/
 	//char* out = "sys_write demo";
 	//tty_puts(out);
-	vga_init();
-	tty_init();
-	tty_puts("Kernel loaded\n");
 }
 
 size_t p_init()

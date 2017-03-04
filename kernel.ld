@@ -15,6 +15,7 @@ SECTIONS
 	.boot : {
 		FILL(0);
 		*(.text16);
+		*(.data16);
 		. = 510;
 		SHORT(0xaa55);
 		*(.text32);
