@@ -10,6 +10,8 @@
 #include <kernel/tss.h>
 #include <kernel/vga.h>
 #include <kernel/memtab.h>
+#include <kernel/idt.h>
+#include <kernel/ints.h>
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -49,6 +51,8 @@ void kernel_start()
 
 	vga_init();
 	tty_init();
+	idt_init();
+	ints_install();
 	tty_puts("Kernel loaded\n");
 	/*
 	enable_tss(5);

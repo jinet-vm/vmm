@@ -51,6 +51,7 @@ start:
 	mov ah, 0x42
 	mov dl, 0x80 ; Floppy
 	int 0x13
+	
 	mbp
 	; memory map
 memory_map:

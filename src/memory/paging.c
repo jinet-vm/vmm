@@ -9,6 +9,9 @@ extern void enable_paging(void* dst);
 
 static void* PD;
 
+#define PAGE_SIZE 0x1000 // = 4K
+#define PD_LOW_LIMIT 0x100000 // = 1 MB (it is just better to do so)
+
 void get_available_memory()
 {
 	volatile mmap_entry* region = (volatile mmap_entry*)(0xF000);	
@@ -23,16 +26,24 @@ void get_available_memory()
 void* init_PD()
 {
 	mmap_entry region;
+	/*
 	for(int i = 1; i < stack_size(); i++) // not the first region - generally used by bootloader, GDT, IDT - no need for mess in there
 	{
 		region = *((mmap_entry *)stack_get(i));
+		if(region.base_low + region.length_low < PD_LOW_LIMIT) continue; // just below limit
 		if(region.length_low > 0x1000+0x1000*1024)
 		{
 			PD = region.base_low; // I hope VERY much, that it takes place in low 32 bits...
 			break; // now, region
 		}
 	}
+	*/
+	// TODO: fix it (see below)
+	// last region is generally the biggest, we'll just use it
 
+	region = *((mmap_entry *)stack_get(stack_size()-1));
+	if(region.base_low > PD_LOW_LIMIT) PD = region.base_low;
+	else PD = PD_LOW_LIMIT;
 	volatile int* e = (volatile int*)PD;
 	for(int i = 0; i<1024; i++)
 	{
