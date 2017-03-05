@@ -2,7 +2,7 @@ MEMORY
 {
 	bootloader : org = 0x7c00, len = 1k
 	basic_kernel : org = 0x8000, len = 16K-1
-	sysenter : org = 0xBC00, len = 1
+	fill : org = 0xBFFF, len = 1
 }
 
 OUTPUT_FORMAT("binary")
@@ -39,5 +39,5 @@ SECTIONS
 	.fill :
 	{
 		BYTE(0x90);
-	} > sysenter
+	} > fill
 }
