@@ -6,6 +6,6 @@
 
 void tty_init();
 void tty_setcolor(uint8_t color);
-void tty_print(char* src);
+void tty_puts(char* src);
 
 #endif

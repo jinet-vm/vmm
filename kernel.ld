@@ -1,8 +1,8 @@
 MEMORY
 {
 	bootloader : org = 0x7c00, len = 1k
-	basic_kernel : org = 0x8000, len = 8K-1
-	sysenter : org = 0x9FFF, len = 1
+	basic_kernel : org = 0x8000, len = 16K-1
+	sysenter : org = 0xBC00, len = 1
 }
 
 OUTPUT_FORMAT("binary")
