@@ -13,7 +13,7 @@ struct idt_header {
 struct idt_entry {
 	uint16_t offset_low;
 	uint16_t selector;
-	uint8_t ;
+	uint8_t always0;
 	uint8_t flags;
 	uint16_t offset_high;
 } __attribute__((packed));

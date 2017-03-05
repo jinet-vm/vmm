@@ -51,9 +51,13 @@ void kernel_start()
 
 	vga_init();
 	tty_init();
-	idt_init();
 	ints_install();
+	mbp;
+	idt_init();
+	idt_flush();
 	tty_puts("Kernel loaded\n");
+	mbp;
+	volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);
 	
