@@ -416,10 +416,11 @@ irq15:
 	push 47
 	jmp irq_common_stub
 
-; extrn irq_handler
+extrn irq_handler
 
 irq_common_stub:
 	pusha
+	xchg bx, bx
 	push ds
 	push es
 	push fs
@@ -433,7 +434,7 @@ irq_common_stub:
 	mov eax, esp
 
 	push eax
-	; mov eax, irq_handler
+	mov eax, irq_handler
 	call eax
 	pop eax
 

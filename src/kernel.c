@@ -57,7 +57,7 @@ void kernel_start()
 	idt_flush();
 	tty_puts("Kernel loaded\n");
 	mbp;
-	volatile int a = 1/(2-1-1);
+	//volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);
 	
