@@ -10,8 +10,8 @@
 #include <kernel/tss.h>
 #include <kernel/vga.h>
 #include <kernel/memtab.h>
-#include <kernel/idt.h>
 #include <kernel/ints.h>
+#include <kernel/keyboard.h>
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -52,11 +52,13 @@ void kernel_start()
 	vga_init();
 	tty_init();
 	ints_install();
-	mbp;
 	idt_init();
 	idt_flush();
 	tty_puts("Kernel loaded\n");
 	mbp;
+	irq_install_handler(1,&keyboard_handler);
+	ints_sti();
+	//volatile int i = 1/0;
 	//volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);

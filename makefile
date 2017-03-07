@@ -21,7 +21,7 @@ obj/msr.o: src/misc/msr.asm
 obj/sys_enter.o: src/usermode/sys_enter.asm
 	$(AS) src/usermode/sys_enter.asm obj/sys_enter.o
 
-obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o
+obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -54,14 +54,23 @@ obj/paging.o: src/memory/paging.c
 obj/desc.o: src/memory/desc.asm
 	$(AS) src/memory/desc.asm obj/desc.o
 
-obj/isr.o: src/idt/isr.asm
-	$(AS) src/idt/isr.asm obj/isr.o
+obj/isrq.o: src/idt/isrq.asm
+	$(AS) src/idt/isrq.asm obj/isrq.o
 
-obj/ints.o: src/idt/ints.c obj/idt.o obj/isr.o
+obj/ints.o: src/idt/ints.c obj/idt.o obj/isrq.o obj/isr.o obj/irq.o
 	$(CC) $(CFLAGS) -c src/idt/ints.c -o obj/ints.o
 
 obj/idt.o: src/idt/idt.c
 	$(CC) $(CFLAGS) -c src/idt/idt.c -o obj/idt.o
+
+obj/irq.o: src/idt/irq.c obj/idt.o obj/io.o
+	$(CC) $(CFLAGS) -c src/idt/irq.c -o obj/irq.o
+
+obj/isr.o: src/idt/isr.c obj/idt.o
+	$(CC) $(CFLAGS) -c src/idt/isr.c -o obj/isr.o
+
+obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
+	$(CC) $(CFLAGS) -c src/misc/keyboard.c -o obj/keyboard.o
 
 kernel: kernel.ld obj/main.o obj/boot.o
 	cp kernel.ld obj

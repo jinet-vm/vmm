@@ -276,8 +276,7 @@ isr_common_stub:
 	mov gs, ax
 	mov eax, esp
 	push eax
-	mov eax, fault_handler
-	call eax
+	call fault_handler
 	pop eax
 	pop gs
 	pop fs
@@ -420,7 +419,6 @@ extrn irq_handler
 
 irq_common_stub:
 	pusha
-	xchg bx, bx
 	push ds
 	push es
 	push fs
@@ -434,8 +432,7 @@ irq_common_stub:
 	mov eax, esp
 
 	push eax
-	mov eax, irq_handler
-	call eax
+	call irq_handler
 	pop eax
 
 	pop gs

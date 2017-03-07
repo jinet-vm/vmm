@@ -8,7 +8,6 @@ volatile static struct idt_entry IDT[IDT_ENTRIES];
 void idt_init()
 {
 	delimit = 0xffff;
-	__asm__("xchg %bx, %bx");
 	idtr.base = &IDT;
 	idtr.limit = sizeof(struct idt_entry)*IDT_ENTRIES;
 	//memset(&IDT,0,idtr.limit);
@@ -16,7 +15,6 @@ void idt_init()
 
 void idt_flush()
 {
-	__asm__("xchg %bx, %bx");
 	__asm__("lidt (%0)"
 		:
 		: "r" ((uint32_t)&idtr)
