@@ -104,8 +104,21 @@ DAP:
 	.lba:	dd 1
 			dd 0
 
-extrn GDTTable
-extrn GDTR
+; the same is done in desc.asm - for better migration to >1MB memspace
+
+GDTTable:   ;таблица GDT
+; zero seg
+d_zero:		db  0,0,0,0,0,0,0,0     
+; 32 bit code seg
+d_code32:	db  0ffh,0ffh,0,0,0,10011010b,11001111b,0
+; data
+d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
+GDTSize     =   $-GDTTable
+times 5 db 0,0,0,0,0,0,0,0
+
+GDTR:               ;загружаемое значение регистра GDTR
+g_size:     dw  GDTSize-1   ;размер таблицы GDT
+g_base:     dd  GDTTable           ;адрес таблицы GDT
 
 ; >>>> 32bit code
 
@@ -130,6 +143,15 @@ entry_pm:
 	mov ax, sel_data
 	mov ds, ax
 	mov es, ax
+
+	; copying
+	mov esi, 0x8000
+	mov edi, 0x100000
+	mov ecx, 0x1000
+	rep movsd
+
+	mbp
+
 	call kernel_start
 	jmp $
 

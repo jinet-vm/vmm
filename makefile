@@ -1,4 +1,4 @@
-.PHONY: all clean kernel sysr
+.PHONY: all clean kernel bootloader
 
 SHELL=bash
 CC=gcc
@@ -74,9 +74,14 @@ obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 
 kernel: kernel.ld obj/main.o obj/boot.o
 	cp kernel.ld obj
-	cd obj
-	ld -T kernel.ld -melf_i386 obj/*.o
-	wc -c final.img
+	ld -T kernel.ld -melf_i386 obj/*.o -M # kernel.img
+
+bootloader: obj/boot.o
+	ld -T boot.ld -melf_i386 obj/boot.o # boot.img
+
+all: kernel bootloader
+	cp boot.img final.img
+	cat kernel.img >> final.img
 
 clean:
 	rm obj/* -rf

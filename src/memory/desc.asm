@@ -1,7 +1,9 @@
 format ELF
 
-section '.data16' executable
+section '.data' executable
 use16
+
+; the same is done in boot.asm for pre-init loading
 
 public GDTTable
 GDTTable:   ;таблица GDT

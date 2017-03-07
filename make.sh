@@ -1,3 +1,6 @@
+# deprecated
+# use makefiles
+
 #!/bin/bash
 echo ">>> init"
 mkdir -p obj

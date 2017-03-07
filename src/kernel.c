@@ -42,22 +42,23 @@ size_t p_init();
 void kernel_start()
 {
 	
-	size_t memory_size = p_init();
-	uint32_t l, h;
+	// size_t memory_size = p_init();
+	// uint32_t l, h;
 	mem_setup();
-	msr_set(0x174,0x0,SEG(1));
-	msr_set(0x175,0x0,0x7c00);
-	msr_set(0x176,0x0,SYSR_LADDR);
+	// msr_set(0x174,0x0,SEG(1));
+	// msr_set(0x175,0x0,0x7c00);
+	// msr_set(0x176,0x0,SYSR_LADDR);
 
 	vga_init();
-	tty_init();
-	ints_install();
+	tty_init(); tty_puts("demo");
+		ints_install();
 	idt_init();
 	idt_flush();
-	tty_puts("Kernel loaded\n");
-	mbp;
+	// tty_puts("Kernel loaded\n");
+	// mbp;
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
+	for(;;);
 	//volatile int i = 1/0;
 	//volatile int a = 1/(2-1-1);
 	/*
