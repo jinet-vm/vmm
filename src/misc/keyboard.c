@@ -1,3 +1,5 @@
+// just a demo!
+
 #include <kernel/tty.h>
 #include <kernel/io.h>
 #include <kernel/irq.h>
@@ -122,17 +124,10 @@ void keyboard_handler(struct regs *r)
 
 	if(scancode & 0x80)
 	{
-		/*
-		scancode = scancode ^ 0x80;
-		if(scancode == 0xF) // shift
-			shift = !shift; */
+
 	}
 	else
 	{
-		/*
-		if(shift)
-			tty_putc(kbdus[scancode]-'a'+'A');
-		else */
 		tty_putc(kbdus[scancode]);
 	}
 }
