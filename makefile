@@ -3,7 +3,7 @@
 SHELL=bash
 CC=gcc
 CFLAGS = -m32 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w
-
+KERNEL_START = 0x0
 AS=fasm
 
 obj/boot.o: src/boot.asm
@@ -74,10 +74,10 @@ obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 
 kernel: kernel.ld obj/main.o obj/boot.o
 	cp kernel.ld obj
-	ld -T kernel.ld -melf_i386 obj/*.o -M # kernel.img
+	ld -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
-bootloader: obj/boot.o
-	ld -T boot.ld -melf_i386 obj/boot.o # boot.img
+bootloader: obj/boot.o kernel
+	ld -T boot.ld -melf_i386 obj/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
 
 all: kernel bootloader
 	cp boot.img final.img
@@ -86,3 +86,4 @@ all: kernel bootloader
 clean:
 	rm obj/* -rf
 	rm -f final.img
+	rm -f kernel_start
