@@ -1,8 +1,17 @@
+/**
+ * @file memtab.c
+ * @brief Interface on top of GDT and TSS.
+ */
+
 #include <kernel/memtab.h>
 #include <kernel/memory.h>
 #include <kernel/gdt.h>
 #include <kernel/tss.h>
 
+
+/**
+ * @brief      Handles memory setup - GDT and TSS.
+ */
 void mem_setup()
 {
 	initGDTR();

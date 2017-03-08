@@ -1,17 +1,31 @@
+/**
+ * @file paging.c
+ * @brief Paging handler.
+ */
+
 #include <kernel/paging.h>
 #include <kernel/stack.h>
 #include <stddef.h>
 #include <kernel/vga.h>
 #include <kernel/memory.h>
 
-extern void hex_f(int n, char *s);
-extern void enable_paging(void* dst);
+/**
+ * @brief      Enables the paging.
+ *
+ * @param      src   The source of page directory.
+ */
+extern void enable_paging(void* src);
 
 static void* PD;
 
 #define PAGE_SIZE 0x1000 // = 4K
 #define PD_LOW_LIMIT 0x100000 // = 1 MB (it is just better to do so)
 
+
+/**
+ * @brief      Gets the available memory from memory map.
+ * @todo Not used yet properly.
+ */
 void get_available_memory()
 {
 	volatile mmap_entry* region = (volatile mmap_entry*)(0xF000);	
@@ -23,6 +37,11 @@ void get_available_memory()
 	}
 }
 
+/**
+ * @brief      Initialise page directory
+ *
+ * @return     PD address.
+ */
 void* init_PD()
 {
 	mmap_entry region;
@@ -52,6 +71,11 @@ void* init_PD()
 	return PD;
 }
 
+/**
+ * @brief      Maps available memory onto memory from beginning. Deprecated and should not be used.
+ *
+ * @return     Available memory size.
+ */
 size_t map_available_memory() // takes from stack
 {
 	size_t memsize = 0;
@@ -88,6 +112,14 @@ size_t map_available_memory() // takes from stack
 	return memsize;
 }
 
+
+/**
+ * @brief      Maps one page in page directory.
+ *
+ * @param[in]  laddr  The logical address of start of the page
+ * @param[in]  paddr  The physical address of start of the page.
+ * @param[in]  flags  The flags (protection and etc)
+ */
 void map_page(uint32_t laddr, uint32_t paddr, uint8_t flags)
 {
 	int *e = (int *)(PD + 0x1000 + (laddr>>12)*4);
@@ -95,8 +127,15 @@ void map_page(uint32_t laddr, uint32_t paddr, uint8_t flags)
 	*e |= flags;
 }
 
-
-// TODO: logical -> physical
+/**
+ * @brief      Gets the physcall address.
+ *
+ * @param[in]  laddr  The logical address
+ *
+ * @return     The physcal address.
+ * 
+ * @todo Not implemented yet!
+ */
 uint32_t get_paddr(uint32_t laddr)
 {
 	/*
@@ -105,6 +144,10 @@ uint32_t get_paddr(uint32_t laddr)
 	*/
 }
 
+/**
+ * @brief Turns paging on.
+ * Basically an interface on top of enable_paging.
+ */
 void init_paging()
 {
 	enable_paging(PD);

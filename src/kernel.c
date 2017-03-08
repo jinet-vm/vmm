@@ -1,3 +1,8 @@
+/**
+ * @file kernel.c
+ * @brief Main kernel file.
+ */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -16,6 +21,7 @@
 
 #define p_entry(addr, f) (addr << 12) | f
 
+/*
 extern void sys_enter();
 extern void sys_write(char* src);
 
@@ -23,6 +29,7 @@ void* PD_a;
 
 extern void msr_get(uint32_t num, uint32_t* low, uint32_t *high);
 extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
+*/
 
 // Happy the man, and happy he alone
 // He who can call today his own,
@@ -39,6 +46,10 @@ size_t p_init();
 
 #define SYSR_LADDR 0xC0010000 // stack - 16k
 
+/**
+ * @brief      Kernel start.
+ * The function we actually boot into.
+ */
 void kernel_start()
 {
 	
@@ -72,6 +83,12 @@ void kernel_start()
 	//tty_puts(out);
 }
 
+
+/**
+ * @brief      Bootstrap paging.
+ *
+ * @return     Size of available memory.
+ */
 size_t p_init()
 {
 	get_available_memory();
