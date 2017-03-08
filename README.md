@@ -1,6 +1,6 @@
 # demos
 
-![Aristotle](aristotle.png)
+![Aristotle](aristotle.gif)
 
 Demo operating system. **So** much work to do.
 
