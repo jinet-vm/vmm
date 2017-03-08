@@ -4,4 +4,5 @@
 *.img
 consts.h
 consts.ld
+doc/
 bx_enh_dbg.ini
