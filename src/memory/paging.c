@@ -40,10 +40,7 @@ void* init_PD()
 	*/
 	// TODO: fix it (see below)
 	// last region is generally the biggest, we'll just use it
-
-	region = *((mmap_entry *)stack_get(stack_size()-1));
-	if(region.base_low > PD_LOW_LIMIT) PD = region.base_low;
-	else PD = PD_LOW_LIMIT;
+	PD = PD_LOW_LIMIT;
 	volatile int* e = (volatile int*)PD;
 	for(int i = 0; i<1024; i++)
 	{

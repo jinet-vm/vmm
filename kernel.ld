@@ -1,7 +1,9 @@
+/* >>> 16K <<< */
+
 MEMORY
 {
-	basic_kernel : org = 0x100000, len = 16K-1
-	fill : org = 0x103FFF, len = 1
+	basic_kernel : org = 0x502000, len = 16K-1 /* before that, since 1MB - paging + gdt */
+	fill : org = 0x504FFF, len = 1
 }
 
 OUTPUT_FORMAT("binary")
@@ -10,6 +12,8 @@ ENTRY(start)
 
 SECTIONS
 {
+	KERNEL_VMA_START = .;
+	KERNEL_SIZE = 16K;
 	.text :
 	{
 		:*(.text)

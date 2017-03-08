@@ -1,0 +1,7 @@
+{
+    "name":
+    {
+        "value": "0x2a",
+        "files": ["kernel_config.h", "bootloader_config.inc"]
+    }
+}

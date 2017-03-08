@@ -42,9 +42,9 @@ size_t p_init();
 void kernel_start()
 {
 	
-	// size_t memory_size = p_init();
+	//size_t memory_size = p_init();
 	// uint32_t l, h;
-	mem_setup();
+	//mem_setup();
 	// msr_set(0x174,0x0,SEG(1));
 	// msr_set(0x175,0x0,0x7c00);
 	// msr_set(0x176,0x0,SYSR_LADDR);

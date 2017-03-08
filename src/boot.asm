@@ -144,11 +144,21 @@ entry_pm:
 	mov ds, ax
 	mov es, ax
 
-	; copying
+	; TODO:
+	; IT IS HARDCODED
+	; FOR 16KB KERNEL
+
+	; copying to > 1MB
 	mov esi, 0x8000
-	mov edi, 0x100000
+	mov edi, 0x502000
 	mov ecx, 0x1000
 	rep movsd
+
+	; ; now paging mess with kernel
+	; ; first PD
+	; mov eax, 0
+	; mov edi, 0x100000
+
 
 	mbp
 

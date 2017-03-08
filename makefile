@@ -85,5 +85,5 @@ all: kernel bootloader
 
 clean:
 	rm obj/* -rf
-	rm -f final.img
+	rm -f *.img
 	rm -f kernel_start
