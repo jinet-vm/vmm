@@ -2,4 +2,6 @@
 *.o
 *.out
 *.img
+consts.h
+consts.ld
 bx_enh_dbg.ini

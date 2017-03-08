@@ -11,4 +11,7 @@ struct regs
 
 void ints_install();
 
+#define INTS_MAX_ISR 32
+#define INTS_MAX_IRQ 40
+
 #endif

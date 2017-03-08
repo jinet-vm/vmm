@@ -127,7 +127,10 @@ section '.text32' executable align 100h
 use32               ;32-битный код!!!
 
 public entry_pm
+
 extrn kernel_start
+extrn KERNEL_PHYS_ADDR
+extrn KERNEL_SIZE
 
 align   10h         ;код должен выравниваться по границе 16 байт
 include 'inc/procedures.inc'
@@ -144,21 +147,17 @@ entry_pm:
 	mov ds, ax
 	mov es, ax
 
-	; TODO:
-	; IT IS HARDCODED
-	; FOR 16KB KERNEL
-
 	; copying to > 1MB
 	mov esi, 0x8000
-	mov edi, 0x502000
-	mov ecx, 0x1000
+	mov edi, KERNEL_PHYS_ADDR
+	mov ecx, KERNEL_SIZE
+	shr ecx, 2
 	rep movsd
 
 	; ; now paging mess with kernel
 	; ; first PD
 	; mov eax, 0
 	; mov edi, 0x100000
-
 
 	mbp
 

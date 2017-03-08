@@ -1,4 +1,4 @@
-.PHONY: all clean kernel bootloader
+.PHONY: all clean kernel bootloader configure
 
 SHELL=bash
 CC=gcc
@@ -6,8 +6,24 @@ CFLAGS = -m32 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w
 KERNEL_START = 0x0
 AS=fasm
 
+consts_h := include/kernel/consts.h
+consts_ld := consts.ld
+
+configure:
+	# consts.h generation
+	touch $(consts_h)
+	cat /dev/null > $(consts_h)
+	printf "#ifndef CONSTS_H\n#define CONSTS_H\n\n" >> $(consts_h)
+	./configure.py --lang c >> $(consts_h)
+	printf "\n#endif" >> $(consts_h)
+	# consts.ld generation
+	touch $(consts_ld)
+	cat /dev/null > $(consts_ld)
+	./configure.py --lang ld >> $(consts_ld)
+
 obj/boot.o: src/boot.asm
-	$(AS) src/boot.asm obj/boot.o
+	mkdir -p obj/boot
+	$(AS) src/boot.asm obj/boot/boot.o
 
 obj/procedures.o: src/procedures.asm
 	$(AS) src/procedures.asm obj/procedures.o
@@ -72,16 +88,16 @@ obj/isr.o: src/idt/isr.c obj/idt.o
 obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 	$(CC) $(CFLAGS) -c src/misc/keyboard.c -o obj/keyboard.o
 
-kernel: kernel.ld obj/main.o obj/boot.o
-	cp kernel.ld obj
-	ld -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
+kernel: kernel.ld obj/main.o obj/boot.o configure
+	ld -T $(consts_ld) -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
-bootloader: obj/boot.o kernel
-	ld -T boot.ld -melf_i386 obj/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
+bootloader: obj/boot.o kernel configure
+	ld -T $(consts_ld) -T boot.ld -melf_i386 obj/boot/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
 
 all: kernel bootloader
 	cp boot.img final.img
 	cat kernel.img >> final.img
+	wc -c final.img
 
 clean:
 	rm obj/* -rf

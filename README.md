@@ -11,11 +11,8 @@ scripts should be defined in [config.json](config.json). Here's an example of ho
 
 ```json
 {
-    "name":
-    {
-        "value": "0x1010010",
-        "files": ["kernel_config.h", "bootloader_config.inc"]
-    }
+    "const1": "value",
+    "const2": "value"
 }
 ```
 
