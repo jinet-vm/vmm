@@ -17,6 +17,7 @@
 #include <kernel/memtab.h>
 #include <kernel/ints.h>
 #include <kernel/keyboard.h>
+#include <kernel/consts.h>
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -50,10 +51,11 @@ size_t p_init();
  * @brief      Kernel start.
  * The function we actually boot into.
  */
+
 void kernel_start()
 {
 	
-	//size_t memory_size = p_init();
+	size_t memory_size = p_init();
 	// uint32_t l, h;
 	//mem_setup();
 	// msr_set(0x174,0x0,SEG(1));
@@ -62,19 +64,17 @@ void kernel_start()
 
 	vga_init();
 	tty_init(); tty_puts("demo");
-		ints_install();
+	ints_install();
 	idt_init();
 	idt_flush();
 	// tty_puts("Kernel loaded\n");
 	// mbp;
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
-	for(;;);
-	//volatile int i = 1/0;
+	mbp;
 	//volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);
-	
 	mbp;
 	sys_write(out);
 	sys_write(out);
@@ -95,9 +95,7 @@ size_t p_init()
 	init_PD();
 	size_t res = map_available_memory();
 	map_page(0xB8000,0xB8000,pg_P | pg_U);
-	for(int i = 0; i < 0x10000; i += 0x1000)
-		map_page(SYSR_LADDR-0x10000+i,0xb000+i,pg_P | pg_U);
-	map_page(SYSR_LADDR,0xA000,pg_P | pg_U); // sysr code
+	mbp;
 	// TODO: bios
 	init_paging();
 	return res;

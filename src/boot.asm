@@ -130,6 +130,7 @@ public entry_pm
 
 extrn kernel_start
 extrn KERNEL_PHYS_ADDR
+extrn PAGING_PHYS_ADDR
 extrn KERNEL_SIZE
 
 align   10h         ;код должен выравниваться по границе 16 байт
@@ -155,10 +156,21 @@ entry_pm:
 	rep movsd
 
 	; ; now paging mess with kernel
-	; ; first PD
-	; mov eax, 0
-	; mov edi, 0x100000
-
+	; making PD
+	mov eax, PAGING_PHYS_ADDR+0x1000
+	or eax, 1
+	mov edi, PAGING_PHYS_ADDR
+	mov ecx, 0x400
+	.pdlp:
+		stosb
+		add eax, 0x1000
+	loop .pdlp
+	mbp
+	mov eax, PAGING_PHYS_ADDR
+	mov cr3, eax
+	mov eax, cr0
+	or eax, 0x80000000
+	mov cr0, eax
 	mbp
 
 	call kernel_start

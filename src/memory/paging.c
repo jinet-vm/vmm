@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <kernel/vga.h>
 #include <kernel/memory.h>
+#include <kernel/consts.h>
 
 /**
  * @brief      Enables the paging.
@@ -17,10 +18,6 @@
 extern void enable_paging(void* src);
 
 static void* PD;
-
-#define PAGE_SIZE 0x1000 // = 4K
-#define PD_LOW_LIMIT 0x100000 // = 1 MB (it is just better to do so)
-
 
 /**
  * @brief      Gets the available memory from memory map.
@@ -59,12 +56,12 @@ void* init_PD()
 	*/
 	// TODO: fix it (see below)
 	// last region is generally the biggest, we'll just use it
-	PD = PD_LOW_LIMIT;
+	PD = PAGING_PHYS_ADDR;
 	volatile int* e = (volatile int*)PD;
 	for(int i = 0; i<1024; i++)
 	{
 		*e = PD+0x1000*(i+1);
-		*e |= pg_P | pg_U;
+		*e |= pg_P | pg_U;	
 		*e++;
 	}
 
