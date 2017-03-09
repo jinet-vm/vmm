@@ -57,6 +57,7 @@ void* init_PD()
 	// TODO: fix it (see below)
 	// last region is generally the biggest, we'll just use it
 	PD = PAGING_PHYS_ADDR;
+	/*
 	volatile int* e = (volatile int*)PD;
 	for(int i = 0; i<1024; i++)
 	{
@@ -64,7 +65,7 @@ void* init_PD()
 		*e |= pg_P | pg_U;	
 		*e++;
 	}
-
+	*/
 	return PD;
 }
 

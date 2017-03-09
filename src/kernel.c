@@ -55,7 +55,9 @@ size_t p_init();
 void kernel_start()
 {
 	
-	size_t memory_size = p_init();
+	//size_t memory_size = p_init();
+	init_PD();
+	map_page(0xB8000,0xB8000,pg_P | pg_U);
 	// uint32_t l, h;
 	//mem_setup();
 	// msr_set(0x174,0x0,SEG(1));
@@ -72,7 +74,7 @@ void kernel_start()
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
 	mbp;
-	//volatile int a = 1/(2-1-1);
+	volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);
 	mbp;
@@ -94,7 +96,7 @@ size_t p_init()
 	get_available_memory();
 	init_PD();
 	size_t res = map_available_memory();
-	map_page(0xB8000,0xB8000,pg_P | pg_U);
+	
 	mbp;
 	// TODO: bios
 	init_paging();

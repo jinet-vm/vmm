@@ -9,7 +9,7 @@ AS=fasm
 consts_h := include/kernel/consts.h
 consts_ld := consts.ld
 
-configure:
+configure: config.json
 	# consts.h generation
 	touch $(consts_h)
 	cat /dev/null > $(consts_h)

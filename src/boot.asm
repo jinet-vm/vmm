@@ -123,14 +123,15 @@ g_base:     dd  GDTTable           ;адрес таблицы GDT
 ; >>>> 32bit code
 
 section '.text32' executable align 100h
-; org     0x7E00
-use32               ;32-битный код!!!
+; org     0x7E00 - done by ld
+use32 ; 32 bit PM
 
 public entry_pm
 
 extrn kernel_start
 extrn KERNEL_PHYS_ADDR
 extrn PAGING_PHYS_ADDR
+extrn KERNEL_VMA_ADDR
 extrn KERNEL_SIZE
 
 align   10h         ;код должен выравниваться по границе 16 байт
@@ -162,10 +163,40 @@ entry_pm:
 	mov edi, PAGING_PHYS_ADDR
 	mov ecx, 0x400
 	.pdlp:
-		stosb
+		stosd
 		add eax, 0x1000
 	loop .pdlp
 	mbp
+	; > mapping neccessary pages
+	; this page
+	mov eax, 0x00007003
+	mov edi, PAGING_PHYS_ADDR+0x1000+7*4
+	stosd
+	; kernel pages
+	mov edi, KERNEL_VMA_ADDR
+	shr edi, 10 ; (edi/2^12)*2^2
+	add edi, PAGING_PHYS_ADDR+0x1000
+	mov eax, KERNEL_PHYS_ADDR
+	or eax, 1 ; only present flag - kernel pages!
+	mov ecx, KERNEL_SIZE
+	shr ecx, 12
+	.ptlp:
+		stosd
+		add eax, 0x1000
+	loop .ptlp
+	; PD 1:1
+	mov edi, PAGING_PHYS_ADDR
+	shr edi, 10 ; (edi/2^12)*2^2
+	add edi, PAGING_PHYS_ADDR+0x1000
+	mov eax, PAGING_PHYS_ADDR
+	or eax, 1 ; only present flag - kernel pages!
+	mov ecx, 0x1000+1024*0x1000
+	shr ecx, 12
+	.patlp:
+		stosd
+		add eax, 0x1000
+	loop .patlp
+	; enabling PD
 	mov eax, PAGING_PHYS_ADDR
 	mov cr3, eax
 	mov eax, cr0
