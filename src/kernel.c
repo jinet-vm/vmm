@@ -69,11 +69,13 @@ void kernel_start()
 	ints_install();
 	idt_init();
 	idt_flush();
+	//mbp;
+	mem_setup();
 	// tty_puts("Kernel loaded\n");
 	// mbp;
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
-	mbp;
+	//mbp;
 	volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);

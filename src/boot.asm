@@ -190,7 +190,7 @@ entry_pm:
 	add edi, PAGING_PHYS_ADDR+0x1000
 	mov eax, PAGING_PHYS_ADDR
 	or eax, 1 ; only present flag - kernel pages!
-	mov ecx, 0x1000+1024*0x1000
+	mov ecx, 0x1000+1024*0x1000+0x1000 ; + GDT page
 	shr ecx, 12
 	.patlp:
 		stosd

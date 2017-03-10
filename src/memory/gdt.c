@@ -4,9 +4,9 @@
  */
 
 #include <kernel/gdt.h>
+#include <kernel/consts.h>
+#include <kernel/debug.h>
 #include <stdint.h>
-extern char* getGDTR();
-extern char* setGDTR();
 
 /**
  * @brief      Will be sent to GDTR.
@@ -17,14 +17,20 @@ struct GDTP
 	uint32_t off; ///< Offset of GDT
 } __attribute__((packed));
 
-static struct GDTP* gdtp;
+struct GDTP* gdtp;
+
+#define GDTP_GDT_GAP 8
+
+extern char* setGDTR(struct GDTP* gdtp);
 
 /**
  * @brief      Initialise GDTP
  */
 void initGDTR()
 {
-	gdtp = getGDTR();
+    mbp;
+	gdtp = GDT_VMA_ADDR;
+    gdtp->off = GDT_VMA_ADDR+GDTP_GDT_GAP; // right after gdtp
 }
 
 // TODO: all the structure stuff and its memory WHATEVER
@@ -62,6 +68,7 @@ uint32_t GDT_offset()
 void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
 {
 	gdt_entry* gdte = gdtp->off+num*8;
+    //mbp;
     gdte->base_low = (base & 0xFFFF);
     gdte->base_middle = (base >> 16) & 0xFF;
     gdte->base_high = (base >> 24) & 0xFF;
@@ -81,5 +88,5 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 void gdt_flush(int num)
 {
 	gdtp->size = num*8;
-	setGDTR();
+	setGDTR(gdtp);
 }
