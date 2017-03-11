@@ -37,7 +37,7 @@ obj/msr.o: src/misc/msr.asm
 obj/sys_enter.o: src/usermode/sys_enter.asm
 	$(AS) src/usermode/sys_enter.asm obj/sys_enter.o
 
-obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o
+obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -87,6 +87,9 @@ obj/isr.o: src/idt/isr.c obj/idt.o
 
 obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 	$(CC) $(CFLAGS) -c src/misc/keyboard.c -o obj/keyboard.o
+
+obj/printf.o: src/vga/printf.c
+	$(CC) $(CFLAGS) -c src/vga/printf.c -o obj/printf.o
 
 kernel: kernel.ld obj/main.o obj/boot.o configure
 	ld -T $(consts_ld) -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start

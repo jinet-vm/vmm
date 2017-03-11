@@ -18,6 +18,7 @@
 #include <kernel/ints.h>
 #include <kernel/keyboard.h>
 #include <kernel/consts.h>
+#include <kernel/printf.h>
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -63,9 +64,9 @@ void kernel_start()
 	// msr_set(0x174,0x0,SEG(1));
 	// msr_set(0x175,0x0,0x7c00);
 	// msr_set(0x176,0x0,SYSR_LADDR);
-
+	double D = 0.042;
 	vga_init();
-	tty_init(); tty_puts("demo");
+	tty_init(); tty_puts("demo\n");
 	ints_install();
 	idt_init();
 	idt_flush();

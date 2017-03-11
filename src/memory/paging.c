@@ -134,12 +134,12 @@ void map_page(uint32_t laddr, uint32_t paddr, uint8_t flags)
  * 
  * @todo Not implemented yet!
  */
+
 uint32_t get_paddr(uint32_t laddr)
 {
-	/*
 	int* a = (int*)(PD + 0x1000 + 4*(laddr >> 12)); 
+	if(!(*a & 1)) return 0xffffffff;
 	return (*a & (~0xFFF)) + (laddr & 0xFFF);
-	*/
 }
 
 /**

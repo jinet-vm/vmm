@@ -25,7 +25,7 @@ void tty_init()
  *
  * @param[in]  color  The color
  */
-void tty_setcolor(uint8_t color)
+void tty_setcolor(char color)
 {
 	tty_color = color;
 }
