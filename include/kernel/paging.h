@@ -4,7 +4,6 @@
 #include <stddef.h>
 #define p_entry(addr, f) (addr << 12) | f
 
-#define PD PD_a
 #define PDE(i) PD+4*i
 #define PT(i) PD+0x1000+0x1000*((void*)i)
 #define PTE(n, i) PT(n)+4*i

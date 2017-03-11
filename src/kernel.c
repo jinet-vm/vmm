@@ -76,8 +76,8 @@ void kernel_start()
 	// mbp;
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
+	printf("%x",get_paddr(0xc0001000));	// demo
 	//mbp;
-	volatile int a = 1/(2-1-1);
 	/*
 	enable_tss(5);
 	mbp;
@@ -99,9 +99,6 @@ size_t p_init()
 	get_available_memory();
 	init_PD();
 	size_t res = map_available_memory();
-	
-	mbp;
-	// TODO: bios
 	init_paging();
 	return res;
 }

@@ -41,31 +41,7 @@ void get_available_memory()
  */
 void* init_PD()
 {
-	mmap_entry region;
-	/*
-	for(int i = 1; i < stack_size(); i++) // not the first region - generally used by bootloader, GDT, IDT - no need for mess in there
-	{
-		region = *((mmap_entry *)stack_get(i));
-		if(region.base_low + region.length_low < PD_LOW_LIMIT) continue; // just below limit
-		if(region.length_low > 0x1000+0x1000*1024)
-		{
-			PD = region.base_low; // I hope VERY much, that it takes place in low 32 bits...
-			break; // now, region
-		}
-	}
-	*/
-	// TODO: fix it (see below)
-	// last region is generally the biggest, we'll just use it
 	PD = PAGING_PHYS_ADDR;
-	/*
-	volatile int* e = (volatile int*)PD;
-	for(int i = 0; i<1024; i++)
-	{
-		*e = PD+0x1000*(i+1);
-		*e |= pg_P | pg_U;	
-		*e++;
-	}
-	*/
 	return PD;
 }
 
@@ -74,7 +50,7 @@ void* init_PD()
  *
  * @return     Available memory size.
  */
-size_t map_available_memory() // takes from stack
+size_t map_available_memory() // takes from our stack
 {
 	size_t memsize = 0;
 
@@ -121,7 +97,7 @@ size_t map_available_memory() // takes from stack
 void map_page(uint32_t laddr, uint32_t paddr, uint8_t flags)
 {
 	int *e = (int *)(PD + 0x1000 + (laddr>>12)*4);
-	*e = paddr & (~0x111);
+	*e = paddr & (~0xfff);
 	*e |= flags;
 }
 
@@ -137,9 +113,22 @@ void map_page(uint32_t laddr, uint32_t paddr, uint8_t flags)
 
 uint32_t get_paddr(uint32_t laddr)
 {
-	int* a = (int*)(PD + 0x1000 + 4*(laddr >> 12)); 
-	if(!(*a & 1)) return 0xffffffff;
-	return (*a & (~0xFFF)) + (laddr & 0xFFF);
+	// first get PT id
+	uint32_t PT_id = laddr >> 22;
+	uint32_t PT_off = ((uint32_t *)PD)[PT_id];
+	if(!(PT_off & 1)) // not present
+		return 0xffffffff;
+	PT_off &= ~0xfff;
+	uint32_t* PT = (int*)(PT_off);
+	 // getting middle 10 bits - ID of page in page table
+	uint32_t page_id = (laddr >> 12) & 0x3ff;
+	printf("page_id = %x\n",page_id);
+	uint32_t page = PT[page_id];
+	if(!(page & 1)) // not present
+		return 0xffffffff;
+	page &= ~0xfff;
+	printf("page = %x\n",page);
+	return page + (laddr & 0xfff);
 }
 
 /**
