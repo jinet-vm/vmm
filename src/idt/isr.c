@@ -111,9 +111,11 @@ void fault_handler(struct regs *r)
 {
 	if(r->int_no < INTS_MAX_ISR)
 	{
-		tty_setcolor(vga_color(VC_BLACK, VC_RED));
-		tty_puts(exception_messages[r->int_no]);
-		tty_puts(" Exception. System Halted!\n");
+		tty_setcolor(vga_color(VC_RED, VC_BLACK));
+		printf("\n%s Exception. System Halted!\n", exception_messages[r->int_no]);
+		printf("EAX=%08x EBX=%08x ECX=%08x EDX=%08x\n",r->eax, r->ebx, r->ecx, r->edx);
+		printf("ESP=%08x EBP=%08x ESI=%08x EDI=%08x\n",r->esp, r->ebp, r->esi, r->edi);
+		printf("EIP=%08x\n", r->eip);
 		for (;;);
 	}
 }

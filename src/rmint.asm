@@ -1,5 +1,7 @@
 format elf
 
+include 'inc/consts.inc'
+
 section '.text32' executable
 use32
 
@@ -13,3 +15,6 @@ cr0_restore:
 public rm_enter
 rm_enter: ; must be stored in a 1:1 page
 	cli
+
+finish:
+times RMINT_SIZE-finish+start db 0

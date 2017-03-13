@@ -1,4 +1,4 @@
-.PHONY: all clean kernel bootloader configure
+.PHONY: all prepare clean kernel bootloader configure
 
 SHELL=bash
 CC=gcc
@@ -8,6 +8,11 @@ AS=fasm
 
 consts_h := include/kernel/consts.h
 consts_ld := consts.ld
+consts_inc := inc/consts.inc
+
+prepare:
+	mkdir -p obj
+	mkdir -p bin
 
 configure: config.json
 	# consts.h generation
@@ -20,6 +25,10 @@ configure: config.json
 	touch $(consts_ld)
 	cat /dev/null > $(consts_ld)
 	./configure.py --lang ld >> $(consts_ld)
+	# consts.inc generation
+	touch $(consts_inc)
+	cat /dev/null > $(consts_inc)
+	./configure.py --lang fasm >> $(consts_inc)
 
 obj/boot.o: src/boot.asm
 	mkdir -p obj/boot
@@ -91,15 +100,19 @@ obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 obj/printf.o: src/vga/printf.c
 	$(CC) $(CFLAGS) -c src/vga/printf.c -o obj/printf.o
 
+bin/rmint.bin:
+	$(AS) src/rmint.asm bin/rmint.bin
+
 kernel: kernel.ld obj/main.o obj/boot.o configure
 	ld -T $(consts_ld) -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
 bootloader: obj/boot.o kernel configure
 	ld -T $(consts_ld) -T boot.ld -melf_i386 obj/boot/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
 
-all: kernel bootloader
+all: prepare kernel bootloader
 	cp boot.img final.img
 	cat kernel.img >> final.img
+	# cat bin/rmint.bin >> final.img
 	wc -c final.img
 
 clean:

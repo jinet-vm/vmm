@@ -55,37 +55,19 @@ size_t p_init();
 
 void kernel_start()
 {
-	
-	//size_t memory_size = p_init();
 	init_PD();
 	map_page(0xB8000,0xB8000,pg_P | pg_U);
-	// uint32_t l, h;
-	//mem_setup();
-	// msr_set(0x174,0x0,SEG(1));
-	// msr_set(0x175,0x0,0x7c00);
-	// msr_set(0x176,0x0,SYSR_LADDR);
 	double D = 0.042;
 	vga_init();
 	tty_init(); tty_puts("demo\n");
-	ints_install();
 	idt_init();
+	ints_install();
 	idt_flush();
-	//mbp;
 	mem_setup();
-	// tty_puts("Kernel loaded\n");
-	// mbp;
 	irq_install_handler(1,&keyboard_handler);
 	ints_sti();
+	volatile int i = 1/0;
 	printf("%x",get_paddr(0xc0001000));	// demo
-	//mbp;
-	/*
-	enable_tss(5);
-	mbp;
-	sys_write(out);
-	sys_write(out);
-	*/
-	//char* out = "sys_write demo";
-	//tty_puts(out);
 }
 
 
