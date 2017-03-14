@@ -46,41 +46,18 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 
 size_t p_init();
 
-#define SYSR_LADDR 0xC0010000 // stack - 16k
-
-/**
- * @brief      Kernel start.
- * The function we actually boot into.
- */
-
 void kernel_start()
 {
 	init_PD();
 	map_page(0xB8000,0xB8000,pg_P | pg_U);
 	double D = 0.042;
 	vga_init();
-	tty_init(); tty_puts("demo\n");
+	tty_init();
+	printf("demos kernel loaded at 0x%x\n(phys = 0x%x)\n",KERNEL_VMA_ADDR,get_paddr(KERNEL_VMA_ADDR));
 	idt_init();
 	ints_install();
 	idt_flush();
 	mem_setup();
-	irq_install_handler(1,&keyboard_handler);
+	irq_install_handler(1, keyboard_handler);
 	ints_sti();
-	volatile int i = 1/0;
-	printf("%x",get_paddr(0xc0001000));	// demo
-}
-
-
-/**
- * @brief      Bootstrap paging.
- *
- * @return     Size of available memory.
- */
-size_t p_init()
-{
-	get_available_memory();
-	init_PD();
-	size_t res = map_available_memory();
-	init_paging();
-	return res;
 }

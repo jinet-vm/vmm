@@ -122,12 +122,10 @@ uint32_t get_paddr(uint32_t laddr)
 	uint32_t* PT = (int*)(PT_off);
 	 // getting middle 10 bits - ID of page in page table
 	uint32_t page_id = (laddr >> 12) & 0x3ff;
-	printf("page_id = %x\n",page_id);
 	uint32_t page = PT[page_id];
 	if(!(page & 1)) // not present
 		return 0xffffffff;
 	page &= ~0xfff;
-	printf("page = %x\n",page);
 	return page + (laddr & 0xfff);
 }
 
