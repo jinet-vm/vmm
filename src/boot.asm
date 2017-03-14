@@ -203,7 +203,6 @@ entry_pm:
 	or eax, 0x80000000
 	mov cr0, eax
 	mbp
-
 	call kernel_start
 	jmp $
 

@@ -119,15 +119,26 @@ unsigned char kbdus[128] =
 
 void keyboard_handler(struct regs *r)
 {
-	static char shift;
+	const char shift = 0;
+	static char flags = 0;
 	unsigned char scancode = inb(0x60);
-
-	if(scancode & 0x80)
+	if(scancode & 0x80) // released
 	{
-
+		if(scancode == 0xaa)
+		{
+			flags ^= 1 << shift;
+		}
 	}
-	else
+	else // pressed
 	{
-		tty_putc(kbdus[scancode]);
+		if(scancode == 0x2a)
+		{
+			flags ^= 1 << shift;
+		}
+		char inp = kbdus[scancode];
+		if(('a' <= inp && inp <= 'z') ||
+			('0' <= inp && inp <= '9') ||
+			inp == '\n' || inp == ' ')
+			tty_putc(inp+(flags & (1 << shift) ? 'A'-'a' : 0));
 	}
 }
