@@ -44,8 +44,6 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 //
 // \xC8 = ╚ \xBC - ╝ \xCA - ╩
 
-size_t p_init();
-
 void kernel_start()
 {
 	init_PD();
@@ -58,6 +56,28 @@ void kernel_start()
 	ints_install();
 	idt_flush();
 	mem_setup();
+	// first pages mappinge
+	map_page(0,0,pg_P | pg_U);
+	// let's see BDA - 0x403 contains EBDA address >> 4
+	uint16_t* ebdaba_point = 0x40e; // EBDA base address
+	uint32_t ebda_point = (int)(*ebdaba_point) << 4;
+	char rsdp_sig[8] = "RSD PTR "; // how does this work?! http://stackoverflow.com/questions/15140708/if-ios-is-a-32-bit-os-how-can-we-be-using-uint64-t-and-int64-t
+	for(uint32_t i = ebda_point; i <= 0x100000; i+=0x1000)
+		map_page(i, i, pg_P | pg_U);
+	char* i;
+	for(i = ebda_point; i < 0x10000; i++)
+	{
+		tty_putc("\n");
+		//printf("add = %x\n", i);
+		int j;
+		for(j = 0; j<8; j++)
+			if(*(i+j) != rsdp_sig[j])
+				break;
+		if(j != 8) continue;
+		break;
+	}
+	printf("hello idiots: %x\n",i);
+	//printf("EBDA base address: 0x%x\n", rsdp_sig >> 32);
 	irq_install_handler(1, keyboard_handler);
 	ints_sti();
 }
