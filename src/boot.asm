@@ -92,7 +92,7 @@ memory_map:
 	; O32 jmp far
 	db  66h ; O32
 	db  0eah ; JMP FAR
-	dd  0x7E00 ; offset
+	dd  entry_pm ; offset
 	dw  sel_code32 ; selector
 
 DAP:
@@ -134,8 +134,52 @@ extrn PAGING_PHYS_ADDR
 extrn KERNEL_VMA_ADDR
 extrn KERNEL_SIZE
 
+; PAGING_PHYS_ADDR:
+; <PDPT>
+
 align   10h         ;код должен выравниваться по границе 16 байт
-include 'inc/procedures.inc'
+; include 'inc/procedures.inc'
+
+
+; _write: esi -> src, eax -> x, ebx -> y, edx -> color
+_write:
+	; esi contains src of string
+	mov edi, ebx
+	imul edi, 160
+	add edi, 0xB8000
+	add edi, eax
+	add edi, eax
+	mov ah, dl
+	.loop:		     ;цикл вывода сообщения
+	lodsb			    ;считываем очередной символ строки
+	test al, al		    ;если встретили 0
+	jz   .exit		    ;прекращаем вывод
+	stosw
+	jmp  .loop
+	.exit:
+	ret
+
+_hex_f:
+	add edi, 7
+	std
+	mbp
+	mov ecx, 8
+	.lp:
+		mov edx, eax
+		and eax, 0xF
+		mov al, [.symbt+eax]
+		stosb
+		mov eax, edx
+		shr eax, 4
+	loop .lp
+	cld
+	ret
+	.symbt: db '0123456789ABCDEF'
+
+VMX_ECX = 100000b
+
+stri: db "00000000",0
+
 entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
@@ -149,64 +193,47 @@ entry_pm:
 	mov ds, ax
 	mov es, ax
 
-	; copying to > 1MB
-	mov esi, 0x8000
-	mov edi, KERNEL_PHYS_ADDR
-	mov ecx, KERNEL_SIZE
-	shr ecx, 2
-	rep movsd
+	; >> checking cpuid
+	; > vmx check
+	cpuid_vmx:
+		mov eax, 1
+		cpuid
+		test ecx, VMX_ECX
+		jnz .exit_cpuid_vmx
+			mov esi, error_vmx
+			mov eax, 0
+			mov ebx, 0
+			mov edx, red
+			call _write
+		.exit_cpuid_vmx:
+	cpuid_lm:
+		mbp
+		mov eax, 0x80000000 ; extended cpuid?
+		cpuid
+		cmp eax, 0x80000001
+		jc .nolm
+		mov eax, 0x80000001
+		cpuid
+		test edx, 0x20000000 ; bit 29 - lm bit
+		jnz .exit_cpuid_lm
+		.nolm:
+			mov esi, error_lm
+			mov eax, 0
+			mov ebx, 1
+			mov edx, red
+			call _write
+			; that's essential
+			jmp $
+		.exit_cpuid_lm:
 
-	; ; now paging mess with kernel
-	; making PD
-	mov eax, PAGING_PHYS_ADDR+0x1000
-	or eax, 1
-	mov edi, PAGING_PHYS_ADDR
-	mov ecx, 0x400
-	.pdlp:
-		stosd
-		add eax, 0x1000
-	loop .pdlp
-	mbp
-	; > mapping neccessary pages
-	; this page
-	mov eax, 0x00007003
-	mov edi, PAGING_PHYS_ADDR+0x1000+7*4
-	stosd
-	; kernel pages
-	mov edi, KERNEL_VMA_ADDR
-	shr edi, 10 ; (edi/2^12)*2^2
-	add edi, PAGING_PHYS_ADDR+0x1000
-	mov eax, KERNEL_PHYS_ADDR
-	or eax, 1 ; only present flag - kernel pages!
-	mov ecx, KERNEL_SIZE
-	shr ecx, 12
-	.ptlp:
-		stosd
-		add eax, 0x1000
-	loop .ptlp
-	; PD 1:1
-	mov edi, PAGING_PHYS_ADDR
-	shr edi, 10 ; (edi/2^12)*2^2
-	add edi, PAGING_PHYS_ADDR+0x1000
-	mov eax, PAGING_PHYS_ADDR
-	or eax, 1 ; only present flag - kernel pages!
-	mov ecx, 0x1000+1024*0x1000+0x1000 ; + GDT page
-	shr ecx, 12
-	.patlp:
-		stosd
-		add eax, 0x1000
-	loop .patlp
-	; enabling PD
-	mov eax, PAGING_PHYS_ADDR
-	mov cr3, eax
-	mov eax, cr0
-	or eax, 0x80000000
-	mov cr0, eax
-	mbp
-	call kernel_start
+.exit:
 	jmp $
 
-addr: times 20 db 0
+error_lm: db "This CPU doesn't support Long Mode (AMD64)",0
+error_paging: db "This CPU doesn't support PAE paging", 0
+error_vmx: db "This CPU doesn't support Intel VMX",0
+vendor: dd 0, 0, 0
+
 ; >>> селекторы дескрипторов (RPL=0, TI=0)
 sel_zero    =   0000000b
 sel_code32  =   0001000b
