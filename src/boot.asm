@@ -116,9 +116,9 @@ d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
 GDTSize     =   $-GDTTable
 times 5 db 0,0,0,0,0,0,0,0
 
-GDTR:               ;загружаемое значение регистра GDTR
-g_size:     dw  GDTSize-1   ;размер таблицы GDT
-g_base:     dd  GDTTable           ;адрес таблицы GDT
+GDTR:
+g_size:     dw  GDTSize-1
+g_base:     dd  GDTTable
 
 ; >>>> 32bit code
 
@@ -177,6 +177,9 @@ _hex_f:
 	.symbt: db '0123456789ABCDEF'
 
 VMX_ECX = 100000b
+PAGE_PRESENT = 01b
+PAGE_WRITE = 10b
+PAGE_SIZE = 1000000b
 
 stri: db "00000000",0
 
@@ -187,52 +190,156 @@ entry_pm:
 	mbp
 	mov ax, sel_data
 	mov ss, ax
-	mov     esp, 0x7C00
-
-	mov ax, sel_data
 	mov ds, ax
 	mov es, ax
+	mov esp, 0x7C00
 
 	; >> checking cpuid
 	; > vmx check
-	cpuid_vmx:
-		mov eax, 1
-		cpuid
-		test ecx, VMX_ECX
-		jnz .exit_cpuid_vmx
-			mov esi, error_vmx
-			mov eax, 0
-			mov ebx, 0
-			mov edx, red
-			call _write
-		.exit_cpuid_vmx:
-	cpuid_lm:
+	; cpuid_vmx:
+	; 	mov eax, 1
+	; 	cpuid
+	; 	test ecx, VMX_ECX
+	; 	jnz .exit_cpuid_vmx
+	; 		mov esi, error_vmx
+	; 		mov eax, 0
+	; 		mov ebx, 0
+	; 		mov edx, red
+	; 		call _write
+	; 	.exit_cpuid_vmx:
+	; ; > lm support check
+	; cpuid_lm:
+	; 	mov eax, 0x80000000 ; extended cpuid?
+	; 	cpuid
+	; 	cmp eax, 0x80000001
+	; 	jc .nolm
+	; 	mov eax, 0x80000001
+	; 	cpuid
+	; 	test edx, 0x20000000 ; bit 29 - lm bit
+	; 	jnz .exit_cpuid_lm
+	; 	.nolm:
+	; 		mov esi, error_lm
+	; 		mov eax, 0
+	; 		mov ebx, 1
+	; 		mov edx, red
+	; 		call _write
+	; 		; that's essential
+	; 		jmp $
+	; 	.exit_cpuid_lm:
+	; >> jumping to long mode
+	; that's the thing:
+	; at first - PTML4 (512x8 bytes = 0x1000)
+	; each entry of PML4 covers 512 GiB of RAM...
+	; one PDP will do :-)
+	paging_clean: ; zero out 16KiB buffer
+		mov edi, PAGING_PHYS_ADDR
+		mov ecx, 0x1000
+		xor eax, eax
+		rep stosd
+	paging_setup:
+		mov edi, PAGING_PHYS_ADDR ; PML4T[0] -> PDPT
+		mov eax, PAGING_PHYS_ADDR+0x1000 + 0x3
+		stosd
+		mov edi, PAGING_PHYS_ADDR+0x1000 ; PDPT[0] -> PDT
+		mov eax, PAGING_PHYS_ADDR+0x2000 + 0x3
+		stosd
+		mov edi, PAGING_PHYS_ADDR+0x2000 ; PDT[0] -> PT
+		mov eax, PAGING_PHYS_ADDR+0x3000 + 0x3
+		stosd
+		mov edi, PAGING_PHYS_ADDR+0x3000
+		mov ecx, 512
+		mov eax, 0x3
+		.SetEntry:
+			stosd
+			add edi, 4
+			add eax, 0x1000
+		loop .SetEntry
+
+
+	; pml4_setup:
+	; 	;mbp
+	; 	mov edi, PAGING_PHYS_ADDR
+	; 	mov eax, PAGING_PHYS_ADDR+0x1000
+	; 	or eax, PAGE_PRESENT
+	; 	mov ecx, 1024
+	; 	.lp:
+	; 		stosd
+	; 		add edi, 4
+	; 	loop .lp
+	; pdp_setup: ; 1gb page - absolute madman
+	; 	;mbp
+	; 	mov edi, PAGING_PHYS_ADDR+0x1000
+	; 	mov eax, PAGE_PRESENT or PAGE_SIZE
+	; 	mov ecx, 1024
+	; 	.lp:
+	; 		stosd
+	; 		add edi, 4
+	; 	loop .lp
+	; pd_setup: ; it'll be more intersting that it was before
+	; 	;mbp
+	; 	mov edi, PAGING_PHYS_ADDR+0x2000+4
+	; 	; for now, just 2MiB pages
+	; 	mov eax, (PAGE_PRESENT or PAGE_WRITE or PAGE_SIZE)
+	; 	mov ecx, 512
+	; 	.lp:
+	; 		stosd
+	; 		add eax, 0x200000
+	; 		add edi, 4
+	; 	loop .lp
+	lm_enable:
 		mbp
-		mov eax, 0x80000000 ; extended cpuid?
-		cpuid
-		cmp eax, 0x80000001
-		jc .nolm
-		mov eax, 0x80000001
-		cpuid
-		test edx, 0x20000000 ; bit 29 - lm bit
-		jnz .exit_cpuid_lm
-		.nolm:
-			mov esi, error_lm
-			mov eax, 0
-			mov ebx, 1
-			mov edx, red
-			call _write
-			; that's essential
-			jmp $
-		.exit_cpuid_lm:
+		mov eax, 00100000b ; Set the PAE and PGE bit.
+    	mov cr4, eax
+
+    	mov edx, PAGING_PHYS_ADDR
+    	mov cr3, edx
+
+    	mov ecx, 0xC0000080
+    	rdmsr
+    	or eax, 0x00000100
+    	wrmsr
+
+    	mov ebx, cr0
+		or ebx, 0x80000000
+		mov cr0, ebx
+
+		;jmp $		
+
+		lgdt [GDT.Pointer]
+		jmp 0x0008:LongMode
 
 .exit:
 	jmp $
+
+GDT:
+.Null:
+    dq 0x0000000000000000             ; Null Descriptor - should be present.
+ 
+.Code:
+    dq 0x00209A0000000000             ; 64-bit code descriptor (exec/read).
+    dq 0x0000920000000000             ; 64-bit data descriptor (read/write).
+ 
+align 4
+    dw 0                              ; Padding to make the "address of the GDT" field aligned on a 4-byte boundary
+ 
+.Pointer:
+    dw $ - GDT - 1                    ; 16-bit Size (Limit) of GDT.
+    dd GDT                            ; 32-bit Base Address of GDT. (CPU will zero extend to 64-bit)
 
 error_lm: db "This CPU doesn't support Long Mode (AMD64)",0
 error_paging: db "This CPU doesn't support PAE paging", 0
 error_vmx: db "This CPU doesn't support Intel VMX",0
 vendor: dd 0, 0, 0
+
+use64
+LongMode:
+    mov ax, 0x0010
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+	jmp $
 
 ; >>> селекторы дескрипторов (RPL=0, TI=0)
 sel_zero    =   0000000b
