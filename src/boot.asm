@@ -11,7 +11,7 @@ org 0x7c00 ; why?! loop problems
 
 public start
 start:
-	mbp
+	;mbp
 	cli		     ; disabling interrupts
 	mov     ax, cs	  ; segment registers' init
 	mov     ds, ax
@@ -46,13 +46,13 @@ start:
 	; mov es, bx   ; Segment 0x2000
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
-	mbp
+	;mbp
 	mov si, DAP
 	mov ah, 0x42
 	mov dl, 0x80 ; Floppy
 	int 0x13
 	
-	mbp
+	;mbp
 	; memory map
 memory_map:
 	xor ebx, ebx
@@ -69,7 +69,7 @@ memory_map:
 		test ebx, ebx
 	jnz .lp
 
-	mbp
+	;mbp
 
 	; loading GDT
 	lgdt    fword   [GDTR]
@@ -88,7 +88,7 @@ memory_map:
 	mov eax,cr0
 	or  al,1     
 	mov cr0,eax
-	mbp
+	;mbp
 	; O32 jmp far
 	db  66h ; O32
 	db  0eah ; JMP FAR
@@ -129,10 +129,7 @@ use32 ; 32 bit PM
 public entry_pm
 
 extrn kernel_start
-extrn KERNEL_PHYS_ADDR
-extrn PAGING_PHYS_ADDR
-extrn KERNEL_VMA_ADDR
-extrn KERNEL_SIZE
+include 'consts.ld'
 
 ; PAGING_PHYS_ADDR:
 ; <PDPT>
@@ -162,7 +159,7 @@ _write:
 _hex_f:
 	add edi, 7
 	std
-	mbp
+	;mbp
 	mov ecx, 8
 	.lp:
 		mov edx, eax
@@ -187,7 +184,7 @@ entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
 	; cs already defined
-	mbp
+	;mbp
 	mov ax, sel_data
 	mov ss, ax
 	mov ds, ax
@@ -242,17 +239,25 @@ entry_pm:
 	PDP_OFF = 0x1000
 	PD_OFF = 0x2000
 	PDP_KERNEL_OFF=0x3000
-
+	PD_KERNEL_OFF = 0x4000
 	paging_setup:
 		mov edi, PAGING_PHYS_ADDR ; PML4T[0] -> PDPT
-		mov eax, PAGING_PHYS_ADDR+PDP_OFF or PAGE_PRESENT
+		mov eax, PAGING_PHYS_ADDR+PDP_OFF
+		or eax, PAGE_PRESENT
 		stosd
 		mov edi, PAGING_PHYS_ADDR+PDP_OFF ; PDPT[0] -> PDT
-		mov eax, PAGING_PHYS_ADDR+PD_OFF or PAGE_PRESENT
+		mov eax, PAGING_PHYS_ADDR+PD_OFF
+		or eax, PAGE_PRESENT
 		stosd
+		mov ecx, 512
+		mbp
 		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[0] -> PT
 		mov eax, PAGE_SIZE or PAGE_PRESENT
-		stosd
+		.lp:
+			stosd
+			add edi, 4
+			add eax, 0x200000
+		loop .lp
 		; mov edi, PAGING_PHYS_ADDR+0x3000
 		; mov ecx, 512
 		; mov eax, 0x3
@@ -263,7 +268,7 @@ entry_pm:
 		; loop .SetEntry
 
 	lm_enable:
-		mbp
+		;mbp
 		mov eax, 00100000b ; Set the PAE and PGE bit.
 		mov cr4, eax
 
@@ -322,26 +327,50 @@ LongMode:
 	mov rdi, 0x00b8000              
  
 	mov rax, 0x1F6C1F6C1F651F48    
-	mov [edi],rax
+	mov [rdi],rax
  
 	mov rax, 0x1F6F1F571F201F6F
-	mov [edi + 8], rax
+	mov [rdi + 8], rax
  
 	mov rax, 0x1F211F641F6C1F72
-	mov [edi + 16], rax
+	mov [rdi + 16], rax
 
 move_kernel:
-	mov esi, 0x8000
-	mov edi, KERNEL_PHYS_ADDR
-	mov ecx, KERNEL_SIZE
-	shr ecx, 3
+	mbp
+	mov rsi, 0x8000
+	mov rdi, KERNEL_PHYS_ADDR
+	mov rcx, KERNEL_SIZE
+	shr rcx, 3
 	rep movsq
 
 kernel_paging_setup:
+	mbp
 	mov r8, KERNEL_VMA_ADDR
 	shr r8, 39
 	and r8, 1FFh ; trash after 47th bit
+	shl r8, 8
+	mbp
+	mov rdi, PAGING_PHYS_ADDR
+	add rdi, 16
+	mov rax, PAGING_PHYS_ADDR+PDP_OFF or PAGE_PRESENT
 
+	stosq
+	mbp
+	; ; now we'll map the kernel
+	; mov rax, PAGING_PHYS_ADDR+PDP_KERNEL_OFF or PAGE_PRESENT
+	; stosq
+	; mov rdi, PAGING_PHYS_ADDR+PDP_KERNEL_OFF
+	; mov rax, PAGING_PHYS_ADDR+PD_KERNEL_OFF or PAGE_PRESENT
+	; stosq
+	; ; not finished yet - 1 GiB for kernel (yet)
+	; mov rcx, 512
+	; mov rdi, PAGING_PHYS_ADDR+PD_KERNEL_OFF
+	; mov rax, PAGE_PRESENT or PAGE_SIZE
+	; .lp:
+	; 	stosq
+	; 	; add rax, 0x200000
+	; loop .lp
+	; stosq
 	jmp $
 
 ; >>> селекторы дескрипторов (RPL=0, TI=0)
