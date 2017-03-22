@@ -30,6 +30,10 @@ configure: config.json
 	cat /dev/null > $(consts_inc)
 	./configure.py --lang fasm >> $(consts_inc)
 
+$(consts_ld): config.json configure
+$(consts_h): config.json configure
+$(consts_inc): config.json configure
+
 obj/boot.o: src/boot.asm
 	mkdir -p obj/boot
 	$(AS) src/boot.asm obj/boot/boot.o
@@ -103,10 +107,10 @@ obj/printf.o: src/vga/printf.c
 bin/rmint.bin:
 	$(AS) src/rmint.asm bin/rmint.bin
 
-kernel: kernel.ld obj/main.o obj/boot.o configure
+kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
 	ld -T $(consts_ld) -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
-bootloader: obj/boot.o kernel configure
+bootloader: obj/boot.o kernel $(consts_ld)
 	ld -T $(consts_ld) -T boot.ld -melf_i386 obj/boot/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
 
 all: prepare kernel bootloader

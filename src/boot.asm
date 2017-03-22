@@ -179,7 +179,7 @@ _hex_f:
 VMX_ECX = 100000b
 PAGE_PRESENT = 01b
 PAGE_WRITE = 10b
-PAGE_SIZE = 1000000b
+PAGE_SIZE = 10000000b
 
 stri: db "00000000",0
 
@@ -207,25 +207,26 @@ entry_pm:
 	; 		mov edx, red
 	; 		call _write
 	; 	.exit_cpuid_vmx:
-	; ; > lm support check
-	; cpuid_lm:
-	; 	mov eax, 0x80000000 ; extended cpuid?
-	; 	cpuid
-	; 	cmp eax, 0x80000001
-	; 	jc .nolm
-	; 	mov eax, 0x80000001
-	; 	cpuid
-	; 	test edx, 0x20000000 ; bit 29 - lm bit
-	; 	jnz .exit_cpuid_lm
-	; 	.nolm:
-	; 		mov esi, error_lm
-	; 		mov eax, 0
-	; 		mov ebx, 1
-	; 		mov edx, red
-	; 		call _write
-	; 		; that's essential
-	; 		jmp $
-	; 	.exit_cpuid_lm:
+	; > lm support check
+	cpuid_lm:
+		mov eax, 0x80000000 ; extended cpuid?
+		cpuid
+		cmp eax, 0x80000001
+		jc .nolm
+		mov eax, 0x80000001
+		cpuid
+		test edx, 0x20000000 ; bit 29 - lm bit
+		jnz .exit_cpuid_lm
+		.nolm:
+			mov esi, error_lm
+			mov eax, 0
+			mov ebx, 1
+			mov edx, red
+			call _write
+			; that's essential
+			jmp $
+		.exit_cpuid_lm:
+
 	; >> jumping to long mode
 	; that's the thing:
 	; at first - PTML4 (512x8 bytes = 0x1000)
@@ -236,74 +237,49 @@ entry_pm:
 		mov ecx, 0x1000
 		xor eax, eax
 		rep stosd
+
+	PML4_OFF = 0
+	PDP_OFF = 0x1000
+	PD_OFF = 0x2000
+	PDP_KERNEL_OFF=0x3000
+
 	paging_setup:
 		mov edi, PAGING_PHYS_ADDR ; PML4T[0] -> PDPT
-		mov eax, PAGING_PHYS_ADDR+0x1000 + 0x3
+		mov eax, PAGING_PHYS_ADDR+PDP_OFF or PAGE_PRESENT
 		stosd
-		mov edi, PAGING_PHYS_ADDR+0x1000 ; PDPT[0] -> PDT
-		mov eax, PAGING_PHYS_ADDR+0x2000 + 0x3
+		mov edi, PAGING_PHYS_ADDR+PDP_OFF ; PDPT[0] -> PDT
+		mov eax, PAGING_PHYS_ADDR+PD_OFF or PAGE_PRESENT
 		stosd
-		mov edi, PAGING_PHYS_ADDR+0x2000 ; PDT[0] -> PT
-		mov eax, PAGING_PHYS_ADDR+0x3000 + 0x3
+		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[0] -> PT
+		mov eax, PAGE_SIZE or PAGE_PRESENT
 		stosd
-		mov edi, PAGING_PHYS_ADDR+0x3000
-		mov ecx, 512
-		mov eax, 0x3
-		.SetEntry:
-			stosd
-			add edi, 4
-			add eax, 0x1000
-		loop .SetEntry
+		; mov edi, PAGING_PHYS_ADDR+0x3000
+		; mov ecx, 512
+		; mov eax, 0x3
+		; .SetEntry:
+		; 	stosd
+		; 	add edi, 4
+		; 	add eax, 0x1000
+		; loop .SetEntry
 
-
-	; pml4_setup:
-	; 	;mbp
-	; 	mov edi, PAGING_PHYS_ADDR
-	; 	mov eax, PAGING_PHYS_ADDR+0x1000
-	; 	or eax, PAGE_PRESENT
-	; 	mov ecx, 1024
-	; 	.lp:
-	; 		stosd
-	; 		add edi, 4
-	; 	loop .lp
-	; pdp_setup: ; 1gb page - absolute madman
-	; 	;mbp
-	; 	mov edi, PAGING_PHYS_ADDR+0x1000
-	; 	mov eax, PAGE_PRESENT or PAGE_SIZE
-	; 	mov ecx, 1024
-	; 	.lp:
-	; 		stosd
-	; 		add edi, 4
-	; 	loop .lp
-	; pd_setup: ; it'll be more intersting that it was before
-	; 	;mbp
-	; 	mov edi, PAGING_PHYS_ADDR+0x2000+4
-	; 	; for now, just 2MiB pages
-	; 	mov eax, (PAGE_PRESENT or PAGE_WRITE or PAGE_SIZE)
-	; 	mov ecx, 512
-	; 	.lp:
-	; 		stosd
-	; 		add eax, 0x200000
-	; 		add edi, 4
-	; 	loop .lp
 	lm_enable:
 		mbp
 		mov eax, 00100000b ; Set the PAE and PGE bit.
-    	mov cr4, eax
+		mov cr4, eax
 
-    	mov edx, PAGING_PHYS_ADDR
-    	mov cr3, edx
+		mov edx, PAGING_PHYS_ADDR
+		mov cr3, edx
 
-    	mov ecx, 0xC0000080
-    	rdmsr
-    	or eax, 0x00000100
-    	wrmsr
+		mov ecx, 0xC0000080
+		rdmsr
+		or eax, 0x00000100
+		wrmsr
 
-    	mov ebx, cr0
+		mov ebx, cr0
 		or ebx, 0x80000000
 		mov cr0, ebx
 
-		;jmp $		
+		;jmp $
 
 		lgdt [GDT.Pointer]
 		jmp 0x0008:LongMode
@@ -313,32 +289,59 @@ entry_pm:
 
 GDT:
 .Null:
-    dq 0x0000000000000000             ; Null Descriptor - should be present.
- 
+	dq 0x0000000000000000             ; Null Descriptor - should be present.
 .Code:
-    dq 0x00209A0000000000             ; 64-bit code descriptor (exec/read).
-    dq 0x0000920000000000             ; 64-bit data descriptor (read/write).
+	dq 0x00209A0000000000             ; 64-bit code descriptor (exec/read).
+	dq 0x0000920000000000             ; 64-bit data descriptor (read/write).
  
 align 4
-    dw 0                              ; Padding to make the "address of the GDT" field aligned on a 4-byte boundary
+	dw 0                              ; Padding to make the "address of the GDT" field aligned on a 4-byte boundary
  
 .Pointer:
-    dw $ - GDT - 1                    ; 16-bit Size (Limit) of GDT.
-    dd GDT                            ; 32-bit Base Address of GDT. (CPU will zero extend to 64-bit)
+	dw $ - GDT - 1                    ; 16-bit Size (Limit) of GDT.
+	dd GDT                            ; 32-bit Base Address of GDT. (CPU will zero extend to 64-bit)
 
 error_lm: db "This CPU doesn't support Long Mode (AMD64)",0
 error_paging: db "This CPU doesn't support PAE paging", 0
 error_vmx: db "This CPU doesn't support Intel VMX",0
-vendor: dd 0, 0, 0
 
 use64
-LongMode:
-    mov ax, 0x0010
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+LongMode: 
+	mov ax, 0x0010
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
+	mov edi, 0xB8000
+	mov rcx, 500						; Since we are clearing uint64_t over here, we put the count as Count/4.
+	mov rax, 0x1F201F201F201F20			; Set the value to set the screen to: Blue background, white foreground, blank spaces.
+	rep stosq							; Clear the entire screen. 
+	; Display "Hello World!"
+	mov rdi, 0x00b8000              
+ 
+	mov rax, 0x1F6C1F6C1F651F48    
+	mov [edi],rax
+ 
+	mov rax, 0x1F6F1F571F201F6F
+	mov [edi + 8], rax
+ 
+	mov rax, 0x1F211F641F6C1F72
+	mov [edi + 16], rax
+
+move_kernel:
+	mov esi, 0x8000
+	mov edi, KERNEL_PHYS_ADDR
+	mov ecx, KERNEL_SIZE
+	shr ecx, 3
+	rep movsq
+
+kernel_paging_setup:
+	mov r8, KERNEL_VMA_ADDR
+	shr r8, 39
+	and r8, 1FFh ; trash after 47th bit
+
 	jmp $
 
 ; >>> селекторы дескрипторов (RPL=0, TI=0)

@@ -1,6 +1,6 @@
 MEMORY
 {
-	bootloader : org = 0x7c00, len = 1k
+	bootloader : org = 0x7c00, len = BOOTLOADER_SIZE
 }
 
 OUTPUT_FORMAT("binary")
@@ -9,7 +9,6 @@ ENTRY(start)
 
 SECTIONS
 {
-	/* kernel_start = 0x00000000001009ec; */
  	. = 0;
 	.boot : {
 		FILL(0);

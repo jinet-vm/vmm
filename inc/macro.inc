@@ -1,6 +1,6 @@
 ; Debugging
 
-DEBUG = 1
+DEBUG = 0
 
 macro mbp
 {
