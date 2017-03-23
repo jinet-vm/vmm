@@ -54,7 +54,7 @@ start:
 	
 	;mbp
 	; memory map
-memory_map:
+memory_murap:
 	xor ebx, ebx
 	xor bp, bp
 	mov edx, 534D4150h
@@ -178,13 +178,19 @@ PAGE_PRESENT = 01b
 PAGE_WRITE = 10b
 PAGE_SIZE = 10000000b
 
+PML4_OFF = 0
+PDP_OFF = 0x1000
+PD_OFF = 0x2000
+PDP_KERNEL_OFF=0x3000
+PD_KERNEL_OFF = 0x4000
+
 stri: db "00000000",0
 
 entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
 	; cs already defined
-	;mbp
+	mbp
 	mov ax, sel_data
 	mov ss, ax
 	mov ds, ax
@@ -235,11 +241,6 @@ entry_pm:
 		xor eax, eax
 		rep stosd
 
-	PML4_OFF = 0
-	PDP_OFF = 0x1000
-	PD_OFF = 0x2000
-	PDP_KERNEL_OFF=0x3000
-	PD_KERNEL_OFF = 0x4000
 	paging_setup:
 		mov edi, PAGING_PHYS_ADDR ; PML4T[0] -> PDPT
 		mov eax, PAGING_PHYS_ADDR+PDP_OFF
@@ -258,6 +259,9 @@ entry_pm:
 			add edi, 4
 			add eax, 0x200000
 		loop .lp
+		mov edi, PAGING_PHYS_ADDR+PD_OFF+0x123*8
+		mov eax, PAGE_SIZE or PAGE_PRESENT
+		stosd
 		; mov edi, PAGING_PHYS_ADDR+0x3000
 		; mov ecx, 512
 		; mov eax, 0x3
@@ -267,12 +271,22 @@ entry_pm:
 		; 	add eax, 0x1000
 		; loop .SetEntry
 
+	demo:
+		mov edi, PAGING_PHYS_ADDR
+		mov ecx, 512
+		.lp:
+			mov eax, 0x101001
+			stosd
+			add edi, 4
+		loop .lp
+		mov edi, PAGING_PHYS_ADDR
+
 	lm_enable:
 		;mbp
 		mov eax, 00100000b ; Set the PAE and PGE bit.
 		mov cr4, eax
 
-		mov edx, PAGING_PHYS_ADDR
+		mov edx, PAGING_PHYS_ADDR+0x1000-8
 		mov cr3, edx
 
 		mov ecx, 0xC0000080
@@ -297,7 +311,7 @@ GDT:
 	dq 0x0000000000000000             ; Null Descriptor - should be present.
 .Code:
 	dq 0x00209A0000000000             ; 64-bit code descriptor (exec/read).
-	dq 0x0000920000000000             ; 64-bit data descriptor (read/write).
+	dq 0x0020920000000000             ; 64-bit data descriptor (read/write).
  
 align 4
 	dw 0                              ; Padding to make the "address of the GDT" field aligned on a 4-byte boundary
@@ -312,6 +326,7 @@ error_vmx: db "This CPU doesn't support Intel VMX",0
 
 use64
 LongMode: 
+	mbp
 	mov ax, 0x0010
 	mov ds, ax
 	mov es, ax
@@ -344,17 +359,14 @@ move_kernel:
 	rep movsq
 
 kernel_paging_setup:
-	mbp
-	mov r8, KERNEL_VMA_ADDR
-	shr r8, 39
-	and r8, 1FFh ; trash after 47th bit
-	shl r8, 8
-	mbp
-	mov rdi, PAGING_PHYS_ADDR
-	add rdi, 16
-	mov rax, PAGING_PHYS_ADDR+PDP_OFF or PAGE_PRESENT
+	; mbp
+	; mov r8, KERNEL_VMA_ADDR
+	; shr r8, 39
+	; and r8, 1FFh ; trash after 47th bit
+	; shl r8, 8
+	; mbp
 
-	stosq
+	; stosq
 	mbp
 	; ; now we'll map the kernel
 	; mov rax, PAGING_PHYS_ADDR+PDP_KERNEL_OFF or PAGE_PRESENT
