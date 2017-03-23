@@ -54,7 +54,7 @@ start:
 	
 	;mbp
 	; memory map
-memory_murap:
+memory_map:
 	xor ebx, ebx
 	xor bp, bp
 	mov edx, 534D4150h
@@ -184,6 +184,7 @@ PD_OFF = 0x2000
 PDP_KERNEL_OFF=0x3000
 PD_KERNEL_OFF = 0x4000
 
+
 stri: db "00000000",0
 
 entry_pm:
@@ -242,24 +243,33 @@ entry_pm:
 		rep stosd
 
 	paging_setup:
-		mov edi, PAGING_PHYS_ADDR ; PML4T[0] -> PDPT
+		mov edi, PAGING_PHYS_ADDR ; PML4T[i] -> PDP
 		mov eax, PAGING_PHYS_ADDR+PDP_OFF
 		or eax, PAGE_PRESENT
 		stosd
-		mov edi, PAGING_PHYS_ADDR+PDP_OFF ; PDPT[0] -> PDT
+		mov edi, PAGING_PHYS_ADDR+256*8
+		mov eax, PAGING_PHYS_ADDR+PDP_KERNEL_OFF
+		or eax, PAGE_PRESENT
+		stosd
+
+		mov edi, PAGING_PHYS_ADDR+PDP_OFF ; PDP[i] -> PDT
 		mov eax, PAGING_PHYS_ADDR+PD_OFF
 		or eax, PAGE_PRESENT
 		stosd
-		mov ecx, 512
-		mbp
-		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[0] -> PT
+		mov edi, PAGING_PHYS_ADDR+PDP_KERNEL_OFF
+		mov eax, PAGING_PHYS_ADDR+PD_OFF
+		or eax, PAGE_PRESENT
+		stosd
+
+		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[i] -> PT
 		mov eax, PAGE_SIZE or PAGE_PRESENT
+		mov ecx, 512
 		.lp:
 			stosd
 			add edi, 4
 			add eax, 0x200000
 		loop .lp
-		mov edi, PAGING_PHYS_ADDR+PD_OFF+0x123*8
+		mov edi, PAGING_PHYS_ADDR+PD_OFF+0x200*8
 		mov eax, PAGE_SIZE or PAGE_PRESENT
 		stosd
 		; mov edi, PAGING_PHYS_ADDR+0x3000
@@ -271,15 +281,15 @@ entry_pm:
 		; 	add eax, 0x1000
 		; loop .SetEntry
 
-	demo:
-		mov edi, PAGING_PHYS_ADDR
-		mov ecx, 512
-		.lp:
-			mov eax, 0x101001
-			stosd
-			add edi, 4
-		loop .lp
-		mov edi, PAGING_PHYS_ADDR
+	; demo:
+	; 	mov edi, PAGING_PHYS_ADDR
+	; 	mov ecx, 512
+	; 	.lp:
+	; 		mov eax, 0x101001
+	; 		stosd
+	; 		add edi, 4
+	; 	loop .lp
+	; 	mov edi, PAGING_PHYS_ADDR
 
 	lm_enable:
 		;mbp
