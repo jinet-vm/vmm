@@ -107,13 +107,13 @@ obj/printf.o: src/vga/printf.c
 	$(CC) $(CFLAGS) -c src/vga/printf.c -o obj/printf.o
 
 enterlm.img: src/enterlm.asm
-	$(AS) src/enterlm.asm obj/boot/enterlm.o
-
-bin/rmint.bin:
-	$(AS) src/rmint.asm bin/rmint.bin
+	mkdir -p obj/enterlm/
+	$(AS) src/enterlm.asm obj/enterlm/enterlm.o
+	ld -T $(consts_ld) -T kernel.ld obj/enterlm/*.o -M -melf_x86_64 
 
 kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
-	ld -T $(consts_ld) -T kernel.ld obj/*.o -M -melf_x86_64 | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
+	ld -T $(consts_ld) -T kernel.ld obj/*.o -M -melf_x86_64 > kernel.map
+	cat kernel.map | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
 bootloader: obj/boot.o kernel $(consts_ld)
 	ld -T $(consts_ld) -T boot.ld obj/boot/boot.o -melf_i386 --defsym kernel_start=$(shell cat kernel_start) # boot.img

@@ -1,4 +1,12 @@
-format elf
+format elf64
+
+use64
+section '.text' executable
+
+macro mbp ; todo
+{
+	xchg bx, bx
+}
 
 VMX_ECX = 100000b
 PAGE_PRESENT = 01b
@@ -11,7 +19,13 @@ PD_OFF = 0x2000
 PDP_KERNEL_OFF=0x3000
 PD_KERNEL_OFF = 0x4000
 
-use64
+extrn kernel_start
+extrn KERNEL_PHYS_ADDR
+extrn KERNEL_VMA_ADDR
+extrn KERNEL_SIZE
+extrn PAGING_PHYS_ADDR
+extrn KERNEL_LOAD_ADDR
+
 LongMode: 
 	mbp
 	mov ax, 0x0010
@@ -84,7 +98,4 @@ kernel_paging_setup:
 	; loop .lp
 	; stosq
 	mbp
-	push 0xffff800000000043
-	ret
-
-times 0x200-LongMode db 0
+	jmp kernel_start
