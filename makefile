@@ -2,7 +2,7 @@
 
 SHELL=bash
 CC=gcc
-CFLAGS = -m32 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w
+CFLAGS = -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w
 KERNEL_START = 0x0
 AS=fasm
 
@@ -50,7 +50,9 @@ obj/msr.o: src/misc/msr.asm
 obj/sys_enter.o: src/usermode/sys_enter.asm
 	$(AS) src/usermode/sys_enter.asm obj/sys_enter.o
 
-obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
+# obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
+#	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
+obj/main.o: src/kernel.c obj/vga.o obj/tty.o # obj/printf.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -104,17 +106,21 @@ obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 obj/printf.o: src/vga/printf.c
 	$(CC) $(CFLAGS) -c src/vga/printf.c -o obj/printf.o
 
+enterlm.img: src/enterlm.asm
+	$(AS) src/enterlm.asm obj/boot/enterlm.o
+
 bin/rmint.bin:
 	$(AS) src/rmint.asm bin/rmint.bin
 
 kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
-	ld -T $(consts_ld) -T kernel.ld -melf_i386 obj/*.o -M | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
+	ld -T $(consts_ld) -T kernel.ld obj/*.o -M -melf_x86_64 | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
 
 bootloader: obj/boot.o kernel $(consts_ld)
-	ld -T $(consts_ld) -T boot.ld -melf_i386 obj/boot/boot.o --defsym kernel_start=$(shell cat kernel_start) # boot.img
+	ld -T $(consts_ld) -T boot.ld obj/boot/boot.o -melf_i386 --defsym kernel_start=$(shell cat kernel_start) # boot.img
 
-all: prepare kernel bootloader
+all: prepare kernel bootloader enterlm.img
 	cp boot.img final.img
+	cat enterlm.img >> final.img
 	cat kernel.img >> final.img
 	# cat bin/rmint.bin >> final.img
 	wc -c final.img

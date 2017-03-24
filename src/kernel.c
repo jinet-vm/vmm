@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+//#include <kernel/printf.h>
+
+/*
 #include <kernel/tty.h>
 #include <kernel/debug.h>
 #include <kernel/stack.h>
@@ -18,7 +21,7 @@
 #include <kernel/ints.h>
 #include <kernel/keyboard.h>
 #include <kernel/consts.h>
-#include <kernel/printf.h>
+#include <kernel/printf.h> */
 //#include <msr.h>
 
 #define p_entry(addr, f) (addr << 12) | f
@@ -46,6 +49,12 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 
 void kernel_start()
 {
+	vga_init();
+	tty_init();
+	//printf("demos");
+	//tty_puts("demo");
+	for(;;);
+	/*
 	init_PD();
 	map_page(0xB8000,0xB8000,pg_P | pg_U);
 	double D = 0.042;
@@ -79,5 +88,5 @@ void kernel_start()
 	printf("hello idiots: %x\n",i);
 	//printf("EBDA base address: 0x%x\n", rsdp_sig >> 32);
 	irq_install_handler(1, keyboard_handler);
-	ints_sti();
+	ints_sti();*/
 }
