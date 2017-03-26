@@ -298,21 +298,26 @@ entry_pm:
 	; 	loop .lp
 	; 	mov edi, PAGING_PHYS_ADDR
 
+cr4_pae_bit = 00100000b
+lm_msr = 0xC0000080
+efer_lme = 0x00000100
+cr0_bit = 0x80000000
+
 	lm_enable:
 		mbp
-		mov eax, 00100000b ; Set the PAE and PGE bit.
+		mov eax, cr4_pae_bit ; PAE 
 		mov cr4, eax
 
 		mov edx, PAGING_PHYS_ADDR+PML4_OFF
 		mov cr3, edx
 
-		mov ecx, 0xC0000080
+		mov ecx, lm_msr
 		rdmsr
-		or eax, 0x00000100
+		or eax, efer_lme
 		wrmsr
 
 		mov ebx, cr0
-		or ebx, 0x80000000
+		or ebx, cr0_bit
 		mov cr0, ebx
 
 		;jmp $
