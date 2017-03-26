@@ -12,5 +12,7 @@ SECTIONS
 	.boot : {
 		FILL(0);
 		*(.text);
+		. = ORIGIN(bootloader)+LENGTH(bootloader)-1;
+		BYTE(0x2a);
 	} > bootloader
 }

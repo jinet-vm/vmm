@@ -24,6 +24,11 @@ SECTIONS
 		:*(.bss);
 	} > basic_kernel
 
+	.rodata :
+	{
+		:*(.rodata);
+	} > basic_kernel
+
 	.fill :
 	{
 		FILL(0x2a); /* = 42 */

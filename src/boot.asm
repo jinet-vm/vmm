@@ -129,7 +129,7 @@ use32 ; 32 bit PM
 public entry_pm
 
 extrn kernel_start
-include 'consts.ld'
+; include 'consts.ld'
 
 ; PAGING_PHYS_ADDR:
 ; <PDPT>
@@ -179,12 +179,6 @@ PAGE_PRESENT = 01b
 PAGE_WRITE = 10b
 PAGE_SIZE = 10000000b
 
-PML4_OFF = 0
-PDP_OFF = 0x1000
-PD_OFF = 0x2000
-PDP_KERNEL_OFF=0x3000
-PD_KERNEL_OFF = 0x4000
-
 stri: db "00000000",0
 
 GDT:
@@ -204,6 +198,8 @@ align 4
 error_lm: db "This CPU doesn't support Long Mode (AMD64)",0
 error_paging: db "This CPU doesn't support PAE paging", 0
 error_vmx: db "This CPU doesn't support Intel VMX",0
+
+include 'inc/consts.inc'
 
 entry_pm:
 	; >>> setting up all the basic stuff
@@ -307,7 +303,7 @@ entry_pm:
 		mov eax, 00100000b ; Set the PAE and PGE bit.
 		mov cr4, eax
 
-		mov edx, PAGING_PHYS_ADDR
+		mov edx, PAGING_PHYS_ADDR+PML4_OFF
 		mov cr3, edx
 
 		mov ecx, 0xC0000080

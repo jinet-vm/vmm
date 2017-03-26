@@ -13,18 +13,9 @@ PAGE_PRESENT = 01b
 PAGE_WRITE = 10b
 PAGE_SIZE = 10000000b
 
-PML4_OFF = 0
-PDP_OFF = 0x1000
-PD_OFF = 0x2000
-PDP_KERNEL_OFF=0x3000
-PD_KERNEL_OFF = 0x4000
+include 'inc/consts.inc'
 
 extrn kernel_start
-extrn KERNEL_PHYS_ADDR
-extrn KERNEL_VMA_ADDR
-extrn KERNEL_SIZE
-extrn PAGING_PHYS_ADDR
-extrn KERNEL_LOAD_ADDR
 
 public LongMode
 
@@ -82,6 +73,8 @@ kernel_paging_setup:
 	mov rax, KERNEL_PHYS_ADDR
 	or rax, PAGE_SIZE or PAGE_PRESENT
 	stosq
+	mov rax, cr3
+	mov cr3, rax
 	; stosq
 	mbp
 	; ; now we'll map the kernel
@@ -100,8 +93,8 @@ kernel_paging_setup:
 	; loop .lp
 	; stosq
 	mbp
-	jmp $
 	mov rax, kernel_start
+	; jmp $
 	push rax
 	ret
 	; jmp kernel_start
