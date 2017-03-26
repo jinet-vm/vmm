@@ -106,17 +106,18 @@ obj/keyboard.o: src/misc/keyboard.c obj/tty.o obj/io.o
 obj/printf.o: src/vga/printf.c
 	$(CC) $(CFLAGS) -c src/vga/printf.c -o obj/printf.o
 
-enterlm.img: src/enterlm.asm
+enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/
 	$(AS) src/enterlm.asm obj/enterlm/enterlm.o
-	ld -T $(consts_ld) -T kernel.ld obj/enterlm/*.o -M -melf_x86_64 
+	ld -T $(consts_ld) -T enterlm.ld obj/enterlm/*.o -M -melf_x86_64 --defsym kernel_start=$(shell cat kernel_start.sym) > enterlm.map
+	cat enterlm.map | grep LongMode | tr ' ' '\n' | grep 0x > longmode.sym
 
 kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
 	ld -T $(consts_ld) -T kernel.ld obj/*.o -M -melf_x86_64 > kernel.map
-	cat kernel.map | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start
+	cat kernel.map | grep kernel_start | tr ' ' '\n' | grep 0x > kernel_start.sym
 
-bootloader: obj/boot.o kernel $(consts_ld)
-	ld -T $(consts_ld) -T boot.ld obj/boot/boot.o -melf_i386 --defsym kernel_start=$(shell cat kernel_start) # boot.img
+bootloader: obj/boot.o enterlm.img $(consts_ld)
+	ld -T $(consts_ld) -T boot.ld obj/boot/boot.o -melf_i386 --defsym LongMode=$(shell cat longmode.sym) # boot.img
 
 all: prepare kernel bootloader enterlm.img
 	cp boot.img final.img
@@ -128,4 +129,6 @@ all: prepare kernel bootloader enterlm.img
 clean:
 	rm obj/* -rf
 	rm -f *.img
+	rm -f *.map
+	rm -f *.sym
 	rm -f kernel_start

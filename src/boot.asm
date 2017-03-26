@@ -137,6 +137,7 @@ include 'consts.ld'
 align   10h         ;код должен выравниваться по границе 16 байт
 ; include 'inc/procedures.inc'
 
+extrn LongMode
 
 ; _write: esi -> src, eax -> x, ebx -> y, edx -> color
 _write:
@@ -322,6 +323,7 @@ entry_pm:
 
 		lgdt [GDT.Pointer]
 .exit:
+	jmp sel_code32:LongMode
 	; hey, we're in Long Mode
 	; concatanate enterlm
 	; TODO: fix it

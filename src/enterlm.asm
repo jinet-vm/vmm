@@ -1,4 +1,4 @@
-format elf64
+format ELF64
 
 use64
 section '.text' executable
@@ -25,6 +25,8 @@ extrn KERNEL_VMA_ADDR
 extrn KERNEL_SIZE
 extrn PAGING_PHYS_ADDR
 extrn KERNEL_LOAD_ADDR
+
+public LongMode
 
 LongMode: 
 	mbp
@@ -98,4 +100,8 @@ kernel_paging_setup:
 	; loop .lp
 	; stosq
 	mbp
-	jmp kernel_start
+	jmp $
+	mov rax, kernel_start
+	push rax
+	ret
+	; jmp kernel_start

@@ -49,8 +49,8 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 
 void kernel_start()
 {
-	vga_init();
-	tty_init();
+	// vga_init();
+	// tty_init();
 	//printf("demos");
 	//tty_puts("demo");
 	for(;;);

@@ -5,7 +5,6 @@ MEMORY
 
 OUTPUT_FORMAT("binary")
 OUTPUT("enterlm.img")
-ENTRY(start)
 
 SECTIONS
 {
