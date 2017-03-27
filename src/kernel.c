@@ -49,18 +49,10 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 
 void kernel_start()
 {
-	//vga_init();
-	//tty_init();
+	vga_init();
+	tty_init();
 	//printf("demos");
-	//tty_puts("64 bit c");
-	// todo: what the heck is happening to '.rodata' section? I wanna have not static vars.
-	static char *string = "Long mode C with proper Higher Half Kernel paging. Hurray!";
-	volatile char *video = (volatile char*)(0xB8000+160*1);
-	while(*string != 0)
-	{
-		*video++ = *string++;
-		*video++ = 0x0F;
-	}
+	tty_puts("64 bit c");
 
 	for(;;);
 	/*
