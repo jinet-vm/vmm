@@ -1,6 +1,8 @@
-format elf
+format elf64
 
 section '.text' executable
+
+use64
 
 ; ISRs & IRQs
 ; http://www.osdever.net/bkerndev/Docs/irqs.htm
@@ -264,9 +266,9 @@ extrn fault_handler
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 isr_common_stub:
-	pusha
-	push ds
-	push es
+	;pushad
+	;push ds
+	;push es
 	push fs
 	push gs
 	mov ax, 0x10
@@ -275,14 +277,14 @@ isr_common_stub:
 	mov fs, ax
 	mov gs, ax
 	mov eax, esp
-	push eax
+	push rax
 	call fault_handler
-	pop eax
+	pop rax
 	pop gs
 	pop fs
-	pop es
-	pop ds
-	popa
+	;pop es
+	;pop ds
+	;popad
 	add esp, 8
 	iret
 
@@ -418,9 +420,9 @@ irq15:
 extrn irq_handler
 
 irq_common_stub:
-	pusha
-	push ds
-	push es
+	;pushad
+	; push ds
+	; push es
 	push fs
 	push gs
 
@@ -431,14 +433,14 @@ irq_common_stub:
 	mov gs, ax
 	mov eax, esp
 
-	push eax
+	push rax
 	call irq_handler
-	pop eax
+	pop rax
 
 	pop gs
 	pop fs
-	pop es
-	pop ds
-	popa
+	; pop es
+	; pop ds
+	;popad
 	add esp, 8
 	iret

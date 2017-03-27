@@ -7,15 +7,16 @@
 
 struct idt_header {
 	uint16_t limit;
-	uint32_t base;
+	uint64_t base;
 } __attribute__((packed));
 
 struct idt_entry {
 	uint16_t offset_low;
 	uint16_t selector;
-	uint8_t always0;
-	uint8_t flags;
-	uint16_t offset_high;
+	uint16_t flags;
+	uint16_t offset_middle;
+	uint32_t offset_high;
+	uint32_t always0;
 } __attribute__((packed));
 
 void idt_init();

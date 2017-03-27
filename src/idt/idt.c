@@ -17,7 +17,7 @@ void idt_flush()
 {
 	__asm__("lidt (%0)"
 		:
-		: "r" ((uint32_t)&idtr)
+		: "r" ((uint64_t)&idtr)
 	);
 }
 
@@ -25,8 +25,9 @@ void idt_set_gate(char i, uint32_t off, uint16_t sel, uint8_t flags)
 {
 	delimit = 0x2a2a;
 	IDT[i].offset_low = off & 0xffff;
-	IDT[i].offset_high = off >> 16;
+	IDT[i].offset_middle = (off >> 16) & 0xffff;
+	IDT[i].offset_high = off >> 32;
 	IDT[i].selector = sel;
-	IDT[i].flags = flags;
+	IDT[i].flags = flags << 8;
 	IDT[i].always0 = 0;
 }

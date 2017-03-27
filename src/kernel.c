@@ -6,8 +6,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
-
-//#include <kernel/printf.h>
+#include <kernel/debug.h>
+#include <kernel/ints.h>
+#include <kernel/idt.h>
+#include <kernel/printf.h>
+#include <kernel/keyboard.h>
 
 /*
 #include <kernel/tty.h>
@@ -19,7 +22,7 @@
 #include <kernel/vga.h>
 #include <kernel/memtab.h>
 #include <kernel/ints.h>
-#include <kernel/keyboard.h>
+
 #include <kernel/consts.h>
 #include <kernel/printf.h> */
 //#include <msr.h>
@@ -51,9 +54,13 @@ void kernel_start()
 {
 	vga_init();
 	tty_init();
-	//printf("demos");
-	tty_puts("64 bit c");
-
+	tty_puts("64 bit c ");
+	idt_init();
+	ints_install();
+	mbp;
+	idt_flush();
+	irq_install_handler(1, keyboard_handler);
+	ints_sti();
 	for(;;);
 	/*
 	init_PD();
@@ -62,9 +69,6 @@ void kernel_start()
 	vga_init();
 	tty_init();
 	printf("demos kernel loaded at 0x%x\n(phys = 0x%x)\n",KERNEL_VMA_ADDR,get_paddr(KERNEL_VMA_ADDR));
-	idt_init();
-	ints_install();
-	idt_flush();
 	mem_setup();
 	// first pages mappinge
 	map_page(0,0,pg_P | pg_U);
@@ -88,6 +92,5 @@ void kernel_start()
 	}
 	printf("hello idiots: %x\n",i);
 	//printf("EBDA base address: 0x%x\n", rsdp_sig >> 32);
-	irq_install_handler(1, keyboard_handler);
-	ints_sti();*/
+	*/
 }

@@ -14,6 +14,7 @@ volatile uint16_t* vga_buffer;
 void vga_init()
 {
 	vga_buffer = 0xB8000;
+	vga_clear();
 	vga_set_cursor(0,0);
 }
 
