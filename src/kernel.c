@@ -57,17 +57,13 @@ void kernel_start()
 	vga_init();
 	tty_init();
 	tty_puts("64 bit c\n");
-	mbp;
-	idt_init();
 	ints_install();
-	idt_flush();
-	mbp;
-	volatile int a = 1/0;
-	for(;;);
-	mbp;
-	irq_install_handler(1, keyboard_handler);
-	ints_sti();
+	//volatile int a = 1/0;
 	
+	irq_install_handler(1, keyboard_handler);
+	mbp;
+	ints_sti();
+	for(;;);
 	/*
 	init_PD();
 	map_page(0xB8000,0xB8000,pg_P | pg_U);

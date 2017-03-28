@@ -4,6 +4,25 @@ section '.text' executable
 
 use64
 
+macro pushaq
+{
+	push rax
+	push rcx
+	push rdx
+	push rbx
+	push rsp
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
+	push r11
+	push r12
+	push r13
+	push r14
+	push r15
+}
+
 ; ISRs & IRQs
 ; http://www.osdever.net/bkerndev/Docs/irqs.htm
 public isr0
@@ -259,34 +278,34 @@ isr31:
 	jmp isr_common_stub
 
 
-; We call a C function in here. We need to let the assembler know
-; that '_fault_handler' exists in another file
+; main c handler
 extrn fault_handler
 
-; This is our common ISR stub. It saves the processor state, sets
-; up for kernel mode segments, calls the C-level fault handler,
-; and finally restores the stack frame.
 isr_common_stub:
 	;pushad
-	;push ds
-	;push es
+	; push ds
+	; push es
 	push fs
 	push gs
+
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
 	mov eax, esp
-	push rax
+
+	pushaq
+	mov rdi, rsp
 	call fault_handler
-	pop rax
+	add esp, 16*8 ; registers
+
 	pop gs
 	pop fs
-	;pop es
-	;pop ds
+	; pop es
+	; pop ds
 	;popad
-	add esp, 8
+	add esp, 8*8 ; ss ... int_no
 	iret
 
 public irq0
@@ -434,14 +453,14 @@ irq_common_stub:
 	mov gs, ax
 	mov eax, esp
 
-	push rax
+	pushaq
 	call irq_handler
-	pop rax
+	add esp, 16*8 ; registers
 
 	pop gs
 	pop fs
 	; pop es
 	; pop ds
 	;popad
-	add esp, 8
+	add esp, 8*8 ; ss ... int_no
 	iret
