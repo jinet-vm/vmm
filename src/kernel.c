@@ -50,13 +50,28 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 //
 // \xC8 = ╚ \xBC - ╝ \xCA - ╩
 
-void demo();
+#define title_lines 6
+
+char* title[title_lines] = 
+{
+	"                         \xDC\xDC\xDC\xDC\xDC \xDC    \xDC   \xDC\xDB\xDB\xDB\xDC     \xDC\xDC\xDC\xDC\xDF v0.01 (WIP)\n",
+	"                       \xDC\xDF  \xDB   \xDB\xDB     \xDB  \xDB\xDF   \xDF \xDF\xDF\xDF \xDB    \n",
+	"                           \xDB   \xDB\xDB \xDB\xDB   \xDB \xDB\xDB\xDC\xDC       \xDB    \n",
+	"                        \xDC \xDB    \xDE\xDB \xDB \xDB  \xDB \xDB\xDC   \xDC\xDF   \xDB     \n",
+	"                         \xDF      \xDE \xDB  \xDB \xDB \xDF\xDB\xDB\xDB\xDF    \xDF      \n",
+	"                                  \xDB   \xDB\xDB\n\n"
+};
 
 void kernel_start()
 {
 	vga_init();
 	tty_init();
-	tty_puts("64 bit c\n");
+	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
+	for(int i = 0; i<title_lines; i++)
+	{
+		tty_puts(title[i]);
+	}
+	tty_setcolor(VC_DEFAULT);
 	ints_install();
 	//volatile int a = 1/0;
 	int* a = 0x4000000000;

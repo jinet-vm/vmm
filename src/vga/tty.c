@@ -17,7 +17,7 @@ void tty_init()
 {
 	tty_x = 0;
 	tty_y = 0;
-	tty_color = vga_color(VC_LIGHT_GREY,VC_BLACK);
+	tty_color = VC_DEFAULT;
 }
 
 /**
