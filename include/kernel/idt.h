@@ -20,7 +20,7 @@ struct idt_entry {
 } __attribute__((packed));
 
 void idt_init();
-void idt_set_gate(char i, uint32_t off, uint16_t sel, uint8_t flags);
+void idt_set_gate(char i, uint64_t off, uint16_t sel, uint8_t flags);
 void idt_flush();
 
 #endif IDT_H

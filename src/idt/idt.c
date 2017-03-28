@@ -1,5 +1,7 @@
 #include <kernel/idt.h>
 #include <kernel/memory.h>
+#include <kernel/printf.h>
+#include <kernel/debug.h>
 
 volatile static struct idt_header idtr;
 int delimit;
@@ -15,13 +17,14 @@ void idt_init()
 
 void idt_flush()
 {
+	printf("IDT: 0x%08x%08x\n",(uint64_t)&IDT >> 32, (uint64_t)&IDT & 0xffffffff);
 	__asm__("lidt (%0)"
 		:
 		: "r" ((uint64_t)&idtr)
 	);
 }
 
-void idt_set_gate(char i, uint32_t off, uint16_t sel, uint8_t flags)
+void idt_set_gate(char i, uint64_t off, uint16_t sel, uint8_t flags)
 {
 	delimit = 0x2a2a;
 	IDT[i].offset_low = off & 0xffff;

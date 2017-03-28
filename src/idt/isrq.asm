@@ -42,6 +42,7 @@ public isr31
 ;  0: Divide By Zero Exception
 isr0:
 	cli
+	xchg bx, bx
 	push 0
 	push 0
 	jmp isr_common_stub

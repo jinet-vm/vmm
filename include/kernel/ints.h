@@ -3,10 +3,10 @@
 
 struct regs
 {
-	unsigned int gs, fs, es, ds;
-	unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+	unsigned int gs, fs;
+	unsigned int rdi, rsi, rbp, rsp, rbx, rdx, rcx, rax;
 	unsigned int int_no, err_code;
-	unsigned int eip, cs, eflags, useresp, ss;
+	unsigned int rip, cs, rflags, useresp, ss;
 };
 
 void ints_install();
