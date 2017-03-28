@@ -11,6 +11,7 @@
 #include <kernel/idt.h>
 #include <kernel/printf.h>
 #include <kernel/keyboard.h>
+#include <kernel/acpi.h>
 
 /*
 #include <kernel/tty.h>
@@ -54,7 +55,7 @@ extern void msr_set(uint32_t num, uint32_t low, uint32_t high);
 
 char* title[title_lines] = 
 {
-	"                         \xDC\xDC\xDC\xDC\xDC \xDC    \xDC   \xDC\xDB\xDB\xDB\xDC     \xDC\xDC\xDC\xDC\xDF v0.01 (WIP)\n",
+	"                         \xDC\xDC\xDC\xDC\xDC \xDC    \xDC   \xDC\xDB\xDB\xDB\xDC     \xDC\xDC\xDC\xDC\xDF v0.0.1 (WIP)\n",
 	"                       \xDC\xDF  \xDB   \xDB\xDB     \xDB  \xDB\xDF   \xDF \xDF\xDF\xDF \xDB    \n",
 	"                           \xDB   \xDB\xDB \xDB\xDB   \xDB \xDB\xDB\xDC\xDC       \xDB    \n",
 	"                        \xDC \xDB    \xDE\xDB \xDB \xDB  \xDB \xDB\xDC   \xDC\xDF   \xDB     \n",
@@ -73,13 +74,12 @@ void kernel_start()
 	}
 	tty_setcolor(VC_DEFAULT);
 	ints_install();
-	//volatile int a = 1/0;
-	int* a = 0x4000000000;
-	mbp;
-	//*a = 0x10;
 	irq_install_handler(1, keyboard_handler);
-	mbp;
-	ints_sti();
+	//ints_sti();
+
+	detect_rsdp();
+	printf("MADT: 0x%x\n",find_sdt("APIC"));
+
 	for(;;);
 	/*
 	init_PD();
