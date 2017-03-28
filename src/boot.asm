@@ -264,7 +264,7 @@ entry_pm:
 
 		mov edi, PAGING_PHYS_ADDR+PDP_OFF ; PDP[i] -> PDT
 		mov eax, PAGING_PHYS_ADDR+PD_OFF
-		or eax, PAGE_PRESENT or PAGE_SIZE
+		or eax, PAGE_PRESENT
 		stosd
 
 		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[i] -> PT
