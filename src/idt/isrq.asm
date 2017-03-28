@@ -285,8 +285,6 @@ isr_common_stub:
 	;pushad
 	; push ds
 	; push es
-	push fs
-	push gs
 
 	mov ax, 0x10
 	mov ds, ax
@@ -295,16 +293,9 @@ isr_common_stub:
 	mov gs, ax
 	mov eax, esp
 
-	pushaq
 	mov rdi, rsp
 	call fault_handler
-	add esp, 16*8 ; registers
 
-	pop gs
-	pop fs
-	; pop es
-	; pop ds
-	;popad
 	add esp, 8*8 ; ss ... int_no
 	iret
 
@@ -443,24 +434,16 @@ irq_common_stub:
 	;pushad
 	; push ds
 	; push es
-	push fs
-	push gs
 
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-	mov eax, esp
 
-	pushaq
+	mov rdi, rsp
 	call irq_handler
-	add esp, 16*8 ; registers
 
-	pop gs
-	pop fs
-	; pop es
-	; pop ds
-	;popad
-	add esp, 8*8 ; ss ... int_no
-	iret
+	add rsp, 8*2 ; clean the pushed error number
+	xchg bx, bx
+	iretq

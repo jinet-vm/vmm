@@ -121,9 +121,9 @@ void fault_handler(struct regs *r)
 		tty_setcolor(vga_color(VC_RED, VC_BLACK));
 		printf("\n%s Exception. System Halted!\n", exception_messages[r->int_no]);
 		
-		printf("RAX=%08x%08x RBX=%08x%08x\nRCX=%08x%08x RDX=%08x%08x\n",r->rax >> 32, r->rax, r->rbx >> 32, r->rbx, r->rcx >> 32, r->rcx, r->rdx >> 32, r->rdx);
+		//printf("RAX=%08x%08x RBX=%08x%08x\nRCX=%08x%08x RDX=%08x%08x\n",r->rax >> 32, r->rax, r->rbx >> 32, r->rbx, r->rcx >> 32, r->rcx, r->rdx >> 32, r->rdx);
 		//printf("RSP=%08x%08x RBP=%08x%08x RSI=%08x%08x RDI=%08x%08x\n",r->rsp, r->rsp >> 32, r->rbp, r->rsi, r->rdi);
-		printf("RIP=%08x%08x\n", r->rip >> 32, r->rip);
+		//printf("RIP=%08x%08x\n", r->rip >> 32, r->rip);
 		
 		for (;;);
 	}

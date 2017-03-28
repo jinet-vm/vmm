@@ -1,6 +1,7 @@
 #include <kernel/io.h>
 #include <kernel/ints.h>
 #include <stdint.h>
+#include <kernel/debug.h>
 
 extern void irq0();
 extern void irq1();
@@ -67,6 +68,8 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
+	mbp;
+	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);
 
 	if (r->int_no >= INTS_MAX_IRQ)
@@ -82,4 +85,5 @@ void irq_handler(struct regs *r)
 
 	// EOI
 	outb(0x20, 0x20);
+	mbp;
 }

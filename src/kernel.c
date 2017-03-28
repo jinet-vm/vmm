@@ -59,7 +59,9 @@ void kernel_start()
 	tty_puts("64 bit c\n");
 	ints_install();
 	//volatile int a = 1/0;
-	
+	int* a = 0x4000000000;
+	mbp;
+	//*a = 0x10;
 	irq_install_handler(1, keyboard_handler);
 	mbp;
 	ints_sti();
