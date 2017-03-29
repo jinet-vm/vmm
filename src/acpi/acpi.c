@@ -20,19 +20,6 @@ struct rsdp_2_0
 	uint8_t reserved;
 } __attribute__ ((packed));
 
-struct sdt_header
-{
-	char sig[4];
-	uint32_t length;
-	uint8_t rev;
-	uint8_t checksum;
-	char oem_id[6];
-	char oemtab_id[8];
-	uint32_t oem_rev;
-	uint32_t creator_id;
-	uint32_t creator_rev;
-};
-
 struct rsdt
 {
 	struct sdt_header h;
@@ -40,25 +27,25 @@ struct rsdt
 };
 
 static struct rsdp_2_0* RSDP;
-static struct rsdt* RSDT;
+static struct rsdt* RSDT = 0;
 
-uint32_t find_sdt(char* sig) // living in RSDT 32-bit world. THIS SUCKS!
+struct sdt_header* find_sdt(char* sig) // living in RSDT 32-bit world. THIS SUCKS!
 {
 	int ent = (RSDT->h.length-sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]); // TODO: XSDT!
 	int* sig1 = sig; // 4-byte char; REMIND YOU OF ANYBODY?
 	for(int i = 0; i<ent; i++)
 	{
 		struct sdt_header* sh = RSDT->sdt_p[i];
-		printf("header of %.4s \n", sh->sig);
 		int* sig2 = sh;
 		if(*sig1 == *sig2) // found!
 			return RSDT->sdt_p[i];
 	}
-	return 0;
 }
 
-int detect_rsdp()
+int detect_rsdt()
 {
+	if(RSDT != 0)
+		return 0;
 	const char rsdp_sig[8] = "RSD PTR ";
 	uint16_t* ebdaba_point = EBDA_P_OFF; // EBDA base address
 	uint32_t ebda_point = (int)(*ebdaba_point) << 4;

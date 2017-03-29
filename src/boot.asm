@@ -266,10 +266,22 @@ entry_pm:
 		mov eax, PAGING_PHYS_ADDR+PD_OFF
 		or eax, PAGE_PRESENT
 		stosd
+		
+		add edi, 4
+		add eax, 0x1000
+		stosd
+		
+		add edi, 4
+		add eax, 0x1000
+		stosd
 
-		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[i] -> PT
+		add edi, 4
+		add eax, 0x1000
+		stosd
+
+		mov edi, PAGING_PHYS_ADDR+PD_OFF ; PDT[i] -> PT(size!)
 		mov eax, PAGE_SIZE or PAGE_PRESENT
-		mov ecx, 512
+		mov ecx, 512*4 ; 4 gb
 		.lp:
 			stosd
 			add edi, 4

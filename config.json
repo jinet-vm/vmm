@@ -15,6 +15,6 @@
     "PML4_OFF": "0",
     "PDP_OFF": "0x1000",
     "PD_OFF": "0x2000",
-    "PDP_KERNEL_OFF": "0x3000",
-    "PD_KERNEL_OFF": "0x4000"
+    "PDP_KERNEL_OFF": "0x7000",
+    "PD_KERNEL_OFF": "0x8000"
 }

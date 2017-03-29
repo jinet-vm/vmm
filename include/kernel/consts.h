@@ -17,7 +17,7 @@
 #define PML4_OFF 0
 #define PDP_OFF 0x1000
 #define PD_OFF 0x2000
-#define PDP_KERNEL_OFF 0x3000
-#define PD_KERNEL_OFF 0x4000
+#define PDP_KERNEL_OFF 0x7000
+#define PD_KERNEL_OFF 0x8000
 
 #endif

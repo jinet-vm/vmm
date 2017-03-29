@@ -12,6 +12,7 @@
 #include <kernel/printf.h>
 #include <kernel/keyboard.h>
 #include <kernel/acpi.h>
+#include <kernel/madt.h>
 
 /*
 #include <kernel/tty.h>
@@ -69,15 +70,13 @@ void kernel_start()
 	tty_init();
 	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
-	{
 		tty_puts(title[i]);
-	}
 	tty_setcolor(VC_DEFAULT);
 	ints_install();
 	irq_install_handler(1, keyboard_handler);
 	//ints_sti();
 
-	detect_rsdp();
+	detect_cpu_topology();
 	printf("MADT: 0x%x\n",find_sdt("APIC"));
 
 	for(;;);
