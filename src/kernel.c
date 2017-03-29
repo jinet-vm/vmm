@@ -77,7 +77,7 @@ void kernel_start()
 	//ints_sti();
 
 	detect_cpu_topology();
-	printf("MADT: 0x%x\n",find_sdt("APIC"));
+	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 
 	for(;;);
 	/*

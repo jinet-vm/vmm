@@ -70,7 +70,8 @@ void detect_cpu_topology()
 
 			default:
 				ioa = p;
-				printf("Unknown entry; type: %d, length: %d bytes\n", ioa->type, ioa->length);
+				//printf("Unknown entry; type: %d, length: %d bytes\n", ioa->type, ioa->length);
+			break;
 		}
 		ioa = p; // a hacker solution
 		uint8_t length = ioa -> length;
