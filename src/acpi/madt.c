@@ -69,12 +69,12 @@ void detect_cpu_topology()
 			
 			case TYPE_IOAPIC:
 				ioa = p;
-				printf("IOAPIC detected; IOAPIC ID: %xh             \n", ioa->ioapic_off);
+				printf("IOAPIC detected; IOAPIC ID: %xh               \n", ioa->ioapic_off);
 			break;
 
 			default:
 				ioa = p;
-				printf("Unknown entry; type: %d, length: %d bytes\n", ioa->type, ioa->length);
+				printf("Unknown entry; type: %d, length: %d bytes      \n", ioa->type, ioa->length);
 			break;
 		}
 		ioa = p; // a hacker solution
