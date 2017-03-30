@@ -41,6 +41,7 @@ extern void irq15();
 
 // io_wait is not needed - we're in a goddamn 21st centrury
 
+// todo: get outta here!1
 void pic_enable()
 {
 	outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
@@ -56,10 +57,28 @@ void pic_enable()
 	// todo: understand what is this
 }
 
-void pic_disable()
+void pic_disable() // see: http://ethv.net/workshops/osdev/notes/notes-3s
 {
-	outb(PIC2_DATA, 0xFF);
+	// set ICW1
+	outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
+	outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
+
+	// set ICW2
+	outb(PIC2_DATA, 0xe0);
+	outb(PIC1_DATA, 0xe8);
+
+	// set ICW3
+	outb(PIC1_DATA, 4);
+	outb(PIC2_DATA, 2);
+
+	// set ICW4
+	outb(PIC1_DATA, 1);
+	outb(PIC2_DATA, 1);
+
+	// set OCW1
 	outb(PIC1_DATA, 0xFF);
+	outb(PIC2_DATA, 0xFF);
+	// todo: what the heck is this?
 }
 
 void irq_install()
@@ -81,6 +100,8 @@ void irq_install()
 	idt_set_gate(45,(uint64_t)irq13,0x08,0x8E);
 	idt_set_gate(46,(uint64_t)irq14,0x08,0x8E);
 	idt_set_gate(47,(uint64_t)irq15,0x08,0x8E);
+	for(int i = 47; i<255; i++)
+		idt_set_gate(i,(uint64_t)irq0,0x08,0x8E);
 }
 
 void *irq_routines[16] =
@@ -96,6 +117,7 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
+	printf("FUCK");
 	mbp;
 	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);

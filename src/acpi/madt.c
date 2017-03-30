@@ -37,7 +37,7 @@ struct ioapic
 
 // there're other stuff we'll ignore
 
-struct madt* MADT;
+static struct madt* MADT;
 
 void detect_madt()
 {
@@ -45,6 +45,11 @@ void detect_madt()
 		return;
 	detect_rsdt();
 	MADT = find_sdt("APIC");
+}
+
+void madt_lapic_base()
+{
+	return MADT->lapic_off;
 }
 
 void detect_cpu_topology()

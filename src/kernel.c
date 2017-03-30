@@ -72,11 +72,16 @@ void kernel_start()
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
 	tty_setcolor(VC_DEFAULT);
-	ints_install();
-	irq_install_handler(1, keyboard_handler);
+	// ints_install(); - not yet, buddy
+	idt_init();
+	isr_install();
+	irq_install();
+	lapic_setup();
+	//idt_flush();
+	//irq_install_handler(1, keyboard_handler);
+	mbp;
 	//ints_sti();
-
-	detect_cpu_topology();
+	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 
 	for(;;);
