@@ -20,7 +20,7 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-static void irq_remap(void)
+void pic_enable()
 {
 	outb(0x20, 0x11);
 	outb(0xA0, 0x11);
@@ -34,9 +34,15 @@ static void irq_remap(void)
 	outb(0xA1, 0x0);
 }
 
+void pic_disable()
+{
+	outb(0xA1, 0xFF);
+	outb(0x21, 0xFF);
+}
+
 void irq_install()
 {
-	irq_remap();
+	pic_enable();
 	idt_set_gate(32,(uint64_t)irq0,0x08,0x8E);
 	idt_set_gate(33,(uint64_t)irq1,0x08,0x8E);
 	idt_set_gate(34,(uint64_t)irq2,0x08,0x8E);
