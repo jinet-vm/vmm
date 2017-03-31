@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define IDT_ENTRIES 256
+#define IDT_ENTRIES 300 // actually 256, just making up a buffer
 
 struct idt_header {
 	uint16_t limit;

@@ -47,7 +47,7 @@ void detect_madt()
 	MADT = find_sdt("APIC");
 }
 
-void madt_lapic_base()
+uint32_t madt_lapic_base()
 {
 	return MADT->lapic_off;
 }

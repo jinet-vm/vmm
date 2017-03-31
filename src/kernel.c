@@ -76,10 +76,10 @@ void kernel_start()
 	idt_init();
 	isr_install();
 	irq_install();
+	detect_madt();
 	lapic_setup();
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);
-	mbp;
 	//ints_sti();
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));

@@ -100,8 +100,8 @@ void irq_install()
 	idt_set_gate(45,(uint64_t)irq13,0x08,0x8E);
 	idt_set_gate(46,(uint64_t)irq14,0x08,0x8E);
 	idt_set_gate(47,(uint64_t)irq15,0x08,0x8E);
-	for(int i = 47; i<255; i++)
-		idt_set_gate(i,(uint64_t)irq0,0x08,0x8E);
+	for(int i=48; i<125; i++)
+		idt_set_gate(i,(uint64_t)irq15,0x08,0x8E);
 }
 
 void *irq_routines[16] =
@@ -117,7 +117,7 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
-	printf("FUCK");
+	//printf("FUCK");
 	mbp;
 	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);

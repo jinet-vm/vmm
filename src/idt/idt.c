@@ -17,7 +17,9 @@ void idt_init()
 
 void idt_flush()
 {
-	printf("IDT: 0x%08x%08x\n",(uint64_t)&IDT >> 32, (uint64_t)&IDT & 0xffffffff);
+	mbp;
+	//printf("IDT: 0x%08x%08x\n",(uint64_t)&IDT >> 32, (uint64_t)&IDT & 0xffffffff);
+	mbp;
 	__asm__("lidt (%0)"
 		:
 		: "r" ((uint64_t)&idtr)
