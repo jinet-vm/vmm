@@ -117,7 +117,6 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
-	//printf("FUCK");
 	mbp;
 	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);
