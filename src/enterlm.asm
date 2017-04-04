@@ -55,7 +55,9 @@ move_kernel:
 kernel_paging_setup:
 	mbp
 	; PML4 kernel entry
-	mov rdi, KERNEL_VMA_ADDR
+	mbp
+	mov rdi, HHKERN_VMA_ADDR
+	;mov rdi, 0xffff800000000000 ; todo: right mask?
 	shr rdi, 39
 	and rdi, 1FFh ; trash after 47th bit
 	shl rdi, 3 ; <=> r8*=8
@@ -70,7 +72,8 @@ kernel_paging_setup:
 	stosq
 	; PD kernel entries
 	mov rdi, PAGING_PHYS_ADDR+PD_KERNEL_OFF
-	mov rax, KERNEL_PHYS_ADDR
+	mov rax, HHKERN_PHYS_ADDR
+	;mov rax, 0x400000
 	or rax, PAGE_SIZE or PAGE_PRESENT
 	stosq
 	mov rax, cr3
@@ -94,7 +97,8 @@ kernel_paging_setup:
 	; stosq
 	mbp
 	mov rax, kernel_start
+	mov rsp, KERNEL_STACK_VMA_ADDR
 	; jmp $
-	push rax
-	ret
+	; push rax
+	jmp rax
 	; jmp kernel_start
