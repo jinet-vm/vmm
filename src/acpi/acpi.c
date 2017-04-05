@@ -24,7 +24,7 @@ struct rsdt
 {
 	struct sdt_header h;
 	uint32_t sdt_p[];
-};
+} __attribute__ ((packed));
 
 static struct rsdp_2_0* RSDP;
 static struct rsdt* RSDT = 0;

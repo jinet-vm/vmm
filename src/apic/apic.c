@@ -12,7 +12,7 @@ struct areg
 {
 	uint64_t a;
 	uint64_t b;
-};
+} __attribute__ ((packed));
 
 // todo: fix it
 
@@ -36,7 +36,6 @@ void lapic_setup()
 	pic_disable();
 	asm("xchg %bx, %bx");
 	lapic = madt_lapic_base();
-	//printf("FUCKKFUFUCUCUCK\n");
 	//printf("LAPIC regs at %08x\n", lapic);
 	struct areg* reg = lapic;
 	reg += SVR_N;

@@ -4,7 +4,7 @@
  */
 
 #include <stdint.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <stddef.h>
 #include <kernel/debug.h>
 #include <kernel/ints.h>
@@ -13,6 +13,7 @@
 #include <kernel/keyboard.h>
 #include <kernel/acpi.h>
 #include <kernel/madt.h>
+#include <kernel/heap.h>
 
 /*
 #include <kernel/tty.h>
@@ -77,7 +78,10 @@ void kernel_start()
 	isr_install();
 	irq_install();
 	detect_madt();
-	lapic_setup();
+	// lapic_setup(); TODO: apic 32bit bochs error
+	mbp;
+	heap_init();
+	mbp;
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);
 	//ints_sti();
