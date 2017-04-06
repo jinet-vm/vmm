@@ -7,13 +7,13 @@ static void* p;
 
 #define HB_USED (1 << 0)
 
-#define HB_SIG 0xEDA02A2A
+#define HB_SIG 0x2a2a
 
 struct heapblock
 {
-	uint16_t size;
+	uint64_t size;
 	uint16_t flags;
-	uint32_t sig; // = HB_SIG
+	uint16_t sig; // = HB_SIG
 
 	/*
 	heapblock flags:
@@ -25,13 +25,14 @@ struct heapblock
 
 } __attribute__ ((packed));
 
-#define HB_DEFBSIZE (0x10000-sizeof(struct heapblock))
+#define HB_DEFBSIZE (0x10000-sizeof(struct heapblock)-HB_DELIMIT)
+#define HB_DELIMIT 0x10 // bytes
 
 void heap_init()
 {
 	heap = HEAP_VMA_ADDR;
 	p = HEAP_VMA_ADDR;
-	for(struct heapblock* hb = HEAP_VMA_ADDR; hb < HEAP_VMA_ADDR+HEAP_SIZE; hb = (struct heapblock*)((char*)hb+HB_DEFBSIZE+sizeof(struct heapblock)))
+	for(struct heapblock* hb = HEAP_VMA_ADDR; hb < HEAP_VMA_ADDR+HEAP_SIZE; hb = (struct heapblock*)((char*)hb+HB_DEFBSIZE+sizeof(struct heapblock))+HB_DELIMIT)
 	{
 		printf("HEAP AT 0xffff8000%08x\n", hb);
 		hb->sig = HB_SIG;
