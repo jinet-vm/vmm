@@ -81,7 +81,14 @@ void kernel_start()
 	// lapic_setup(); TODO: apic 32bit bochs error
 	mbp;
 	heap_init();
-	mbp;
+	void* a = malloc(0x100);
+	void* b = malloc(0x100);
+	void* c = malloc(0x100);
+	void* d = malloc(0x100);
+	printf("b = 0x%x%x\n",(uint64_t)b >> 32, b);
+	free(b);
+	heap_show_blocks();
+	//mbp;
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);
 	//ints_sti();

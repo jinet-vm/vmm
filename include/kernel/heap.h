@@ -7,6 +7,7 @@
 //  only blocks <= 0xffff are allowed
 
 void heap_init();
+void heap_show_blocks();
 void* malloc(uint16_t size);
 void free(void* ptr);
 void* realloc(void* ptr, uint16_t size);

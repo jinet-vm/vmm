@@ -31,6 +31,8 @@ void vga_scroll_row()
 			entry = vga_buffer[i];
 			i -= VGA_WIDTH;
 			vga_buffer[i] = entry;
+			i = y*VGA_WIDTH+x;
+			vga_buffer[i] = 0;
 		}
 }
 
