@@ -92,9 +92,10 @@ void kernel_start()
 	heap_show_blocks();*/
 	memcpy(0x7000, 0x10600, 0x1000);	
 	mbp;
-	ipi_send(0x70,5,0,0,0,0,1);
-	ipi_send(0x70,6,0,0,0,0,1);
-	ipi_send(0x70,6,0,0,0,0,1);
+	// vector = segment (in SIPI); addr = seg << 4 + off (off = 0)
+	ipi_send(0x7,5,0,0,0,0,1);
+	ipi_send(0x7,6,0,0,0,0,1);
+	ipi_send(0x7,6,0,0,0,0,1);
 	//mbp;
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);
