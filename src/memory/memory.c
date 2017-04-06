@@ -21,3 +21,8 @@ void* memset(void * dest, int c, size_t n) {
 	             : "flags", "memory");
 	return dest;
 }
+
+void * memcpy(void * restrict dest, const void * restrict src, size_t count) {
+	asm volatile ("cld; rep movsb" : "+c" (count), "+S" (src), "+D" (dest) :: "memory");
+	return dest;
+}

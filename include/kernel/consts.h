@@ -23,5 +23,7 @@
 #define PD_OFF 0x2000
 #define PDP_KERNEL_OFF 0x7000
 #define PD_KERNEL_OFF 0x8000
+#define AP_ENTER_LOAD 0x10600
+#define AP_PHYS_LOAD 0x7000
 
 #endif

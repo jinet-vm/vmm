@@ -14,7 +14,8 @@
 #include <kernel/acpi.h>
 #include <kernel/madt.h>
 #include <kernel/heap.h>
-
+#include <kernel/ipi.h>
+#include <kernel/consts.h>
 /*
 #include <kernel/tty.h>
 #include <kernel/debug.h>
@@ -78,16 +79,22 @@ void kernel_start()
 	isr_install();
 	irq_install();
 	detect_madt();
-	// lapic_setup(); TODO: apic 32bit bochs error
-	mbp;
+	lapic_setup(); // TODO: apic 32bit bochs error
+	//mbp;
 	heap_init();
+	/*
 	void* a = malloc(0x100);
 	void* b = malloc(0x100);
 	void* c = malloc(0x100);
 	void* d = malloc(0x100);
 	printf("b = 0x%x%x\n",(uint64_t)b >> 32, b);
 	free(b);
-	heap_show_blocks();
+	heap_show_blocks();*/
+	memcpy(0x7000, 0x10600, 0x1000);	
+	mbp;
+	ipi_send(0x70,5,0,0,0,0,1);
+	ipi_send(0x70,6,0,0,0,0,1);
+	ipi_send(0x70,6,0,0,0,0,1);
 	//mbp;
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);

@@ -20,5 +20,7 @@
     "PDP_OFF": "0x1000",
     "PD_OFF": "0x2000",
     "PDP_KERNEL_OFF": "0x7000",
-    "PD_KERNEL_OFF": "0x8000"
+    "PD_KERNEL_OFF": "0x8000",
+    "AP_ENTER_LOAD": "0x10600",
+    "AP_PHYS_LOAD": "0x7000"
 }

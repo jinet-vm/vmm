@@ -8,23 +8,10 @@
 // identity mapped. A bright
 // but quite impossible pic.
 
-struct areg
-{
-	uint64_t a;
-	uint64_t b;
-} __attribute__ ((packed));
-
 // todo: fix it
 
-#define REG_S 0x10
-
-#define LAPIC_ID_N 0x2
 #define LAPIC_ID *(lapic+LAPIC_ID_R_OFF*REG_S)
-
-#define EOIR_N 0xB
 #define EOIR *(lapic+EOIR_N)
-
-#define SVR_N 0xF
 #define SVR *(lapic+SVR_N)
 
 #define APIC_ENABLE 1 << 8
@@ -37,8 +24,19 @@ void lapic_setup()
 	asm("xchg %bx, %bx");
 	lapic = madt_lapic_base();
 	//printf("LAPIC regs at %08x\n", lapic);
-	struct areg* reg = lapic;
-	reg += SVR_N;
-	//printf("reg at %08x", reg);
-	reg->a |= APIC_ENABLE;
+	uint32_t* reg = lapic+SVR_N*REG_S;
+	//printf("reg at %08x\n", reg);
+	*reg = (*reg) | APIC_ENABLE;
+}
+
+uint32_t lapic_reg_read(int n)
+{
+	uint32_t* reg = lapic+n*REG_S;
+	return *reg;
+}
+
+void lapic_reg_write(int n, uint32_t val)
+{
+	uint32_t* reg = lapic+n*REG_S;
+	*reg = val;
 }

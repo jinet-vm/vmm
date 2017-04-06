@@ -52,7 +52,7 @@ obj/sys_enter.o: src/usermode/sys_enter.asm
 
 # obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
 #	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
-obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o 
+obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -112,17 +112,23 @@ obj/acpi.o: src/acpi/acpi.c
 obj/madt.o: obj/acpi.o src/acpi/madt.c
 	$(CC) $(CFLAGS)	-c src/acpi/madt.c -o obj/madt.o
 
-obj/apic.o: obj/irq.o src/apic/apic.c
+obj/apic.o: src/apic/apic.c
 	$(CC) $(CFLAGS) -c src/apic/apic.c -o obj/apic.o
 
 obj/heap.o: src/memory/heap.c
 	$(CC) $(CFLAGS) -c src/memory/heap.c -o obj/heap.o
+
+obj/ipi.o: obj/apic.o src/apic/ipi.c
+	$(CC) $(CFLAGS) -c src/apic/ipi.c -o obj/ipi.o
 
 enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/
 	$(AS) src/enterlm.asm obj/enterlm/enterlm.o
 	ld -T $(consts_ld) -T enterlm.ld obj/enterlm/*.o -M -melf_x86_64 --defsym kernel_start=$(shell cat kernel_start.sym) > enterlm.map
 	cat enterlm.map | grep LongMode | tr ' ' '\n' | grep 0x > longmode.sym
+
+ap_tramp.img:
+	$(AS) src/ap_enter.asm ap_tramp.img
 
 kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
 	ld -T $(consts_ld) -T kernel.ld obj/*.o -M -melf_x86_64 > kernel.map
@@ -131,10 +137,11 @@ kernel: kernel.ld obj/main.o obj/boot.o $(consts_h)
 bootloader: obj/boot.o enterlm.img $(consts_ld)
 	ld -T $(consts_ld) -T boot.ld obj/boot/boot.o -melf_i386 --defsym LongMode=$(shell cat longmode.sym) # boot.img
 
-all: prepare kernel bootloader enterlm.img
+all: prepare kernel bootloader enterlm.img ap_tramp.img
 	cp boot.img final.img
 	cat enterlm.img >> final.img
 	cat kernel.img >> final.img
+	cat ap_tramp.img >> final.img
 	# cat bin/rmint.bin >> final.img
 	wc -c final.img
 
