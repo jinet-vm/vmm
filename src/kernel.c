@@ -92,9 +92,8 @@ void kernel_start()
 	heap_show_blocks();*/
 	memcpy(0x7000, 0x10600, 0x1000);	
 	mbp;
-	ipi_send(0x70,5,0,0,0,0,1);
-	ipi_send(0x70,6,0,0,0,0,1);
-	ipi_send(0x70,6,0,0,0,0,1);
+	ipi_send(0x7,DLM_INIT,DSM_PHYS,LVL_INIT,TRG_EDGE,DSH_NO,1);
+	ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
 	//mbp;
 	//idt_flush();
 	//irq_install_handler(1, keyboard_handler);
