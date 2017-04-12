@@ -2,6 +2,7 @@
 #include <kernel/ints.h>
 #include <stdint.h>
 #include <kernel/debug.h>
+#include <kernel/apic.h>
 
 extern void irq0();
 extern void irq1();
@@ -83,7 +84,7 @@ void pic_disable() // see: http://ethv.net/workshops/osdev/notes/notes-3s
 
 void irq_install()
 {
-	pic_enable();
+	//pic_enable();
 	idt_set_gate(32,(uint64_t)irq0,0x08,0x8E);
 	idt_set_gate(33,(uint64_t)irq1,0x08,0x8E);
 	idt_set_gate(34,(uint64_t)irq2,0x08,0x8E);
@@ -100,8 +101,6 @@ void irq_install()
 	idt_set_gate(45,(uint64_t)irq13,0x08,0x8E);
 	idt_set_gate(46,(uint64_t)irq14,0x08,0x8E);
 	idt_set_gate(47,(uint64_t)irq15,0x08,0x8E);
-	for(int i=48; i<125; i++)
-		idt_set_gate(i,(uint64_t)irq15,0x08,0x8E);
 }
 
 void *irq_routines[16] =
@@ -123,7 +122,8 @@ void irq_handler(struct regs *r)
 
 	if (r->int_no >= INTS_MAX_IRQ)
 	{
-		outb(0xA0, 0x20); // wrong int_no => EOI
+		lapic_eoi_send();
+		return;
 	}
 
 	handler = irq_routines[r->int_no - INTS_MAX_ISR];
@@ -133,6 +133,6 @@ void irq_handler(struct regs *r)
 	}
 
 	// EOI
-	outb(0x20, 0x20);
+	lapic_eoi_send();
 	mbp;
 }

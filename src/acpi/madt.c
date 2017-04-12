@@ -39,17 +39,25 @@ struct ioapic
 
 static struct madt* MADT;
 
-void detect_madt()
+uint32_t detect_madt()
 {
 	if(MADT != 0)
 		return;
 	detect_rsdt();
 	MADT = find_sdt("APIC");
+	return MADT;
 }
 
 uint32_t madt_lapic_base()
 {
 	return MADT->lapic_off;
+}
+
+static uint32_t IOAPIC_ADDR = 0xFEC00000; // default value
+
+uint32_t madt_ioapic_base()
+{
+	return IOAPIC_ADDR;
 }
 
 void detect_cpu_topology()
@@ -69,17 +77,18 @@ void detect_cpu_topology()
 		{
 			case TYPE_LAPIC:
 				cl = p;
-				printf("LAPIC detected; APIC ID: %xh                \n", cl->apic_id);
+				printf("LAPIC detected; APIC ID: %xh\n", cl->apic_id);
 			break;
 			
 			case TYPE_IOAPIC:
 				ioa = p;
-				printf("IOAPIC detected; IOAPIC ID: %xh               \n", ioa->ioapic_off);
+				printf("IOAPIC detected; IOAPIC ID: 0x%x\noffset: 0x%x\n", ioa->ioapic_id, ioa->ioapic_off);
+				IOAPIC_ADDR = ioa->ioapic_off;
 			break;
 
 			default:
 				ioa = p;
-				printf("Unknown entry; type: %d, length: %d bytes      \n", ioa->type, ioa->length);
+				printf("Unknown entry; type: %d, length: %d bytes\n", ioa->type, ioa->length);
 			break;
 		}
 		ioa = p; // a hacker solution

@@ -16,6 +16,7 @@
 #include <kernel/heap.h>
 #include <kernel/ipi.h>
 #include <kernel/consts.h>
+#include <kernel/ioapic.h>
 /*
 #include <kernel/tty.h>
 #include <kernel/debug.h>
@@ -68,20 +69,42 @@ char* title[title_lines] =
 
 void kernel_start()
 {
+	// VGA
 	vga_init();
 	tty_init();
 	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
 	tty_setcolor(VC_DEFAULT);
-	// ints_install(); - not yet, buddy
+	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	printf("VGA terminal initialized.\n");
+	// IDT
 	idt_init();
 	isr_install();
 	irq_install();
-	detect_madt();
-	lapic_setup(); // TODO: apic 32bit bochs error
-	//mbp;
+	idt_flush();
+	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	printf("IDT initialized.\n");
+	tty_setcolor(VC_DEFAULT);
+	// Heap
 	heap_init();
+	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	printf("Heap initialized.\n");
+	tty_setcolor(VC_DEFAULT);
+	// MADT
+	uint32_t madtb = detect_madt();
+	if(!madtb)
+	{
+		tty_setcolor(vga_color(VC_RED,VC_BLACK));
+		printf("ERROR: No MADT.\n");
+		for(;;);
+	}
+	detect_cpu_topology();
+	lapic_setup(); // TODO: apic 32bit bochs error
+	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	printf("MADT & LAPIC initialized.");
+	tty_setcolor(VC_DEFAULT);
+	//mbp;
 	/*
 	void* a = malloc(0x100);
 	void* b = malloc(0x100);
@@ -90,14 +113,17 @@ void kernel_start()
 	printf("b = 0x%x%x\n",(uint64_t)b >> 32, b);
 	free(b);
 	heap_show_blocks();*/
-	memcpy(0x7000, 0x10600, 0x1000);	
-	mbp;
-	ipi_send(0x7,DLM_INIT,DSM_PHYS,LVL_INIT,TRG_EDGE,DSH_NO,1);
-	ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
+	// memcpy(0x7000, 0x10600, 0x1000);
+	// //mbp;
+	// ipi_send(0x7,DLM_INIT,DSM_PHYS,LVL_INIT,TRG_EDGE,DSH_NO,1);
+	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
 	//mbp;
 	//idt_flush();
-	//irq_install_handler(1, keyboard_handler);
-	//ints_sti();
+	ioapic_setup();
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
+	mbp;
+	ints_sti();
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 

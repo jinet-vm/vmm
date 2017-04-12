@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-// uint16_t instead of common size_t:
-//  only blocks <= 0xffff are allowed
-
 void heap_init();
 void heap_show_blocks();
 void* malloc(uint16_t size);

@@ -1,35 +1,46 @@
 format binary
+use16
 
 include 'inc/consts.inc'
 
 org AP_PHYS_LOAD
 
 start:
+	cli                     ; Запрещаем прерывания
+	mov ax, cs          ; Инициализируем сегментные регистры
+	mov ds, ax
+	mov es, ax
+	mov ss, ax
+	mov sp, 0x7C00      ; Т.к. стек растет в обратную сторону, то код не затрется
+   
+	mov ax, 0xB800
+	mov gs, ax          ; Использовал для вывода текста прямой доступ к видеопамяти
+   
+	mov si, msg
+	and si, 0xff
 	xchg bx, bx
-	; jmp $
-	cli		     ; disabling interrupts
-	mov     ax, cs	  ; segment registers' init
-	mov     ds, ax
-	mov     es, ax
-	mov     ss, ax
-	mov     sp, 0x7C00      ; stack backwards => ok
+	mov cx, 1
+	.lp:
+	pusha
+	call k_puts
+	popa
+	loop .lp
+	jmp     $               ; И уходим в бесконечный цикл
+	   
+k_puts:
+	
 
-	shl eax,4       ;умножаем на 16
-	mov ebx,eax     ;копируем в регистр EBX
-	; why?!
-
-	; push dx, bx, ax, cx
-	mov dx, 0 ; set cursor to top left-most corner of screen
-	mov bh, 0 ; page
-	mov ah, 0x2 ; ah = 2 => set cursor
-	int 0x10 ; moving cursor
-	mov cx, 2000 ; print 2000 = 80*45 chars
-	mov bh, 0
-	mov al, 'E'
-	mov ah, 0x9
+	xchg bx, bx
+	lodsb
+	test al, al
+	jz .end_str
+	mov ah, 0x0E
+	mov bl, 0x                ; Серый на черном
 	int 0x10
-	; pop cx, ax, bx, dx
-
-	jmp $
-
+	jmp k_puts
+.end_str:
+	ret
+ 
+msg     db 'AP loaded', 0
+ 
 times 512-($-$$) db 0

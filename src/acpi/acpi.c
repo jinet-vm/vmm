@@ -40,6 +40,7 @@ struct sdt_header* find_sdt(char* sig) // living in RSDT 32-bit world. THIS SUCK
 		if(*sig1 == *sig2) // found!
 			return RSDT->sdt_p[i];
 	}
+	return 0;
 }
 
 int detect_rsdt()

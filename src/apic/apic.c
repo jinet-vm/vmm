@@ -16,6 +16,8 @@
 
 #define APIC_ENABLE 1 << 8
 
+#define REG_S 0x10
+
 static void* lapic;
 
 void lapic_setup()
@@ -39,4 +41,9 @@ void lapic_reg_write(int n, uint32_t val)
 {
 	uint32_t* reg = lapic+n*REG_S;
 	*reg = val;
+}
+
+void lapic_eoi_send()
+{
+	lapic_reg_write(0xB,0);
 }

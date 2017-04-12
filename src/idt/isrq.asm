@@ -434,7 +434,7 @@ irq_common_stub:
 	;pushad
 	; push ds
 	; push es
-
+	xchg bx, bx
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
