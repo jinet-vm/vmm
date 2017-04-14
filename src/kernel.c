@@ -92,17 +92,19 @@ void kernel_start()
 	printf("Heap initialized.\n");
 	tty_setcolor(VC_DEFAULT);
 	// MADT
+	detect_rsdt();
+	//print_sdts();
 	uint32_t madtb = detect_madt();
-	if(!madtb)
-	{
-		tty_setcolor(vga_color(VC_RED,VC_BLACK));
-		printf("ERROR: No MADT.\n");
-		for(;;);
-	}
-	detect_cpu_topology();
+	// if(!madtb)
+	// {
+	// 	tty_setcolor(vga_color(VC_RED,VC_BLACK));
+	// 	printf("ERROR: No MADT.\n");
+	// 	for(;;);
+	// }
+	// detect_cpu_topology();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	printf("MADT & LAPIC initialized.");
+	printf("MADT & LAPIC initialized.\n");
 	tty_setcolor(VC_DEFAULT);
 	//mbp;
 	/*
@@ -122,11 +124,14 @@ void kernel_start()
 	ioapic_setup();
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
+	// pit_init();
 	mbp;
+	printf("STI...\n");
 	ints_sti();
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
-
+	mbp;
+	//volatile int a = 1/0;
 	for(;;);
 	/*
 	init_PD();

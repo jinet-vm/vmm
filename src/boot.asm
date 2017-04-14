@@ -49,7 +49,7 @@ start:
 	;mbp
 	mov si, DAP
 	mov ah, 0x42
-	mov dl, 0x80 ; Floppy
+	mov dl, 0 ; Floppy
 	int 0x13
 	
 	;mbp

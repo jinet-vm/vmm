@@ -52,7 +52,7 @@ obj/sys_enter.o: src/usermode/sys_enter.asm
 
 # obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
 #	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
-obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o obj/ioapic.o
+obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o obj/ioapic.o obj/pit.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -123,6 +123,9 @@ obj/ipi.o: obj/apic.o src/apic/ipi.c
 
 obj/ioapic.o: obj/madt.o src/apic/ioapic.o obj/madt.o
 	$(CC) $(CFLAGS) -c src/apic/ioapic.c -o obj/ioapic.o
+
+obj/pit.o: obj/io.o obj/irq.o obj/printf.o src/devices/pit.c
+	$(CC) $(CFLAGS) -c src/devices/pit.c -o obj/pit.o
 
 enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/

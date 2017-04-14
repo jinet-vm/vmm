@@ -43,6 +43,7 @@ void lapic_reg_write(int n, uint32_t val)
 	*reg = val;
 }
 
+// todo: whaaaaat?
 void lapic_eoi_send()
 {
 	lapic_reg_write(0xB,0);

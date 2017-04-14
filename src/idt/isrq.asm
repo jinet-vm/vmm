@@ -286,11 +286,9 @@ isr_common_stub:
 	; push ds
 	; push es
 
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+	; mov ax, 0x10
+	; mov fs, ax
+	; mov gs, ax
 	mov eax, esp
 
 	mov rdi, rsp
@@ -435,11 +433,9 @@ irq_common_stub:
 	; push ds
 	; push es
 	xchg bx, bx
-	mov ax, 0x10
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+	; mov ax, 0x10
+	; mov fs, ax
+	; mov gs, ax
 
 	mov rdi, rsp
 	call irq_handler

@@ -17,6 +17,7 @@ struct sdt_header
 };
 
 int detect_rsdt();
+void print_sdts();
 struct sdt_header* find_sdt(char* sig);
 
 #endif
