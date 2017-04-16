@@ -124,10 +124,13 @@ void kernel_start()
 	ioapic_setup();
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
-	// pit_init();
+	pit_init();
 	mbp;
 	printf("STI...\n");
 	ints_sti();
+	printf("as");
+	//pit_sleep(1000);
+	///printf("as");
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 	mbp;

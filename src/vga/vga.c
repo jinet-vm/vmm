@@ -23,17 +23,13 @@ void vga_init()
  */
 void vga_scroll_row()
 {
-	size_t i; uint16_t entry;
-	for(char y = 1; y < VGA_HEIGHT; y++)
-		for(char x = 0; x<VGA_WIDTH;x++)
-		{
-			i = y*VGA_WIDTH+x;
-			entry = vga_buffer[i];
-			i -= VGA_WIDTH;
-			vga_buffer[i] = entry;
-			i = y*VGA_WIDTH+x;
-			vga_buffer[i] = 0;
-		}
+	for(int x = 0; x < VGA_WIDTH; x++)
+	{
+		for(int y = 1; y < VGA_HEIGHT; y++)
+			vga_buffer[(y-1)*VGA_WIDTH+x]=vga_buffer[y*VGA_WIDTH+x];
+	}
+	memset(vga_buffer+(VGA_HEIGHT-1)*VGA_WIDTH,0,4*VGA_WIDTH);
+	//vga_set_cursor(0,VGA_HEIGHT-2);
 }
 
 
