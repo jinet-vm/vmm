@@ -14,8 +14,3 @@ void ints_cli()
 {
 	__asm__ volatile ("cli");
 }
-
-void ints_sti()
-{
-	__asm__ volatile ("sti");
-}

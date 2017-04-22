@@ -67,6 +67,8 @@ char* title[title_lines] =
 	"                                  \xDB   \xDB\xDB\n\n"
 };
 
+extern ints_sti(void);
+
 void kernel_start()
 {
 	// VGA
@@ -121,16 +123,18 @@ void kernel_start()
 	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
 	//mbp;
 	//idt_flush();
+	//pic_disable();
 	ioapic_setup();
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
-	irq_install_handler(1, keyboard_handler);
 	pit_init();
+	//printf("STI...\n");
 	mbp;
-	printf("STI...\n");
-	ints_sti();
-	printf("as");
+ 	irq_install_handler(1, keyboard_handler);
+ 	ints_sti();
+	//printf("one and ");
 	//pit_sleep(1000);
-	///printf("as");
+	//mbp;
+	//pit_sleep(1000);
+	//printf("two");
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 	mbp;

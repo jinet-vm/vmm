@@ -12,6 +12,7 @@ org 0x7c00 ; why?! loop problems
 public start
 start:
 	;mbp
+	mov [drive], dl
 	cli		     ; disabling interrupts
 	mov     ax, cs	  ; segment registers' init
 	mov     ds, ax
@@ -49,7 +50,7 @@ start:
 	;mbp
 	mov si, DAP
 	mov ah, 0x42
-	mov dl, 0x80 ; Floppy
+	mov dl, [drive] ; Floppy
 	int 0x13
 	
 	;mbp
@@ -123,6 +124,7 @@ g_base:     dd  GDTTable
 ; >>>> 32bit code
 
 section '.text32' executable align 100h
+drive: db 0
 ; org     0x7E00 - done by ld
 use32 ; 32 bit PM
 

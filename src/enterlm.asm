@@ -20,7 +20,7 @@ extrn kernel_start
 public LongMode
 
 LongMode: 
-	mbp
+	
 	mov ax, 0x0010
 	mov ds, ax
 	mov es, ax
@@ -45,7 +45,7 @@ LongMode:
 	; mov [rdi + 16], rax
 
 move_kernel:
-	mbp
+	
 	mov rsi, KERNEL_LOAD_ADDR
 	mov rdi, KERNEL_PHYS_ADDR
 	mov rcx, KERNEL_SIZE
@@ -53,9 +53,9 @@ move_kernel:
 	rep movsq
 
 kernel_paging_setup:
-	mbp
+	
 	; PML4 kernel entry
-	mbp
+	
 	mov rdi, HHKERN_VMA_ADDR
 	;mov rdi, 0xffff800000000000 ; todo: right mask?
 	shr rdi, 39
@@ -79,7 +79,7 @@ kernel_paging_setup:
 	mov rax, cr3
 	mov cr3, rax
 	; stosq
-	mbp
+	
 	; ; now we'll map the kernel
 	; mov rax, PAGING_PHYS_ADDR+PDP_KERNEL_OFF or PAGE_PRESENT
 	; stosq
@@ -95,7 +95,7 @@ kernel_paging_setup:
 	; 	; add rax, 0x200000
 	; loop .lp
 	; stosq
-	mbp
+	
 	mov rax, kernel_start
 	mov rsp, KERNEL_STACK_VMA_ADDR
 	; jmp $

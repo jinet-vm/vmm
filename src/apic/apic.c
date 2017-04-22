@@ -23,7 +23,6 @@ static void* lapic;
 void lapic_setup()
 {
 	pic_disable();
-	asm("xchg %bx, %bx");
 	lapic = madt_lapic_base();
 	//printf("LAPIC regs at %08x\n", lapic);
 	uint32_t* reg = lapic+SVR_N*REG_S;

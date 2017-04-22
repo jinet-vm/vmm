@@ -116,7 +116,6 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
-	mbp;
 	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);
 
@@ -134,5 +133,4 @@ void irq_handler(struct regs *r)
 
 	// EOI
 	lapic_eoi_send();
-	mbp;
 }

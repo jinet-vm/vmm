@@ -4,24 +4,11 @@ section '.text' executable
 
 use64
 
-macro pushaq
-{
-	push rax
-	push rcx
-	push rdx
-	push rbx
-	push rsp
-	push rsi
-	push rdi
-	push r8
-	push r9
-	push r10
-	push r11
-	push r12
-	push r13
-	push r14
-	push r15
-}
+public ints_sti
+ints_sti:
+	sti
+	ret
+
 
 ; ISRs & IRQs
 ; http://www.osdever.net/bkerndev/Docs/irqs.htm
@@ -61,7 +48,6 @@ public isr31
 ;  0: Divide By Zero Exception
 isr0:
 	cli
-	xchg bx, bx
 	push 0
 	push 0
 	jmp isr_common_stub
@@ -295,7 +281,7 @@ isr_common_stub:
 	call fault_handler
 
 	add esp, 8*8 ; ss ... int_no
-	iret
+	iretq
 
 public irq0
 public irq1
@@ -432,7 +418,7 @@ irq_common_stub:
 	;pushad
 	; push ds
 	; push es
-	xchg bx, bx
+	
 	; mov ax, 0x10
 	; mov fs, ax
 	; mov gs, ax
@@ -441,5 +427,5 @@ irq_common_stub:
 	call irq_handler
 
 	add rsp, 8*2 ; clean the pushed error number
-	xchg bx, bx
+	sti
 	iretq
