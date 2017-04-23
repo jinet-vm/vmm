@@ -125,11 +125,14 @@ void kernel_start()
 	//idt_flush();
 	//pic_disable();
 	ioapic_setup();
-	pit_init();
-	//printf("STI...\n");
-	mbp;
+	//pit_init();
+	printf("STI...\n");
+	// mbp;
+	for(int i = 0; i<24; i++)
+		ioapic_set_gate(i,32+i,0,0,0,0,0,0);
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
  	irq_install_handler(1, keyboard_handler);
- 	ints_sti();
+ 	asm volatile("sti");
 	//printf("one and ");
 	//pit_sleep(1000);
 	//mbp;
