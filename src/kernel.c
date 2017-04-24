@@ -103,7 +103,7 @@ void kernel_start()
 	// 	printf("ERROR: No MADT.\n");
 	// 	for(;;);
 	// }
-	// detect_cpu_topology();
+	detect_cpu_topology();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	printf("MADT & LAPIC initialized.\n");
@@ -126,13 +126,13 @@ void kernel_start()
 	pic_disable();
 	ioapic_setup();
 	//pit_init();
+	asm volatile("sti");
 	printf("STI...\n");
 	// mbp;
 	for(int i = 0; i<16; i++)
-		ioapic_set_gate(i,32+i,0,0,0,0,0,0);
-	asm("int $34");
+		ioapic_set_gate(i,32+i,0,0,0,0,1,0);
+	//asm("int $34");
 	//ioapic_set_gate(1,33,0,0,0,0,0,0);
- 	//asm volatile("sti");
 	//printf("one and ");
 	//pit_sleep(1000);
 	//mbp;
