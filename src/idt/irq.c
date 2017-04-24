@@ -116,7 +116,7 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
-	//printf("irq %d", r->int_no);
+	printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);
 
 	if (r->int_no >= INTS_MAX_IRQ)

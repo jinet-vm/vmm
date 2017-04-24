@@ -123,16 +123,16 @@ void kernel_start()
 	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
 	//mbp;
 	//idt_flush();
-	//pic_disable();
+	pic_disable();
 	ioapic_setup();
 	//pit_init();
 	printf("STI...\n");
 	// mbp;
-	for(int i = 0; i<24; i++)
+	for(int i = 0; i<16; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0);
+	asm("int $34");
 	//ioapic_set_gate(1,33,0,0,0,0,0,0);
- 	irq_install_handler(1, keyboard_handler);
- 	asm volatile("sti");
+ 	//asm volatile("sti");
 	//printf("one and ");
 	//pit_sleep(1000);
 	//mbp;
