@@ -58,23 +58,24 @@ void pic_enable()
 	// todo: understand what is this
 }
 
-void pic_disable() // see: http://ethv.net/workshops/osdev/notes/notes-3s
+void pic_disable() // info: see http://ethv.net/workshops/osdev/notes/notes-3s
 {
+	// info: see http://wiki.osdev.org/8259_PIC
 	// set ICW1
-	outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
-	outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
+	// outb(PIC1_CMD, ICW1_INIT | ICW1_ICW4);
+	// outb(PIC2_CMD, ICW1_INIT | ICW1_ICW4);
 
-	// set ICW2
-	outb(PIC2_DATA, 0xe0);
-	outb(PIC1_DATA, 0xe8);
+	// // set ICW2
+	// outb(PIC2_DATA, 0xe0);
+	// outb(PIC1_DATA, 0xe8);
 
-	// set ICW3
-	outb(PIC1_DATA, 4);
-	outb(PIC2_DATA, 2);
+	// // set ICW3
+	// outb(PIC1_DATA, 4);
+	// outb(PIC2_DATA, 2);
 
-	// set ICW4
-	outb(PIC1_DATA, 1);
-	outb(PIC2_DATA, 1);
+	// // set ICW4
+	// outb(PIC1_DATA, 1);
+	// outb(PIC2_DATA, 1);
 
 	// set OCW1
 	outb(PIC1_DATA, 0xFF);

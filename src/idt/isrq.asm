@@ -103,6 +103,7 @@ isr7:
 
 ;  8: Double Fault Exception (With Error Code!)
 isr8:
+	xchg bx, bx
 	cli
 	push 8
 	jmp isr_common_stub

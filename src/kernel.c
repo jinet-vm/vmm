@@ -129,10 +129,8 @@ void kernel_start()
 	asm volatile("sti");
 	printf("STI...\n");
 	// mbp;
-	for(int i = 0; i<16; i++)
-		ioapic_set_gate(i,32+i,0,0,0,0,1,0);
-	//asm("int $34");
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
+	// ioapic_set_gate(1,33,0,0,0,0,0,0);
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	//printf("one and ");
 	//pit_sleep(1000);
 	//mbp;

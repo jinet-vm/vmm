@@ -14,7 +14,7 @@ struct sdt_header
 	uint32_t oem_rev;
 	uint32_t creator_id;
 	uint32_t creator_rev;
-};
+} __attribute__((packed));
 
 int detect_rsdt();
 void print_sdts();
