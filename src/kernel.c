@@ -126,11 +126,12 @@ void kernel_start()
 	pic_disable();
 	ioapic_setup();
 	//pit_init();
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	printf("IOAPIC setup keyboard\n");
 	asm volatile("sti");
 	printf("STI...\n");
 	// mbp;
 	// ioapic_set_gate(1,33,0,0,0,0,0,0);
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	//printf("one and ");
 	//pit_sleep(1000);
 	//mbp;
