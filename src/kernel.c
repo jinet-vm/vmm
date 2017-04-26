@@ -125,11 +125,18 @@ void kernel_start()
 	//idt_flush();
 	pic_disable();
 	ioapic_setup();
-	//pit_init();
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	pit_init();
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
+	//irq_install_handler(1, keyboard_handler);
 	printf("IOAPIC setup keyboard\n");
-	asm volatile("sti");
+	ints_sti();
 	printf("STI...\n");
+	unsigned int i = 0;
+	for(;;)
+	{
+		printf("%d\n",++i);
+		//pit_sleep(1000);
+	}
 	// mbp;
 	// ioapic_set_gate(1,33,0,0,0,0,0,0);
 	//printf("one and ");
@@ -139,7 +146,7 @@ void kernel_start()
 	//printf("two");
 	//detect_cpu_topology();
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
-	mbp;
+	//mbp;
 	//volatile int a = 1/0;
 	for(;;);
 	/*

@@ -12,7 +12,7 @@ void vga_init()
 
 void vga_scroll_row()
 {
-	size_t i; uint16_t entry;
+	static size_t i; static uint16_t entry;
 	for(char y = 1; y < VGA_HEIGHT; y++)
 		for(char x = 0; x<VGA_WIDTH;x++)
 		{
