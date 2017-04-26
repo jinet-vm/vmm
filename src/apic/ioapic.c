@@ -35,7 +35,7 @@ void ioapic_reg_write(uint8_t n, uint32_t val)
 void ioapic_set_gate(uint8_t n, uint8_t intvec, uint8_t delmod, uint8_t destmod, uint8_t intpol, uint8_t trigmod, uint8_t intmask, uint8_t dest)
 {
 	if(n > 23) return;
-	uint8_t low = 0, high = 0;
+	uint32_t low = 0, high = 0;
 	low |= intvec << 0;
 	low |= (delmod & 7) << 8;
 	low |= (destmod & 1) << 11;
