@@ -6,6 +6,7 @@ include 'inc/consts.inc'
 org AP_PHYS_LOAD
 
 start:
+	jmp $
 	cli                     ; Запрещаем прерывания
 	mov ax, cs          ; Инициализируем сегментные регистры
 	mov ds, ax
