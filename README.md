@@ -1,8 +1,6 @@
-# demos
+# VMM
 
-![Aristotle](aristotle.gif)
-
-Demo operating system. **So** much work to do.
+A VMM (*Virtual Machine Monitor*) of the Jinet hypervisor.
 
 ## Config file
 
