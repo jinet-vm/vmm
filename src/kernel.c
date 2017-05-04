@@ -95,7 +95,7 @@ void kernel_start()
 	tty_setcolor(VC_DEFAULT);
 	// MADT
 	detect_rsdt();
-	//print_sdts();
+	print_sdts();
 	uint32_t madtb = detect_madt();
 	// if(!madtb)
 	// {
@@ -103,7 +103,7 @@ void kernel_start()
 	// 	printf("ERROR: No MADT.\n");
 	// 	for(;;);
 	// }
-	detect_cpu_topology();
+	//detect_cpu_topology();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	printf("MADT & LAPIC initialized.\n");
@@ -126,28 +126,24 @@ void kernel_start()
 	pic_disable();
 	ioapic_setup();
 	pit_init();
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
 	printf("IOAPIC setup keyboard\n");
-	
+	//ints_sti();
 	printf("STI...\n");
-	//unsigned int i = 0;
 	memcpy(0x7000, 0x10600, 0x1000);
-	ints_sti();
-	ipi_send(0x7,DLM_INIT,DSM_PHYS,LVL_INIT,TRG_EDGE,DSH_NO,1);
-	// asm volatile("sti");
-	// pit_sleep(10);
-	// asm volatile("cli");
-	ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
-	// asm volatile("sti");
-	// pit_sleep(10);
-	// asm volatile("cli");
-	ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
-	// for(;;)
-	// {
-	// 	printf("%d\n",++i);
-	// 	pit_sleep(1000);
-	// }
+	//ints_sti();
+	//asm volatile("cli");
+	// ipi_send(0x7,DLM_INIT,DSM_PHYS,LVL_INIT,TRG_EDGE,DSH_NO,1);
+	// // asm volatile("sti");
+	// // pit_sleep(10);
+	// // asm volatile("cli");
+	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
+	// // asm volatile("sti");
+	// // pit_sleep(10);
+	// // asm volatile("cli");
+	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
+	//asm volatile("sti");
 	// mbp;
 	// ioapic_set_gate(1,33,0,0,0,0,0,0);
 	//printf("one and ");

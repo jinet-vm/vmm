@@ -6,8 +6,7 @@ include 'inc/consts.inc'
 org AP_PHYS_LOAD
 
 start:
-	jmp $
-	cli                     ; Запрещаем прерывания
+	;cli                     ; Запрещаем прерывания
 	mov ax, cs          ; Инициализируем сегментные регистры
 	mov ds, ax
 	mov es, ax
@@ -20,14 +19,14 @@ start:
 	mov si, msg
 	and si, 0xff
 	xchg bx, bx
-	mov cx, 1
+	.dest:
+	mov cx, 100
 	.lp:
 	pusha
 	call k_puts
 	popa
-	loop .lp
-	jmp     $               ; И уходим в бесконечный цикл
-	   
+	loop .lp               ; И уходим в бесконечный цикл
+	jmp $
 k_puts:
 	
 

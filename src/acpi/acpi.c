@@ -45,8 +45,9 @@ struct sdt_header* find_sdt(char* sig) // living in RSDT 32-bit world. THIS SUCK
 
 void print_sdts() // living in RSDT 32-bit world. THIS SUCKS!
 {
-	uint32_t ent = (RSDT->h.length-sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]); // TODO: XSDT!
+	uint32_t ent = ((RSDT->h.length)-(uint32_t)sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]); // TODO: XSDT!
 	printf("%x\n",RSDT);
+	printf("\n\n%d\n\n",ent);
 	for(int i = 0; i<ent; i++)
 	{
 		struct sdt_header* sh = RSDT->sdt_p[i];
