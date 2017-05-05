@@ -17,6 +17,7 @@
 #include <kernel/ipi.h>
 #include <kernel/consts.h>
 #include <kernel/ioapic.h>
+#include <kernel/vmx.h>
 /*
 #include <kernel/tty.h>
 #include <kernel/debug.h>
@@ -68,8 +69,6 @@ char* title[title_lines] =
 };
 
 extern ints_sti(void);
-extern vmx_check();
-
 
 void kernel_start()
 {
@@ -157,7 +156,7 @@ void kernel_start()
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 	//mbp;
 	//volatile int a = 1/0;
-	printf("vmx: %d",vmx_check());
+	vmx_init();
 	for(;;);
 	/*
 	init_PD();
