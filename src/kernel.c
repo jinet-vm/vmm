@@ -68,6 +68,8 @@ char* title[title_lines] =
 };
 
 extern ints_sti(void);
+extern vmx_check();
+
 
 void kernel_start()
 {
@@ -89,7 +91,7 @@ void kernel_start()
 	printf("IDT initialized.\n");
 	tty_setcolor(VC_DEFAULT);
 	// Heap
-	heap_init();
+	//heap_init();
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	printf("Heap initialized.\n");
 	tty_setcolor(VC_DEFAULT);
@@ -129,7 +131,7 @@ void kernel_start()
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
 	printf("IOAPIC setup keyboard\n");
-	//ints_sti();
+	//cdints_sti();
 	printf("STI...\n");
 	memcpy(0x7000, 0x10600, 0x1000);
 	//ints_sti();
@@ -155,6 +157,7 @@ void kernel_start()
 	//printf("MADT: 0x%x\n",find_sdt("APIC"));
 	//mbp;
 	//volatile int a = 1/0;
+	printf("vmx: %d",vmx_check());
 	for(;;);
 	/*
 	init_PD();
