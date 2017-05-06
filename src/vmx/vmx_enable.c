@@ -15,8 +15,8 @@ int vmx_init()
 	if(size == 0) size = 1024;
 	int* rev = 0xffff800000010000;
 	*rev = bmsr & 0xffffffff;
-	int* addr = 0xffff800000020000;
-	*addr = 0x410000;
-	vmx_on(&addr);
+	int addr = 0xffff800000010000;
+	//*addr = 0x410000;
+	vmx_on(addr);
 	return 0;
 }

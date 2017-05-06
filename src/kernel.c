@@ -140,7 +140,7 @@ void kernel_start()
 	// // asm volatile("sti");
 	// // pit_sleep(10);
 	// // asm volatile("cli");
-	// ipi_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
+	// ipiEFLAGSEFLAGSEFLAGSEFLAGSEFLAGS_send(0x7,DLM_SIPI,DSM_PHYS,LVL_DEF,TRG_EDGE,DSH_NO,1);
 	// // asm volatile("sti");
 	// // pit_sleep(10);
 	// // asm volatile("cli");
@@ -174,7 +174,7 @@ void kernel_start()
 	uint32_t ebda_point = (int)(*ebdaba_point) << 4;
 	char rsdp_sig[8] = "RSD PTR "; // how does this work?! http://stackoverflow.com/questions/15140708/if-ios-is-a-32-bit-os-how-can-we-be-using-uint64-t-and-int64-t
 	for(uint32_t i = ebda_point; i <= 0x100000; i+=0x1000)
-		map_page(i, i, pg_P | pg_U);
+		map_page(i, i, pg_P | pg_U);a
 	char* i;
 	for(i = ebda_point; i < 0x10000; i++)
 	{
