@@ -8,15 +8,16 @@ int vmx_init()
 {
 	if(!vmx_check()) return -1;
 	printf("VMX supported!\n");
-	uint64_t bmsr = vmx_bmsr();
+	uint64_t bmsr=0;
+	cpuGetMSR(0x480,&bmsr,4+(char*)(&bmsr));
 	printf("VMX revision: 0x%08x\n", bmsr & 0xffffffff);
 	size = (bmsr >> 32) & 0x1fff;
 	printf("VMCS size: 0x%d\n",size);
 	if(size == 0) size = 1024;
 	int* rev = 0xffff800000010000;
 	*rev = bmsr & 0xffffffff;
-	int addr = 0xffff800000010000;
-	//*addr = 0x410000;
-	vmx_on(addr);
+	uint64_t* addr = 0xffff800000010000;
+	*addr = 0x410000;
+	vmx_on(0x410000);
 	return 0;
 }

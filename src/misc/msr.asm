@@ -1,12 +1,14 @@
 format ELF
-
 section '.text' executable
+
+use64
 
 include 'inc/macro.inc'
 
 ; TODO: cpuid check
 
 public msr_get ; void msr_get(uint32_t num, uint32_t* high, uint32_t *low)
+; num -> rdi
 msr_get:
 	push ebp
 	mov ebp, esp

@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 import json as j
 import argparse as ag
 from collections import OrderedDict
