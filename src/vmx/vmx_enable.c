@@ -44,5 +44,6 @@ int vmx_init()
 	uint64_t* addr = 0xffff800000010000;
 	*addr = 0x410000;
 	vmx_on(0x410000);
+	printf("vmxon succesful\n");
 	return 0;
 }

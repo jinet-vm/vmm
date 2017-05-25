@@ -63,10 +63,11 @@ void kernel_start()
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	printf("MADT & LAPIC initialized.\n");
 	tty_setcolor(VC_DEFAULT);
-	pic_disable();
-	ioapic_setup();
-	asm("sti");
-	pit_init();
+	//pic_disable();
+	//ioapic_setup();
+	//asm("sti");
+	//pit_init();
+	// todo: crazy stuff here!
 	// VMX
 	vmx_init();
 	for(;;);
