@@ -19,3 +19,5 @@ scripts should be defined in [config.json](config.json). Here's an example of ho
 ## Acknowledgements and remarks
 
 This repo is originally cloned from [ilya101010/demos](https://github.com/ilya101010/demos).
+
+This project is done under supervision of Boris Baykov and Alexei Ponamarev who I owe a debt of gratitude for all the guidance they provided me during work on this project.
