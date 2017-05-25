@@ -47,3 +47,9 @@ int vmx_init()
 	printf("vmxon succesful\n");
 	return 0;
 }
+
+void vmwrite(uint64_t vmcs_id, uint64_t value)
+{
+	asm("vmwrite %1, %0"
+		: "=r"(vmcs_id), "=r"(value));
+}
