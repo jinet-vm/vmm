@@ -5,6 +5,29 @@
 
 int size;
 
+void vmx_on(void* paddr)
+{
+	asm("vmxon %0"
+		:"=m"(paddr));
+}
+
+void vmx_crinit()
+{
+	// I HATE INLINE AT&T ASM!
+	// I need it though.
+	// todo: why multiline-inline-assembly needs '\n' ?
+	asm("movq %%cr4, %%rax\n"
+		"bts $13, %%rax\n"
+		"movq %%rax, %%cr4\n"
+		: :	:"%rax"
+		);
+	asm("movq %%cr0, %%rax\n"
+		"bts $5, %%rax\n"
+		"movq %%rax, %%cr0\n"
+		: :	:"%rax"
+		);
+}
+
 int vmx_init()
 {
 	if(!vmx_check()) return -1;

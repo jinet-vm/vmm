@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-// vmx_init.asm
+// vmx_init.asm todo: get rid of it
 extern char vmx_check();
-extern void vmx_crinit();
-extern uint64_t vmx_bmsr();
 
 // vmx_enable.c
 int vmx_init();
+void vmx_crinit();
+void vmx_on();
 
 #endif
