@@ -3,12 +3,14 @@
 
 #include <stdint.h>
 
-// vmx_init.asm todo: get rid of itvoid vmwrite(int vmcs_id, int value);
+// vmx_init.asm todo: get rid of it
 extern char vmx_check();
 
 // vmx_enable.c
 int vmx_init();
 void vmx_crinit();
-void vmx_vmxon();
-void vmwrite(uint64_t vmcs_id, uint64_t value);
+int vmx_vmxon();
+int vmwrite(uint64_t vmcs_id, uint64_t value);
+uint64_t vmread(uint64_t vmcs_id)
+
 #endif

@@ -8,17 +8,20 @@
 
 int size;
 
-void vmx_vmxon(void* paddr)
+int vmx_vmxon(uint64_t paddr)
 {
-	asm("vmxon %0"
-		:"=m"(paddr));
+	unsigned char err;
+	asm volatile ("vmxon %1; setna %0"
+		: "=r"(err)
+		: "m"(paddr)
+		: "memory", "cc");
+	return err ? -1 : 0;
 }
 
-void vmx_vmptrld(unsigned long vmcs)
+int vmx_vmptrld(unsigned long vmcs)
 {
-unsigned char err;
-
-	__asm__ volatile ("vmptrld %1; setna %0"
+	unsigned char err;
+	asm volatile ("vmptrld %1; setna %0"
 		: "=r"(err)
 		: "m"(vmcs)
 		: "memory", "cc");
@@ -50,23 +53,49 @@ int vmx_init()
 	vmx_crinit();
 	uint64_t bmsr=0;
 	msr_get(0x480,&bmsr,4+(char*)(&bmsr));
-	printf("VMX revision: 0x%08x\n", bmsr & 0x8fffffff);
+	printf("VMX revision: 0x%08x\n", bmsr & 0x7fffffff);
 	size = (bmsr >> 32) & 0x1fff;
 	printf("VMCS size: 0x%d\n",size);
 	// vmxon region:
 	int* rev = VMCS_L;
-	*rev = bmsr & 0x8fffffff;
-	vmx_vmxon(VMCS_P);
-	printf("vmxon succesful\n");
+	*rev = bmsr & 0x7fffffff;
+	if(!vmx_vmxon(VMCS_P))
+		printf("vmxon successful\n");
+	else
+	{
+		printf("vmxon: VMFailInvalid\n");
+		return -1;
+	}
 	// vmcs:
-	rev += 0x1000;
-	*rev = bmsr & 0x8fffffff;
-	vmx_vmptrld(VMCS_P+0x1000);
+	rev = VMCS_L+0x1000;
+	*rev = bmsr & 0x7fffffff;
+	if(!vmx_vmptrld(VMCS_P+0x1000))
+		printf("vmptrld successful\n");
+	else
+	{
+		printf("vmptrld: VMFailInvalid (no active VMCS so far)\n");
+		return -1;
+	}
+	//vmwrite(0x681e,0x7c00);
+	if(!vmlaunch())
+		printf("vmlaunch successful");
+	else
+		printf("vmlaunch: VMFail");
 	return 0;
 }
 
-void vmwrite(uint64_t vmcs_id, uint64_t value)
+int vmwrite(uint64_t vmcs_id, uint64_t value)
 {
-	asm("vmwrite %1, %0"
-		: "=r"(vmcs_id), "=r"(value));
+	char err;
+	asm("vmwrite %1, %0; setna %2"
+		: "=r"(vmcs_id), "=r"(value), "=r"(err));
+	return err ? -1 : 0;
+}
+
+int vmlaunch()
+{
+	char err;
+	asm("vmlaunch; setna %0"
+		: "=r"(err));
+	return err ? -1 : 0;
 }
