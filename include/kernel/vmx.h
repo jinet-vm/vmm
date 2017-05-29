@@ -10,7 +10,7 @@ extern char vmx_check();
 int vmx_init();
 void vmx_crinit();
 int vmx_vmxon();
-int vmwrite(uint64_t vmcs_id, uint64_t value);
-uint64_t vmread(uint64_t vmcs_id)
+int vmx_vmwrite(uint64_t vmcs_id, uint64_t value);
+uint64_t vmx_vmread(uint64_t vmcs_id);
 
 #endif

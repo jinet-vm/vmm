@@ -81,9 +81,9 @@ memory_map:
 	out 70h,al
 
 	; enable a20
-	; in  al,92h
-	; or  al,2
-	; out 92h,al
+	in  al,92h
+	or  al,2
+	out 92h,al
 	
 	; get into PM
 	mov eax,cr0

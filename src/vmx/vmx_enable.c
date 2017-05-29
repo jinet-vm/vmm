@@ -76,15 +76,47 @@ int vmx_init()
 		printf("vmptrld: VMFailInvalid (no active VMCS so far)\n");
 		return -1;
 	}
-	//vmwrite(0x681e,0x7c00);
-	if(!vmlaunch())
+	vmx_vmwrite(0x681e,3);
+	const char* rsns[]=
+	{
+		"VMCALL executed in VMX root operation",
+		"VMCLEAR with invalid physical address",
+		"VMCLEAR with VMXON pointer",
+		"VMLAUNCH with non-clear VMCS",
+		"VMRESUME with non-launched VMCS",
+		"VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME)",
+		"VM entry with invalid control field(s)",
+		"VM entry with invalid host-state field(s)",
+		"VMPTRLD with invalid physical address",
+		"VMPTRLD with VMXON pointer",
+		"VMPTRLD with incorrect VMCS revision identifier",
+		"VMREAD/VMWRITE from/to unsupported VMCS component",
+		"VMWRITE to read-only VMCS component",
+		"VMXON executed in VMX root operation",
+		"VM entry with invalid executive-VMCS pointer",
+		"VM entry with non-launched executive VMCS",
+		"VM entry with executive-VMCS pointer not VMXON pointer (when attempting to deactivate the dual-monitor treatment of SMIs and SMM)",
+		"VMCALL with non-clear VMCS (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VMCALL with invalid VM-exit control fields",
+		"VMCALL with incorrect MSEG revision identifier (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VMXOFF under dual-monitor treatment of SMIs and SMM",
+		"VMCALL with invalid SMM-monitor features (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VM entry with invalid VM-execution control fields in executive VMCS (when attempting to return from SMM)",
+		"VM entry with events blocked by MOV SS.",
+		"Invalid operand to INVEPT/INVVPID."
+	};
+	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else
-		printf("vmlaunch: VMFail");
+	{
+		uint64_t reason = vmx_vmread(0x681e);
+		printf("vmlaunch: VMFail\nReason #%x: ",reason);
+		printf("%s\n", rsns[reason]);
+	}
 	return 0;
 }
 
-int vmwrite(uint64_t vmcs_id, uint64_t value)
+int vmx_vmwrite(uint64_t vmcs_id, uint64_t value)
 {
 	char err;
 	asm("vmwrite %1, %0; setna %2"
@@ -92,10 +124,20 @@ int vmwrite(uint64_t vmcs_id, uint64_t value)
 	return err ? -1 : 0;
 }
 
-int vmlaunch()
+int vmx_vmlaunch()
 {
 	char err;
 	asm("vmlaunch; setna %0"
 		: "=r"(err));
 	return err ? -1 : 0;
+}
+
+uint64_t vmx_vmread(uint64_t vmcs_id)
+{
+	uint64_t value = 0;
+	char err_carry, err_zero;
+	asm volatile("xchg %bx, %bx");
+	asm volatile("vmread %1, %0; setnae %2; sete %3"
+		: "=r"(vmcs_id), "=r"(value), "=r"(err_carry), "=r"(err_zero));
+	return value;
 }
