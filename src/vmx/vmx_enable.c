@@ -115,7 +115,7 @@ int vmx_init()
 		printf("vmlaunch successful");
 	else
 	{
-		uint64_t reason = vmx_vmread(0x681e);
+		uint64_t reason = vmx_vmread(0x4400);
 		printf("vmlaunch: VMFail\nReason #%x: ",reason);
 		printf("%s\n", rsns[reason]);
 	}
@@ -142,9 +142,9 @@ int vmx_vmlaunch()
 uint64_t vmx_vmread(uint64_t vmcs_id)
 {
 	uint64_t value = 0;
-	char err_carry, err_zero;
 	asm volatile("xchg %bx, %bx");
-	asm volatile("vmread %1, %0; setnae %2; sete %3"
-		: "=r"(vmcs_id), "=r"(value), "=r"(err_carry), "=r"(err_zero));
+	asm volatile("vmread %0, %1"
+		: "=r"(value)
+		: "r"(vmcs_id));
 	return value;
 }
