@@ -1,6 +1,7 @@
 #include <kernel/vmx.h>
 #include <kernel/msr.h>
 #include <kernel/printf.h>
+#include <kernel/debug.h>
 
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
@@ -59,6 +60,10 @@ int vmx_init()
 	// vmxon region:
 	int* rev = VMCS_L;
 	*rev = bmsr & 0x7fffffff;
+	uint32_t low, high;
+	msr_get(IA32_FEATURE_CONTROL, &low, &high);
+	low |= 1 << 1 || 1 << 2;
+	msr_set(IA32_FEATURE_CONTROL, low, high);
 	if(!vmx_vmxon(VMCS_P))
 		printf("vmxon successful\n");
 	else
@@ -76,6 +81,7 @@ int vmx_init()
 		printf("vmptrld: VMFailInvalid (no active VMCS so far)\n");
 		return -1;
 	}
+	mbp;
 	vmx_vmwrite(0x681e,3);
 	const char* rsns[]=
 	{
@@ -119,8 +125,9 @@ int vmx_init()
 int vmx_vmwrite(uint64_t vmcs_id, uint64_t value)
 {
 	char err;
-	asm("vmwrite %1, %0; setna %2"
-		: "=r"(vmcs_id), "=r"(value), "=r"(err));
+	asm("vmwrite %2, %1; setna %0"
+		: "=r"(err)
+		: "r"(vmcs_id), "r"(value));
 	return err ? -1 : 0;
 }
 
