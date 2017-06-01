@@ -87,6 +87,7 @@ int vmx_init()
 	vmx_vmwrite(0x681e,3);
 	const char* rsns[]=
 	{
+		"",
 		"VMCALL executed in VMX root operation",
 		"VMCLEAR with invalid physical address",
 		"VMCLEAR with VMXON pointer",
@@ -114,8 +115,27 @@ int vmx_init()
 		"Invalid operand to INVEPT/INVVPID."
 	};
 	//return 0;
-	uint64_t pinb = msr_get(IA32_VMX_PINBASED_CTLS);
-	if(!vmx_vmwrite(0x4000, 0xffffffff))
+	uint64_t pinb;
+	uint32_t zero, one;
+	if(msr_get(IA32_VMX_BASIC) & (1 << 55))
+	{
+		printf("forming vmx pin-based controls from IA32_VMX_TRUE_PINBASED_CTLS\n");
+		pinb = msr_get(IA32_VMX_TRUE_PINBASED_CTLS);
+	}
+	else
+	{
+		// todo:
+		// i can't understand it; see 3D, page 183
+		printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
+		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
+		zero = pinb & 0xffffffff, one = pinb >> 32;
+		printf("0x%x & 0x%x\n", zero, one);
+		uint32_t pinbvm = 0;
+		pinbvm |= ~zero;
+		pinbvm |= one;
+	}
+
+	if(!vmx_vmwrite(0x4000, pinb))
 		printf("vmwrite: OK!\n");
 	else
 	{
@@ -123,6 +143,67 @@ int vmx_init()
 		printf("vmwrite: VMFail\nReason #%x: ",reason);
 		printf("%s\n", rsns[reason]);
 	}
+
+	// todo:
+	// i can't understand it; see 3D, page 183
+	//printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
+	pinb = msr_get(IA32_VMX_PROCBASED_CTLS);
+	zero = pinb & 0xffffffff, one = pinb >> 32;
+	printf("0x%x & 0x%x\n", zero, one);
+	uint32_t pinbvm = 0;
+	pinbvm |= ~zero;
+	pinbvm |= one;
+
+	if(!vmx_vmwrite(0x4002, pinb))
+		printf("vmwrite: OK!\n");
+	else
+	{
+		uint64_t reason = vmx_vmread(0x4400);
+		printf("vmwrite: VMFail\nReason #%x: ",reason);
+		printf("%s\n", rsns[reason]);
+	}
+
+		// todo:
+	// i can't understand it; see 3D, page 183
+	//printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
+	pinb = msr_get(IA32_VMX_EXIT_CTLS);
+	zero = pinb & 0xffffffff, one = pinb >> 32;
+	printf("0x%x & 0x%x\n", zero, one);
+	pinbvm = 0;
+	pinbvm |= ~zero;
+	pinbvm |= one;
+
+	if(!vmx_vmwrite(0x400C, pinb))
+		printf("vmwrite: OK!\n");
+	else
+	{
+		uint64_t reason = vmx_vmread(0x4400);
+		printf("vmwrite: VMFail\nReason #%x: ",reason);
+		printf("%s\n", rsns[reason]);
+	}
+
+
+	pinb = msr_get(IA32_VMX_ENTRY_CTLS);
+	zero = pinb & 0xffffffff, one = pinb >> 32;
+	printf("0x%x & 0x%x\n", zero, one);
+	pinbvm = 0;
+	pinbvm |= ~zero;
+	pinbvm |= one;
+
+	if(!vmx_vmwrite(0x4012, pinb))
+		printf("vmwrite: OK!\n");
+	else
+	{
+		uint64_t reason = vmx_vmread(0x4400);
+		printf("vmwrite: VMFail\nReason #%x: ",reason);
+		printf("%s\n", rsns[reason]);
+	}
+
+
+
+	//printf("0x%x%x\n", pinb >> 32, pinb);
+	// uint64_t pinb = msr_get(IA32_VMX_PINBASED_CTLS);
+	// uint32_t zero = pinb & 0xffffffff, one = pinb >> 32;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else

@@ -10,6 +10,8 @@
 #define IA32_VMX_EXIT_CTLS 0x483
 #define IA32_VMX_ENTRY_CTLS 0x484
 #define IA32_VMX_MISC 0x485
+#define IA32_VMX_TRUE_PINBASED_CTLS 0x48D
+
 
 uint64_t msr_get(uint32_t msr);
 void msr_set(uint32_t msr, uint64_t value);
