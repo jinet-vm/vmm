@@ -52,18 +52,20 @@ int vmx_init()
 	if(!vmx_check()) return -1;
 	printf("VMX supported!\n");
 	vmx_crinit();
-	uint64_t bmsr=0;
-	msr_get(0x480,&bmsr,4+(char*)(&bmsr));
+	uint64_t bmsr=msr_get(0x480);
 	printf("VMX revision: 0x%08x\n", bmsr & 0x7fffffff);
 	size = (bmsr >> 32) & 0x1fff;
 	printf("VMCS size: 0x%d\n",size);
 	// vmxon region:
 	int* rev = VMCS_L;
 	*rev = bmsr & 0x7fffffff;
-	uint32_t low, high;
-	msr_get(IA32_FEATURE_CONTROL, &low, &high);
-	low |= 1 << 1 || 1 << 2;
-	msr_set(IA32_FEATURE_CONTROL, low, high);
+	uint64_t ifc = msr_get(IA32_FEATURE_CONTROL);
+	printf("IA32_FEATURE_CONTROL: 0x%x%x\n", ifc >> 32, ifc);
+	if(ifc % 2 == 0)
+	{
+		ifc |= (1 << 0) | (1 << 1) | (1 << 2); // locked!
+		msr_set(IA32_FEATURE_CONTROL, ifc);
+	}
 	if(!vmx_vmxon(VMCS_P))
 		printf("vmxon successful\n");
 	else
@@ -111,6 +113,16 @@ int vmx_init()
 		"VM entry with events blocked by MOV SS.",
 		"Invalid operand to INVEPT/INVVPID."
 	};
+	//return 0;
+	uint64_t pinb = msr_get(IA32_VMX_PINBASED_CTLS);
+	if(!vmx_vmwrite(0x4000, 0xffffffff))
+		printf("vmwrite: OK!\n");
+	else
+	{
+		uint64_t reason = vmx_vmread(0x4400);
+		printf("vmwrite: VMFail\nReason #%x: ",reason);
+		printf("%s\n", rsns[reason]);
+	}
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else
@@ -119,7 +131,6 @@ int vmx_init()
 		printf("vmlaunch: VMFail\nReason #%x: ",reason);
 		printf("%s\n", rsns[reason]);
 	}
-	return 0;
 }
 
 int vmx_vmwrite(uint64_t vmcs_id, uint64_t value)
