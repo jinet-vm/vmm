@@ -69,6 +69,6 @@ void kernel_start()
 	//pit_init();
 	// todo: crazy stuff here!
 	// VMX
-	vmx_init();
+	virt_init();
 	for(;;);
 }
