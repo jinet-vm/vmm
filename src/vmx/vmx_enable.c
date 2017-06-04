@@ -2,6 +2,7 @@
 #include <kernel/msr.h>
 #include <kernel/printf.h>
 #include <kernel/debug.h>
+#include <kernel/regs.h>
 
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
@@ -38,6 +39,8 @@ void virt_crinit()
 		"movq %%rax, %%cr4\n"
 		: :	:"%rax"
 		);
+	//cr0_set(cr0_get() | (1 << 5));
+	//cr0_get();
 	asm("movq %%cr0, %%rax\n"
 		"bts $5, %%rax\n"
 		"movq %%rax, %%cr0\n"
@@ -45,9 +48,7 @@ void virt_crinit()
 		);
 }
 
-char* vmx_reason()
-{
-	const char* rsns[]=
+const char* rsns[]=
 	{
 		"",
 		"VMCALL executed in VMX root operation",
@@ -78,7 +79,10 @@ char* vmx_reason()
 		"VM entry with events blocked by MOV SS.",
 		"",
 		"Invalid operand to INVEPT/INVVPID."
-	};
+};
+
+char* vmx_reason()
+{
 	uint64_t reason = vmx_vmread(0x4400);
 	if(reason > 28) reason = 0;
 	return rsns[reason];
@@ -224,6 +228,28 @@ int virt_init()
 	{
 		uint32_t zero = msr_get(IA32_VMX_CR0_FIXED0);
 		uint32_t one = msr_get(IA32_VMX_CR0_FIXED1);
+		uint64_t vmcr0 = zero;
+
+		if(!vmx_vmwrite(VMX_GUEST_CR0_N, vmcr0))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+	}
+
+	// host cr0
+	{
+		if(!vmx_vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1)))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+	}
+
+	// host cr4
+	{
+		if(!vmx_vmwrite(VMX_HOST_CR4_N, msr_get(IA32_VMX_CR4_FIXED1)))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
 	}
 
 	// vm_launch?

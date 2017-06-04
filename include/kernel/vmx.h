@@ -34,4 +34,19 @@ uint64_t vmx_vmread(uint64_t vmcs_id);
 #define VMX_VMEXIT_CTLS_D 0x400C
 #define VMX_VMENTRY_CTLS_D 0x4012
 
+#define VMX_HOST_CR0_N 0x6C00
+#define VMX_HOST_CR3_N 0x6C02
+#define VMX_HOST_CR4_N 0x6C04
+#define VMX_HOST_FS_N 0x6C06
+#define VMX_HOST_GS_N 0x6C08
+#define VMX_HOST_TR_N 0x6C0A
+#define VMX_HOST_GDTR_N 0x6C0C
+#define VMX_HOST_IDTR_N 0x6C0E
+#define VMX_HOST_IA32_SYSTENTER_ESP_N 0x6C10
+#define VMX_HOST_IA32_SYSTENTER_EIP_N 0x6C12
+#define VMX_HOST_RSP_N 0x6C14
+#define VMX_HOST_RIP_N 0x6C16
+
+#define VMX_GUEST_CR0_N 0x6800
+
 #endif

@@ -11,8 +11,10 @@
 #define IA32_VMX_ENTRY_CTLS 0x484
 #define IA32_VMX_MISC 0x485
 #define IA32_VMX_TRUE_PINBASED_CTLS 0x48D
-#define IA32_VMX_CR0_FIXED0 0x488
-#define IA32_VMX_CR0_FIXED1 0x489
+#define IA32_VMX_CR0_FIXED0 0x486
+#define IA32_VMX_CR0_FIXED1 0x487
+#define IA32_VMX_CR4_FIXED0 0x488
+#define IA32_VMX_CR4_FIXED1 0x489
 
 // if you mess with nonpresent msrs
 // you'll f*ck up everything
