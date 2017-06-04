@@ -1,4 +1,5 @@
 #include <kernel/acpi.h>
+#include <kernel/printf.h>
 #include <stdint.h>
 
 #define EBDA_P_OFF 0x40E

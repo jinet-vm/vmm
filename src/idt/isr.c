@@ -1,6 +1,7 @@
 #include <kernel/isr.h>
 #include <kernel/ints.h>
 #include <kernel/tty.h>
+#include <kernel/printf.h>
 #include <stdint.h>
 
 extern void isr0();
@@ -35,12 +36,6 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-
-void demo()
-{
-	demo:
-	printf("off: %016x\n",demo);
-}
 
 void isr_install() // default setup
 {

@@ -35,6 +35,11 @@ char* title[title_lines] =
 
 extern ints_sti(void);
 
+void putc(void* none, char c)
+{
+	tty_putc(c);
+}
+
 void kernel_start()
 {
 	// VGA
@@ -45,6 +50,7 @@ void kernel_start()
 		tty_puts(title[i]);
 	tty_setcolor(VC_DEFAULT);
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	init_printf(NULL,putc);
 	printf("VGA terminal initialized.\n");
 	// IDT
 	idt_init();
@@ -55,20 +61,24 @@ void kernel_start()
 	printf("IDT initialized.\n");
 	tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
-	// MADT
-	detect_rsdt();
-	print_sdts();
-	uint32_t madtb = detect_madt();
-	lapic_setup(); // TODO: apic 32bit bochs error
-	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	printf("MADT & LAPIC initialized.\n");
-	tty_setcolor(VC_DEFAULT);
+	// // MADT
+	// detect_rsdt();
+	// print_sdts();
+	// uint32_t madtb = detect_madt();
+	// lapic_setup(); // TODO: apic 32bit bochs error
+	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	// printf("MADT & LAPIC initialized.\n");
+	// tty_setcolor(VC_DEFAULT);
+	// asm("xchg %bx, %bx");
+	//printf("MADT & LAPIC initialized.\n");
 	//pic_disable();
 	//ioapic_setup();
 	//asm("sti");
 	//pit_init();
 	// todo: crazy stuff here!
 	// VMX
+	//printf("hey!\n");
+	//volatile int a = 1/;
 	virt_init();
 	for(;;);
 }

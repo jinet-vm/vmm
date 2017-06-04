@@ -90,6 +90,8 @@ char* vmx_reason()
 
 int virt_init()
 {
+	
+
 	uint32_t vmcs_size, revision;
 
 	// checking vmx
@@ -252,7 +254,23 @@ int virt_init()
 			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
 	}
 
-	// vm_launch?
+	// host cs
+	{
+		if(!vmx_vmwrite(VMX_HOST_CS_W, cs_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+	}
+
+	// host tr
+	{
+		if(!vmx_vmwrite(VMX_HOST_TR_W, tr_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+	}
+
+	// vm_launch
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else

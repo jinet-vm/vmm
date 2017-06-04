@@ -47,6 +47,14 @@ uint64_t vmx_vmread(uint64_t vmcs_id);
 #define VMX_HOST_RSP_N 0x6C14
 #define VMX_HOST_RIP_N 0x6C16
 
+#define VMX_HOST_ES_W 0xC00
+#define VMX_HOST_CS_W 0xC02
+#define VMX_HOST_SS_W 0xC04
+#define VMX_HOST_DS_W 0xC06
+#define VMX_HOST_FS_W 0xC08
+#define VMX_HOST_GS_W 0xC0A
+#define VMX_HOST_TR_W 0xC0C
+
 #define VMX_GUEST_CR0_N 0x6800
 
 #endif
