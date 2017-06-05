@@ -18,6 +18,7 @@ int virt_init();
 void virt_crinit();
 int vmx_vmxon();
 int vmx_vmwrite(uint64_t vmcs_id, uint64_t value);
+int vmx_vmwrite16(uint64_t vmcs_id, uint16_t value);
 uint64_t vmx_vmread(uint64_t vmcs_id);
 
 // >> vmcs fields

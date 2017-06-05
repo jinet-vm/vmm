@@ -78,7 +78,11 @@ void kernel_start()
 	// todo: crazy stuff here!
 	// VMX
 	//printf("hey!\n");
-	//volatile int a = 1/;
-	virt_init();
+	//volatile int a = 1/0;
+	initGDTR();
+	gdt_set_code(1);
+	gdt_set_data(2);
+	gdt_flush(3);
+	//virt_init();
 	for(;;);
 }
