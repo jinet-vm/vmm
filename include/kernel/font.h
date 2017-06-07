@@ -6,6 +6,6 @@
 #define FONT_W 8
 #define FONT_H 16
 
-const unsigned char the_font[FONTDATAMAX];
+const volatile unsigned char the_font[FONTDATAMAX];
 
 #endif

@@ -82,6 +82,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 void vga_init();
 void vga_scroll_row();
 void vga_set_cursor(int x, int y);
-void vga_putc(char c, struct vga_pixel color, int x, int y);
+void vga_putc(unsigned char c, struct vga_pixel color, int x, int y);
 
 #endif

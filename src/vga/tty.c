@@ -58,7 +58,7 @@ void tty_setcolor(char color)
 // 	}
 // }
 
-void tty_putc(char a)
+void tty_putc(unsigned char a)
 {
 	if(a == '\n') tty_y++, tty_x = 0;
 	else

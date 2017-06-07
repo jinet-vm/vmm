@@ -46,21 +46,43 @@ void kernel_start()
 	// VGA
 	vga_init();
 	tty_init();
-	struct vga_pixel white;
-	white.r=white.g=white.b=0xff;
-	 // vga_put_pixel(0,0,white);
-	 // vga_put_pixel(0,1,white);
-	 // vga_put_pixel(0,2,white);
-	asm("xchg %bx, %bx");
-	//vga_putc(176,white,0,0);
-	for(int i = 0; i<256; i++)
-		tty_putc(i);
-	tty_putc('\n');
 	init_printf(NULL,putc);
-	for(int i = 0; i<16; i++)
-		printf("%02x ", the_font[0xd3*16+i]);
-	printf("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
-	for(;;);
+	// tty_putc('\n');
+	// tty_putc('\n');
+	// struct vga_pixel white;
+	// white.r=white.g=white.b=0xff;
+	// vga_putc(0xdb,white,0,0);
+	// for(;;);
+	//  // vga_put_pixel(0,0,white);
+	//  // vga_put_pixel(0,1,white);
+	//  // vga_put_pixel(0,2,white);
+	// unsigned char c = 0xDB;
+	// for(int j = 0; j<16; j++)
+	// {
+	// 	int s = c;
+	// 	s <<= 4;
+	// 	s += j;
+	// 	uint8_t line = the_font[s];
+	// 	printf("%x and\n",line);
+	// 	for(int i = 0; i<8; i++)
+	// 		if((line >> (8-i)) & 1)
+	// 			vga_put_pixel(0*8+i,0*16+j,white);
+	// }
+	// asm("xchg %bx, %bx");
+	// //for(;;);
+	// //vga_putc(176,white,0,0);
+	// // for(int i = 0; i<16; i++)
+	// // {
+	// // 	for(int j=0; j<16; j++)
+	// // 		if((i*16 + j) == '\n') vga_putc(' ');
+	// // 		else tty_putc(0xb7);
+	// // 	tty_putc('\n');
+	// // }
+	
+	// for(int i = 0; i<16; i++)
+	// 	printf("%02x ", the_font[0xdb0+i]);
+	// printf("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
+	// for(;;);
 	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);

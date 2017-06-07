@@ -1,6 +1,6 @@
 #include <kernel/font.h>
 
-const unsigned char the_font[FONTDATAMAX] = {
+const volatile unsigned char the_font[FONTDATAMAX] = {
 
     /* 0 0x00 '^@' */
     0x00, /* 00000000 */

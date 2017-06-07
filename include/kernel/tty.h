@@ -6,7 +6,7 @@
 void tty_init();
 void tty_setcolor(char color); // vga colors
 void tty_puts(char* src);
-void tty_putc(char a);
+void tty_putc(unsigned char a);
 
 
 #define TTY_WIDTH 160
