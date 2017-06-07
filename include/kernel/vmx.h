@@ -6,9 +6,9 @@
 // >> functions
 
 // prefixes:
-// vmx_<vmx instruction> - interface to intel vmx (probably has zf & cf flag check)
-// virt_<...> - jinet function
-// <vmx instruction> - wrap-around of vmx_<vmx instruction> with error handling (vmx reasons)
+// int vmx_<vmx instruction>(T values) - interface to intel vmx (probably has zf & cf flag check)
+// T virt_<...> - jinet function
+// int <vmx instruction>(T values, char debug) - wrap-around of vmx_<vmx instruction> with error handling (vmx reasons); if debug => output
 
 // vmx_init.asm todo: get rid of it
 extern char vmx_check();

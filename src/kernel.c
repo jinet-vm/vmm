@@ -18,7 +18,8 @@
 #include <kernel/consts.h>
 #include <kernel/ioapic.h>
 #include <kernel/vmx.h>
-
+#include <kernel/gdt.h>
+#include <kernel/font.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -45,6 +46,21 @@ void kernel_start()
 	// VGA
 	vga_init();
 	tty_init();
+	struct vga_pixel white;
+	white.r=white.g=white.b=0xff;
+	 // vga_put_pixel(0,0,white);
+	 // vga_put_pixel(0,1,white);
+	 // vga_put_pixel(0,2,white);
+	asm("xchg %bx, %bx");
+	//vga_putc(176,white,0,0);
+	for(int i = 0; i<256; i++)
+		tty_putc(i);
+	tty_putc('\n');
+	init_printf(NULL,putc);
+	for(int i = 0; i<16; i++)
+		printf("%02x ", the_font[0xd3*16+i]);
+	printf("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
+	for(;;);
 	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
@@ -82,7 +98,10 @@ void kernel_start()
 	initGDTR();
 	gdt_set_code(1);
 	gdt_set_data(2);
-	gdt_flush(3);
-	//virt_init();
+	gdt_set_tss(3,104,0xffff800000000000);
+	gdt_flush(5);
+	asm("xchg %bx, %bx");
+	tr_set(SEG(3));
+	virt_init();
 	for(;;);
 }

@@ -35,12 +35,37 @@ void tty_setcolor(char color)
  *
  * @param[in]  a     The character.
  */
+// void tty_putc(char a)
+// {
+// 	if(a == '\n') tty_y++, tty_x = 0;
+// 	else
+// 	{
+// 		vga_putc(a, tty_color, tty_x, tty_y);
+// 		tty_x++;
+// 	}
+
+// 	if(tty_x > VGA_WIDTH)
+// 	{
+// 		tty_x = 0;
+// 		tty_y++;
+// 	}
+
+// 	if(tty_y > VGA_HEIGHT - 1)
+// 	{
+// 		tty_x = 0;
+// 		tty_y = VGA_HEIGHT - 1;
+// 		vga_scroll_row();
+// 	}
+// }
+
 void tty_putc(char a)
 {
 	if(a == '\n') tty_y++, tty_x = 0;
 	else
 	{
-		vga_putc(a, tty_color, tty_x, tty_y);
+		struct vga_pixel white;
+		white.r=white.g=white.b=0xff;
+		vga_putc(a, white, tty_x, tty_y);
 		tty_x++;
 	}
 
@@ -57,6 +82,7 @@ void tty_putc(char a)
 		vga_scroll_row();
 	}
 }
+
 
 /**
  * @brief      Puts a null-terminated string on terminal

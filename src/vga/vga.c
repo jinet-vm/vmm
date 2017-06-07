@@ -5,15 +5,21 @@
 #include <kernel/vga.h>
 #include <kernel/io.h>
 #include <kernel/memory.h>
+#include <kernel/font.h>
 
 volatile uint16_t* vga_buffer;
+static int vga_pitch;
+static int vga_bpp;
 
 /**
  * @brief      Initialize VGA.
  */
 void vga_init()
 {
-	vga_buffer = 0xB8000;
+	struct vbe_info* vbm = 0x7000;
+	vga_buffer = vbm->framebuffer;
+	vga_pitch = vbm->pitch;
+	vga_bpp = 3;
 	vga_clear();
 	vga_set_cursor(0,0);
 }
@@ -58,9 +64,22 @@ void vga_set_cursor(int row, int col)
  * @param[in]  x      The row of the cursor
  * @param[in]  y      The column of the cursor
  */
-void vga_putc(char c, uint8_t color, int x, int y)
+void vga_putc(char c, struct vga_pixel color, int tty_x, int tty_y)
 {
-	vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
+	//vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
+	for(int j = 0; j<16; j++)
+	{
+		for(int i = 0; i<8; i++)
+			if((the_font[16*c+j] >> (8-i)) & 1)
+				vga_put_pixel(tty_x*8+i,tty_y*16+j,color);
+	}
+}
+
+void vga_put_pixel(int x, int y, struct vga_pixel color)
+{
+	uint64_t t = vga_buffer+(vga_pitch*y+vga_bpp*x) / 2;
+	volatile struct vga_pixel* s = t;
+	*s = color;
 }
 
 /**
@@ -68,5 +87,5 @@ void vga_putc(char c, uint8_t color, int x, int y)
  */
 void vga_clear()
 {
-	memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*2);
+	memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*vga_bpp);
 }

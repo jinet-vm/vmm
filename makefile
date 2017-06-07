@@ -61,7 +61,7 @@ obj/memory.o: src/memory/memory.c include/kernel/memory.h
 obj/memtab.o: src/memory/memtab.c obj/memory.o obj/tss.o obj/gdt.o
 	$(CC) $(CFLAGS) -c src/memory/memtab.c -o obj/memtab.o
 
-obj/tty.o: src/vga/tty.c obj/vga.o
+obj/tty.o: src/vga/tty.c obj/vga.o obj/font.o
 	$(CC) $(CFLAGS) -c src/vga/tty.c -o obj/tty.o	
 
 obj/vga.o: src/vga/vga.c obj/io.o obj/memory.o
@@ -135,6 +135,9 @@ obj/vmx_enable.o: src/vmx/vmx_enable.c obj/regs.o
 
 obj/regs.o: src/regs.c
 	$(CC) $(CFLAGS) -c src/regs.c -o obj/regs.o
+
+obj/font.o: src/vga/font.c
+	$(CC) $(CFLAGS) -c src/vga/font.c -o obj/font.o
 
 enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/

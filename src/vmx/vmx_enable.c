@@ -18,7 +18,23 @@ int vmx_vmxon(uint64_t paddr)
 	return err ? -1 : 0;
 }
 
-int vmx_vmptrld(unsigned long vmcs)
+int vmxon(uint64_t paddr, char debug)
+{
+	if(!debug) return vmx_vmxon(paddr);
+	int vmxon_res = vmx_vmxon(VMCS_P);
+	if(!vmxon_res)
+	{
+		printf("vmxon successful\n");
+		return 0;
+	}
+	else
+	{
+		printf("vmxon: VMFailInvalid\n");
+		return vmxon_res;
+	}
+}
+
+int vmx_vmptrld(uint64_t vmcs)
 {
 	unsigned char err;
 	asm volatile ("vmptrld %1; setna %0"
@@ -28,6 +44,21 @@ int vmx_vmptrld(unsigned long vmcs)
 	return err ? -1 : 0;
 }
 
+int vmptrld(uint64_t vmcs, char debug)
+{
+	if(!debug) return vmx_vmptrld(vmcs);
+	int vmxon_res = vmx_vmptrld(vmcs);
+	if(!vmxon_res)
+	{
+		printf("vmxon successful\n");
+		return 0;
+	}
+	else
+	{
+		printf("vmxon: VMFailInvalid\n");
+		return vmxon_res;
+	}
+}
 
 void virt_crinit()
 {
@@ -48,7 +79,7 @@ void virt_crinit()
 		);
 }
 
-const char* rsns[]=
+static const char* rsns[]=
 	{
 		"",
 		"VMCALL executed in VMX root operation",
@@ -119,27 +150,14 @@ int virt_init()
 		msr_set(IA32_FEATURE_CONTROL, ifc);
 	}
 
-	// vmxon
-	if(!vmx_vmxon(VMCS_P))
-		printf("vmxon successful\n");
-	else
-	{
-		printf("vmxon: VMFailInvalid\n");
-		return -1;
-	}
+	vmxon(VMCS_P, 1);
 
 	// vmcs: setting revision
 	rev = VMCS_L+0x1000;
 	*rev = revision;
 
 	// vmptrld: loading vmcs pointer
-	if(!vmx_vmptrld(VMCS_P+0x1000))
-		printf("vmptrld successful\n");
-	else
-	{
-		printf("vmptrld: VMFailInvalid (no active VMCS so far)\n");
-		return -1;
-	}
+	vmptrld(VMCS_P+0x1000, 1);
 	
 	// >> managing vmx controls
 	// note: UL suffix required to become unsigned long
@@ -262,12 +280,15 @@ int virt_init()
 
 	// host tr
 	{
-		if(!vmx_vmwrite(VMX_HOST_TR_W, 0))
+		printf("tr selector: %x\n", tr_get());
+		if(!vmx_vmwrite(VMX_HOST_TR_W, tr_get()))
 			printf("vmwrite: OK!\n");
 		else
 			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
 	}
 
+	asm("xchg %bx, %bx");
+	vmx_vmwrite(0x681E, 0xffff800000000000);
 	// vm_launch
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");

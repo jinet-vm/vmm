@@ -24,16 +24,16 @@ start:
 	mov ebx,eax     ;копируем в регистр EBX
 	; why?!
 
-	push dx, bx, ax, cx
-	mov dx, 0 ; set cursor to top left-most corner of screen
-	mov bh, 0 ; page
-	mov ah, 0x2 ; ah = 2 => set cursor
-	int 0x10 ; moving cursor
-	mov cx, 2000 ; print 2000 = 80*45 chars
-	mov bh, 0
-	mov ah, 0x9
-	int 0x10
-	pop cx, ax, bx, dx
+	; push dx, bx, ax, cx
+	; mov dx, 0 ; set cursor to top left-most corner of screen
+	; mov bh, 0 ; page
+	; mov ah, 0x2 ; ah = 2 => set cursor
+	; int 0x10 ; moving cursor
+	; mov cx, 2000 ; print 2000 = 80*45 chars
+	; mov bh, 0
+	; mov ah, 0x9
+	; int 0x10
+	; pop cx, ax, bx, dx
 
 	; mbp
 	; ; loading entry_pm to RAM
@@ -48,6 +48,19 @@ start:
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
 	;mbp
+
+	; setup up 1280x1024x24 mode
+	mov ax, 4F02h
+	mov bx, 411bh
+	int 10h
+	;mbp
+
+	; get mode info on 0x7000
+	mov di, 7000h
+	mov cx, 411bh
+	mov ax, 4F01h
+	int 10h
+
 	mov si, DAP
 	mov ah, 0x42
 	mov dl, [drive] ; Floppy
