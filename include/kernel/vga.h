@@ -68,8 +68,7 @@ struct vbe_info {
 // 	uint8_t b;
 // } __attribute__ ((packed));
 
-#define VGA_WIDTH 1280
-#define VGA_HEIGHT 1024
+int VGA_WIDTH, VGA_HEIGHT;
 
 static inline uint8_t vga_color(enum vga_color fg, enum vga_color bg) {
 	return fg | (bg << 4);

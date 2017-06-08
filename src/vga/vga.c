@@ -11,6 +11,8 @@ volatile uint16_t* vga_buffer;
 static int vga_pitch;
 static int vga_bpp;
 
+int VGA_WIDTH, VGA_HEIGHT;
+
 /**
  * @brief      Initialize VGA.
  */
@@ -19,11 +21,12 @@ void vga_init()
 	struct vbe_info* vbm = 0x6F00;
 	vga_buffer = vbm->framebuffer;
 	vga_pitch = vbm->pitch;
+	VGA_WIDTH = vbm->width;
+	VGA_HEIGHT = vbm->height;
 	vga_bpp = vbm->bpp/8;
 	vga_clear();
 	vga_set_cursor(0,0);
 }
-
 /**
  * @brief      Scroll one row in VGA buffer.
  */

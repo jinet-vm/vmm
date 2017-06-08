@@ -12,7 +12,7 @@ org 0x7c00 ; why?! loop problems
 
 public start
 start:
-	xchg bx, bx
+	;xchg bx, bx
 	mov [drive], dl
 	cli		     ; disabling interrupts
 	mov     ax, cs	  ; segment registers' init
@@ -88,6 +88,7 @@ key_loop:
 	pop esi
 	mov ah, 0h
 	int 16h
+	xchg bx, bx
 	cmp ah, 0x48
 	jne notup
 .up: ; todo: zero up
@@ -96,16 +97,20 @@ key_loop:
 	jmp key_loop
 notup:
 	cmp al, 0x0D
-	je setup
+	jz setup
 	pop cx
 jmp key_loop
 setup:
-	;xchg bx, bx
 	mov ax, 4F02h
-	mov bx, 0x4106
+	mov bx, [esp]
 	or bx, 4000h
-	int 10h
-	;xchg bx, bx
+	int 10h ; set it
+	
+	mov ax, 0x4F01
+	pop cx
+	mov di, 0x6F00
+	int 10h ; info about it
+	
 	; loading GDT
 	lgdt    fword   [GDTR]
 
@@ -151,7 +156,7 @@ d_code32:	db  0ffh,0ffh,0,0,0,10011010b,11001111b,0
 ; data
 d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
 GDTSize     =   $-GDTTable
-times 5 db 0,0,0,0,0,0,0,0
+times 2 db 0,0,0,0,0,0,0,0
 
 GDTR:
 g_size:     dw  GDTSize-1
@@ -247,12 +252,12 @@ print_mode:
 	mov edi, .str+22
 	call itoa
 	mov esi, .str
-	mov ecx, 47
+	mov ecx, 41
 	;xchg bx, bx
 	call print_str
 	pop cx
 	ret
-	.str: db 'mode 0000h: 0000x0000x00bpp (press ENTER if ok)'
+	.str: db 'mode 0000h: 0000x0000x00bpp (press ENTER)'
 
 ; >>>> 32bit code
 
