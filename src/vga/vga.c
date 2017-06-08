@@ -16,7 +16,7 @@ static int vga_bpp;
  */
 void vga_init()
 {
-	struct vbe_info* vbm = 0x7000;
+	struct vbe_info* vbm = 0x6F00;
 	vga_buffer = vbm->framebuffer;
 	vga_pitch = vbm->pitch;
 	vga_bpp = vbm->bpp/8;

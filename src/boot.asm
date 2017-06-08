@@ -49,7 +49,10 @@ start:
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
 	;mbp
-
+	mov si, DAP
+	mov ah, 0x42
+	mov dl, [drive] ; Floppy
+	int 0x13
 
 	; TODO: proper check
 	; get vbe info -- mode
@@ -64,80 +67,45 @@ start:
 	mov di, 0x7000
 	mov ax, 0x4f00
 	int 10h ; getting info
-	xchg bx, bx
+	;xchg bx, bx
 key_before:
 	mov si, 0x700E ; address of modes pointer
 	lodsd
 	mov si, ax
 	shr eax, 16
 	mov ds, ax
-	xchg bx, bx
+	;xchg bx, bx
 key_loop:
 	; modes in ds:si
 	lodsw
 	test ax, 0xFFFF
 	jz key_before
 	mov cx, ax
-	xchg bx, bx
+	push cx
+	;xchg bx, bx
 	push esi
 	call print_mode
 	pop esi
 	mov ah, 0h
 	int 16h
+	cmp ah, 0x48
+	jne notup
+.up: ; todo: zero up
+	sub si, 4
+	pop cx
+	jmp key_loop
+notup:
+	cmp al, 0x0D
+	je setup
+	pop cx
 jmp key_loop
-	; xchg bx, bx
-	; mov cx, 000h
-	; call print_mode
-
-	; ; ; get mode info
-	; ; mov di, 7000h
-	; ; mov cx, 411bh
-	; ; mov ax, 4F01h
-	; ; ;int 10h
-
-	; ; xchg bx, bx
-	; ; mov eax, 10
-	; ; mov ecx, 3
-	; ; mov ebx, 16
-	; ; call itoa
-	; jmp $
-
-	; ; setup up 1280x1024x8 mode
-	; mov ax, 4F02h
-	; mov bx, 4107h
-	; int 10h
-	; ;mbp
-
-	; ; get mode info on 0x7000
-	; mov di, 7000h
-	; mov cx, 4107h
-	; mov ax, 4F01h
-	; int 10h
-
-	; mov si, DAP
-	; mov ah, 0x42
-	; mov dl, [drive] ; Floppy
-	; int 0x13
-	
-	;mbp
-	; memory map
-; memory_map:
-; 	xor ebx, ebx
-; 	xor bp, bp
-; 	mov edx, 534D4150h
-; 	mov eax, 0xe820
-; 	mov edi, 0xF000-20
-; 	.lp:
-; 		add edi, 20
-; 		mov ecx, 20
-; 		mov edx, 534D4150h
-; 		mov eax, 0xe820
-; 		int 15h
-; 		test ebx, ebx
-; 	jnz .lp
-
-	;mbp
-
+setup:
+	;xchg bx, bx
+	mov ax, 4F02h
+	mov bx, 0x4106
+	or bx, 4000h
+	int 10h
+	;xchg bx, bx
 	; loading GDT
 	lgdt    fword   [GDTR]
 
@@ -233,7 +201,6 @@ itoa:
 	pop ebp
 	ret
 	digits db '0123456789ABCDEF'
-	output db '00000000000000000000000000000000', 0
 
 
 print_str: ; esi - ptr, ecx - count
@@ -258,26 +225,30 @@ print_mode:
 	mov ebx, 16
 	mov edi, .str+5
 	call itoa
-	xchg bx, bx
+	;xchg bx, bx
 	mov ax, 0x4F01
 	mov cx, [esp]
 	mov di, 0x6F00
 	int 10h
-	xchg bx, bx
-	movzx eax, word [0x6F00+18]
+	;xchg bx, bx
+	movzx eax, word [0x6F00+18] ; width
 	mov ecx, 4
 	mov ebx, 10
 	mov edi, .str+12
 	call itoa
-	movzx eax, word [0x6F00+20]
+	movzx eax, word [0x6F00+20] ; height 
 	mov ecx, 4
 	mov ebx, 10
 	mov edi, .str+17
 	call itoa
-
+	movzx eax, byte [0x6F00+25] ; bpp
+	mov ecx, 2
+	mov ebx, 10
+	mov edi, .str+22
+	call itoa
 	mov esi, .str
 	mov ecx, 47
-	xchg bx, bx
+	;xchg bx, bx
 	call print_str
 	pop cx
 	ret
