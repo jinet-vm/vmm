@@ -64,7 +64,7 @@ void vga_set_cursor(int row, int col)
  * @param[in]  x      The row of the cursor
  * @param[in]  y      The column of the cursor
  */
-void vga_putc(unsigned char c, struct vga_pixel color, int tty_x, int tty_y)
+void vga_putc(unsigned char c, unsigned char color, int tty_x, int tty_y)
 {
 	//vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
 	for(int j = 0; j<16; j++)
@@ -76,12 +76,12 @@ void vga_putc(unsigned char c, struct vga_pixel color, int tty_x, int tty_y)
 	}
 }
 
-void vga_put_pixel(int x, int y, struct vga_pixel color)
+void vga_put_pixel(int x, int y, unsigned char color)
 {
 	uint64_t t = vga_buffer;
-	volatile struct vga_pixel* s = t;
+	volatile unsigned char* s = t;
 	s += x;
-	s += (vga_pitch/3)*y;
+	s += vga_pitch*y;
 	*s = color;
 }
 

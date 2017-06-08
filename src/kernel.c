@@ -86,6 +86,7 @@ void kernel_start()
 	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
+	for(;;);
 	tty_setcolor(VC_DEFAULT);
 	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	init_printf(NULL,putc);
@@ -122,6 +123,7 @@ void kernel_start()
 	gdt_set_data(2);
 	gdt_set_tss(3,104,0xffff800000000000);
 	gdt_flush(5);
+	for(;;);
 	asm("xchg %bx, %bx");
 	tr_set(SEG(3));
 	virt_init();

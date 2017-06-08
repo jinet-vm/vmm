@@ -1,4 +1,4 @@
-include 'macro.inc'
+; include 'macro.inc'
 
 extrn _write
 extrn _print

@@ -1,6 +1,7 @@
 format ELF
 
 include 'inc/macro.inc'
+;include 'inc/procedures.inc'
 
 ; >>>> 16bit code
 
@@ -11,7 +12,7 @@ org 0x7c00 ; why?! loop problems
 
 public start
 start:
-	;mbp
+	xchg bx, bx
 	mov [drive], dl
 	cli		     ; disabling interrupts
 	mov     ax, cs	  ; segment registers' init
@@ -20,8 +21,8 @@ start:
 	mov     ss, ax
 	mov     sp, 0x7C00      ; stack backwards => ok
 
-	shl eax,4       ;умножаем на 16
-	mov ebx,eax     ;копируем в регистр EBX
+	; shl eax,4       ;умножаем на 16
+	; mov ebx,eax     ;копируем в регистр EBX
 	; why?!
 
 	; push dx, bx, ax, cx
@@ -49,39 +50,91 @@ start:
 	; int 13h
 	;mbp
 
-	; setup up 1280x1024x24 mode
-	mov ax, 4F02h
-	mov bx, 411bh
-	int 10h
-	;mbp
 
-	; get mode info on 0x7000
-	mov di, 7000h
-	mov cx, 411bh
-	mov ax, 4F01h
-	int 10h
+	; TODO: proper check
+	; get vbe info -- mode
+	mov ax, 0
+	mov di, 0x7000
+	mov cx, 256
+	rep stosw ; zeroing
+	mov si, vesa_sig
+	mov cx, 4
+	mov di, 0x7000
+	rep movsb ; signature
+	mov di, 0x7000
+	mov ax, 0x4f00
+	int 10h ; getting info
+	xchg bx, bx
+key_before:
+	mov si, 0x700E ; address of modes pointer
+	lodsd
+	mov si, ax
+	shr eax, 16
+	mov ds, ax
+	xchg bx, bx
+key_loop:
+	; modes in ds:si
+	lodsw
+	test ax, 0xFFFF
+	jz key_before
+	mov cx, ax
+	xchg bx, bx
+	push esi
+	call print_mode
+	pop esi
+	mov ah, 0h
+	int 16h
+jmp key_loop
+	; xchg bx, bx
+	; mov cx, 000h
+	; call print_mode
 
-	mov si, DAP
-	mov ah, 0x42
-	mov dl, [drive] ; Floppy
-	int 0x13
+	; ; ; get mode info
+	; ; mov di, 7000h
+	; ; mov cx, 411bh
+	; ; mov ax, 4F01h
+	; ; ;int 10h
+
+	; ; xchg bx, bx
+	; ; mov eax, 10
+	; ; mov ecx, 3
+	; ; mov ebx, 16
+	; ; call itoa
+	; jmp $
+
+	; ; setup up 1280x1024x8 mode
+	; mov ax, 4F02h
+	; mov bx, 4107h
+	; int 10h
+	; ;mbp
+
+	; ; get mode info on 0x7000
+	; mov di, 7000h
+	; mov cx, 4107h
+	; mov ax, 4F01h
+	; int 10h
+
+	; mov si, DAP
+	; mov ah, 0x42
+	; mov dl, [drive] ; Floppy
+	; int 0x13
 	
 	;mbp
 	; memory map
-memory_map:
-	xor ebx, ebx
-	xor bp, bp
-	mov edx, 534D4150h
-	mov eax, 0xe820
-	mov edi, 0xF000-20
-	.lp:
-		add edi, 20
-		mov ecx, 20
-		mov edx, 534D4150h
-		mov eax, 0xe820
-		int 15h
-		test ebx, ebx
-	jnz .lp
+; memory_map:
+; 	xor ebx, ebx
+; 	xor bp, bp
+; 	mov edx, 534D4150h
+; 	mov eax, 0xe820
+; 	mov edi, 0xF000-20
+; 	.lp:
+; 		add edi, 20
+; 		mov ecx, 20
+; 		mov edx, 534D4150h
+; 		mov eax, 0xe820
+; 		int 15h
+; 		test ebx, ebx
+; 	jnz .lp
 
 	;mbp
 
@@ -93,10 +146,10 @@ memory_map:
 	or  al,80h
 	out 70h,al
 
-	; enable a20
-	in  al,92h
-	or  al,2
-	out 92h,al
+	; ; enable a20 no need for this
+	; in  al,92h
+	; or  al,2
+	; out 92h,al
 	
 	; get into PM
 	mov eax,cr0
@@ -110,7 +163,7 @@ memory_map:
 	dw  sel_code32 ; selector
 
 DAP:
-	.size:	db 10h
+	.size:	db 0xff
 	.zero:	db 0
 	.num:	dw 100
 	.addr:	dw 0x7e00
@@ -119,6 +172,8 @@ DAP:
 			dd 0
 
 ; the same is done in desc.asm - for better migration to >1MB memspace
+
+modes_ptr: dd 0
 
 GDTTable:   ;таблица GDT
 ; zero seg
@@ -133,6 +188,100 @@ times 5 db 0,0,0,0,0,0,0,0
 GDTR:
 g_size:     dw  GDTSize-1
 g_base:     dd  GDTTable
+
+vesa_sig: db "vbe2"
+
+; itoa(eax : number, ecx : width, ebx :  radix, edi : dest) -- stack
+; Format number as string of width in radix. Returns pointer to string.
+itoa:
+	; push cx
+	; push ax
+	; push di
+	; 	mov di, output
+	; 	mov cx, 31
+	; 	mov al, '0'
+	; 	rep stosb
+	; pop di
+	; pop ax
+	; pop cx
+	push ebp
+	mov ebp, esp
+	push esi
+	; Start at end of output string and work backwards.
+	; lea edi, [output + 32]
+	add edi, ecx
+	dec edi
+	std
+	; Load number and radix for division and iteration.
+	; number eax
+	; width ebx
+	; radix ecx
+	.loop:
+		; Clear remainder / upper bits of dividend.
+		xor edx, edx
+		; Divide number by radix.
+		div ebx
+		; Use remainder to set digit in output string.
+		lea esi, [digits + edx]
+		movsb
+	loop .loop
+	; The last movsb brought us too far back.
+	lea eax, [edi + 1]
+	cld
+	pop esi
+	mov esp, ebp
+	pop ebp
+	ret
+	digits db '0123456789ABCDEF'
+	output db '00000000000000000000000000000000', 0
+
+
+print_str: ; esi - ptr, ecx - count
+	push es
+	mov ax, 0xb800
+	mov es, ax
+	mov di, 0x3e8
+	mov ah, 0x0A
+	.lp:
+		lodsb
+		stosw
+	loop .lp
+	pop es
+	ret
+
+
+; print_mode(cx: mode)
+print_mode:
+	push cx
+	movzx eax, cx
+	mov ecx, 4
+	mov ebx, 16
+	mov edi, .str+5
+	call itoa
+	xchg bx, bx
+	mov ax, 0x4F01
+	mov cx, [esp]
+	mov di, 0x6F00
+	int 10h
+	xchg bx, bx
+	movzx eax, word [0x6F00+18]
+	mov ecx, 4
+	mov ebx, 10
+	mov edi, .str+12
+	call itoa
+	movzx eax, word [0x6F00+20]
+	mov ecx, 4
+	mov ebx, 10
+	mov edi, .str+17
+	call itoa
+
+	mov esi, .str
+	mov ecx, 47
+	xchg bx, bx
+	call print_str
+	pop cx
+	ret
+	.str: db 'mode 0000h: 0000x0000x00bpp (press ENTER if ok)'
 
 ; >>>> 32bit code
 

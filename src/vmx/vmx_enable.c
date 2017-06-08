@@ -290,6 +290,7 @@ int virt_init()
 	asm("xchg %bx, %bx");
 	vmx_vmwrite(0x681E, 0xffff800000000000);
 	// vm_launch
+	return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else

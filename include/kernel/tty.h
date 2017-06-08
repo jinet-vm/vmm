@@ -1,4 +1,5 @@
 #ifndef TTY_H
+
 #define TTY_H
 
 #include <kernel/vga.h>

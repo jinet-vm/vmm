@@ -61,12 +61,12 @@ struct vbe_info {
 } __attribute__ ((packed));
 
 
-struct vga_pixel
-{
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} __attribute__ ((packed));
+// struct vga_pixel
+// {
+// 	uint8_t r;
+// 	uint8_t g;
+// 	uint8_t b;
+// } __attribute__ ((packed));
 
 #define VGA_WIDTH 1280
 #define VGA_HEIGHT 1024
@@ -82,6 +82,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 void vga_init();
 void vga_scroll_row();
 void vga_set_cursor(int x, int y);
-void vga_putc(unsigned char c, struct vga_pixel color, int x, int y);
+void vga_putc(unsigned char c, unsigned char color, int x, int y);
 
 #endif

@@ -58,14 +58,16 @@ void tty_setcolor(char color)
 // 	}
 // }
 
+unsigned char c = 0;
+
 void tty_putc(unsigned char a)
 {
 	if(a == '\n') tty_y++, tty_x = 0;
 	else
 	{
-		struct vga_pixel white;
-		white.r=white.g=white.b=0xff;
-		vga_putc(a, white, tty_x, tty_y);
+		// struct vga_pixel white;
+		// white.r=white.g=white.b=0xff;
+		vga_putc(a, 100+(c++) % 25, tty_x, tty_y);
 		tty_x++;
 	}
 
