@@ -73,6 +73,8 @@ start:
 	mov di, 0x7000
 	mov ax, 0x4f00
 	int 10h ; getting info
+	cmp ax, 4fh
+	jne $
 	;xchg bx, bx
 key_before:
 	mov si, 0x700E ; address of modes pointer
@@ -107,16 +109,12 @@ notup:
 	pop cx
 jmp key_loop
 setup:
+	xchg bx, bx
 	mov ax, 4F02h
-	mov bx, [esp]
+	pop bx
 	or bx, 4000h
 	int 10h ; set it
-	
-	mov ax, 0x4F01
-	pop cx
-	mov di, 0x6F00
-	int 10h ; info about it
-	
+	xchg bx, bx
 	; loading GDT
 	lgdt    fword   [GDTR]
 
@@ -201,7 +199,7 @@ itoa:
 		; Divide number by radix.
 		div ebx
 		; Use remainder to set digit in output string.
-		lea esi, [digits + edx]
+		lea esi, [digits+edx]
 		movsb
 	loop .loop
 	; The last movsb brought us too far back.
@@ -211,7 +209,7 @@ itoa:
 	mov esp, ebp
 	pop ebp
 	ret
-	digits db '0123456789ABCDEF'
+	digits db "0123456789ABCDEF"
 
 
 print_str: ; esi - ptr, ecx - count
@@ -272,7 +270,7 @@ print_mode:
 	call print_str
 	pop cx
 	ret
-	.str: db 0x6d, 0x6f, 0x64, 0x65, 0x20, 0x30, 0x30, 0x30, 0x30, 0x68, 0x3a, 0x20, 0x30, 0x30, 0x30, 0x30, 0x78, 0x30, 0x30, 0x30, 0x30, 0x78, 0x30, 0x30, 0x62, 0x70, 0x70, 0x20, 0x28, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x45, 0x4e, 0x54, 0x45, 0x52, 0x29
+	.str: db "mode 0000h: 0000x0000x00bpp (press ENTER)"
 
 ; >>>> 32bit code
 

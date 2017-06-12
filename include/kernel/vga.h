@@ -3,25 +3,6 @@
 
 #include <stdint.h>
 
-enum vga_color {
-	VC_BLACK = 0,
-	VC_BLUE = 1,
-	VC_GREEN = 2,
-	VC_CYAN = 3,
-	VC_RED = 4,
-	VC_MAGENTA = 5,
-	VC_BROWN = 6,
-	VC_LIGHT_GREY = 7,
-	VC_DARK_GREY = 8,
-	VC_LIGHT_BLUE = 9,
-	VC_LIGHT_GREEN = 10,
-	VC_LIGHT_CYAN = 11,
-	VC_LIGHT_RED = 12,
-	VC_LIGHT_MAGENTA = 13,
-	VC_LIGHT_BROWN = 14,
-	VC_WHITE = 15,
-};
-
 struct vbe_info {
    uint16_t attributes;      // deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
    uint8_t window_a;         // deprecated
@@ -60,27 +41,30 @@ struct vbe_info {
    uint8_t reserved1[206];
 } __attribute__ ((packed));
 
+typedef enum vga_color {
+   VC_BLACK = 0,
+   VC_BLUE = 1,
+   VC_GREEN = 2,
+   VC_CYAN = 3,
+   VC_RED = 4,
+   VC_MAGENTA = 5,
+   VC_BROWN = 6,
+   VC_LIGHT_GREY = 7,
+   VC_DARK_GREY = 8,
+   VC_LIGHT_BLUE = 9,
+   VC_LIGHT_GREEN = 10,
+   VC_LIGHT_CYAN = 11,
+   VC_LIGHT_RED = 12,
+   VC_LIGHT_MAGENTA = 13,
+   VC_LIGHT_BROWN = 14,
+   VC_WHITE = 15,
+} vga_color;
 
-// struct vga_pixel
-// {
-// 	uint8_t r;
-// 	uint8_t g;
-// 	uint8_t b;
-// } __attribute__ ((packed));
-
-int VGA_WIDTH, VGA_HEIGHT;
-
-static inline uint8_t vga_color(enum vga_color fg, enum vga_color bg) {
-	return fg | (bg << 4);
-}
- 
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
-	return (uint16_t) uc | (uint16_t) color << 8;
-}
+int VGA_WIDTH, VGA_HEIGHT; // vga_init
 
 void vga_init();
-void vga_scroll_row();
-void vga_set_cursor(int x, int y);
+
+void (*vga_put_pixel)(int x, int y, vga_color color); // vga_init
 void vga_putc(unsigned char c, unsigned char color, int x, int y);
 
 #endif

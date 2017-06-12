@@ -16,6 +16,11 @@ int VGA_WIDTH, VGA_HEIGHT;
 /**
  * @brief      Initialize VGA.
  */
+
+static void vga_put_pixel_4(int x, int y, vga_color color);
+static void vga_put_pixel_8(int x, int y, vga_color color);
+static void vga_put_pixel_24(int x, int y, vga_color color);
+
 void vga_init()
 {
 	struct vbe_info* vbm = 0x6F00;
@@ -23,9 +28,15 @@ void vga_init()
 	vga_pitch = vbm->pitch;
 	VGA_WIDTH = vbm->width;
 	VGA_HEIGHT = vbm->height;
-	vga_bpp = vbm->bpp/8;
+	vga_bpp = vbm->bpp;
 	vga_clear();
 	vga_set_cursor(0,0);
+	if(vga_bpp == 4)
+		vga_put_pixel = vga_put_pixel_4;
+	else if(vga_bpp == 8)
+		vga_put_pixel = vga_put_pixel_8;
+	else //if(vga_bpp == 24)
+		vga_put_pixel = vga_put_pixel_24;
 }
 /**
  * @brief      Scroll one row in VGA buffer.
@@ -79,13 +90,83 @@ void vga_putc(unsigned char c, unsigned char color, int tty_x, int tty_y)
 	}
 }
 
-void vga_put_pixel(int x, int y, unsigned char color)
+static void vga_put_pixel_4(int x, int y, vga_color color)
 {
-	uint64_t t = vga_buffer;
+	uint64_t t = vga_buffer+(VGA_WIDTH*y+x)/2;
 	volatile unsigned char* s = t;
-	s += x;
-	s += vga_pitch*y;
+	*s |= 0xff;
+}
+
+static void vga_put_pixel_8(int x, int y, vga_color color)
+{
+	static uint8_t colors[16] = {
+		0x00,
+		0x01,
+		0x02,
+		0x03,
+		0x04,
+		0x05,
+		0x14,
+		0x07,
+		0x38,
+		0x39,
+		0x3A,
+		0x3B,
+		0x3C,
+		0x3D,
+		0x3E,
+		0x3F};
+	uint64_t t = (uint64_t)vga_buffer+x+VGA_WIDTH*y;
+	volatile uint8_t* s = t;
+	*s = colors[color];
+}
+
+static void vga_put_pixel_15(int x, int y, vga_color color)
+{
+	static uint16_t colors[16] = {
+		0x00,
+		0x01,
+		0x02,
+		0x03,
+		0x04,
+		0x05,
+		0x14,
+		0x07,
+		0x38,
+		0x39,
+		0x3A,
+		0x3B,
+		0x3C,
+		0x3D,
+		0x3E,
+		0x3F};
+	uint64_t t = vga_buffer+15*VGA_WIDTH*y+15*x;
+	volatile uint16_t* s = t;
 	*s = color;
+}
+
+static void vga_put_pixel_24(int x, int y, vga_color color)
+{
+	static uint32_t colors[16] = { // colors work
+		0x000000,
+		0x0000aa,
+		0x00aa00,
+		0x00aaaa,
+		0xaa0000,
+		0xaa00aa,
+		0xaa5500,
+		0xaaaaaa,
+		0x555555,
+		0x5555ff,
+		0x55ff55,
+		0x55ffff,
+		0xff5555,
+		0xff55ff,
+		0xffff55,
+		0xffffff};
+	uint64_t t = (uint64_t)vga_buffer+3*VGA_WIDTH*y+3*x;
+	volatile uint32_t* s = t;
+	*s |= colors[color];
 }
 
 /**

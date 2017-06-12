@@ -83,22 +83,23 @@ void kernel_start()
 	// 	printf("%02x ", the_font[0xdb0+i]);
 	// printf("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
 	// for(;;);
-	tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
+	//tty_setcolor(vga_color(VC_LIGHT_BLUE,VC_BLACK));
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
 	//for(;;);
-	tty_setcolor(VC_DEFAULT);
-	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	//tty_setcolor(VC_DEFAULT);
+	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	init_printf(NULL,putc);
 	printf("VGA terminal initialized.\n");
+	for(;;);
 	// IDT
 	idt_init();
 	isr_install();
 	irq_install();
 	idt_flush();
-	tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
+	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	printf("IDT initialized.\n");
-	tty_setcolor(VC_DEFAULT);
+	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
 	// detect_rsdt();

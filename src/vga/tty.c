@@ -17,7 +17,7 @@ void tty_init()
 {
 	tty_x = 0;
 	tty_y = 0;
-	tty_color = VC_DEFAULT;
+	//tty_color = VC_DEFAULT;
 }
 
 /**

@@ -395,7 +395,7 @@ int virt_init()
 		vmx_vmwrite(VMX_GUEST_GDTR_BASE_N, gdtp);
 	}
 
-	//return 0;
+	return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else

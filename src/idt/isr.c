@@ -113,7 +113,7 @@ void fault_handler(struct regs *r)
 {
 	if(r->int_no < INTS_MAX_ISR)
 	{
-		tty_setcolor(vga_color(VC_RED, VC_BLACK));
+		//tty_setcolor(vga_color(VC_RED, VC_BLACK));
 		printf("\n%s Exception. System Halted!\n", exception_messages[r->int_no]);
 		printf("RIP=%08x%08x\n", r->rip >> 32, r->rip);
 		asm("xchg %bx, %bx");

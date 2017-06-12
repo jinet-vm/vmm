@@ -13,6 +13,6 @@ void tty_putc(unsigned char a);
 #define TTY_WIDTH 160
 #define TTY_HEIGHT 64
 
-#define VC_DEFAULT vga_color(VC_LIGHT_GREY,VC_BLACK)
+//#define VC_DEFAULT vga_color(VC_LIGHT_GREY,VC_BLACK)
 
 #endif
