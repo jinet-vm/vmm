@@ -67,7 +67,7 @@ void tty_putc(unsigned char a)
 	{
 		// struct vga_pixel white;
 		// white.r=white.g=white.b=0xff;
-		vga_putc(a, 100+(c++) % 25, tty_x, tty_y);
+		vga_putc(a, 15, tty_x, tty_y);
 		tty_x++;
 	}
 

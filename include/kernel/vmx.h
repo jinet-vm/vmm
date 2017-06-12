@@ -21,6 +21,8 @@ int vmx_vmwrite(uint64_t vmcs_id, uint64_t value);
 int vmx_vmwrite16(uint64_t vmcs_id, uint16_t value);
 uint64_t vmx_vmread(uint64_t vmcs_id);
 
+void virt_exit();
+
 // >> vmcs fields
 
 // size suffixes:
@@ -38,11 +40,11 @@ uint64_t vmx_vmread(uint64_t vmcs_id);
 #define VMX_HOST_CR0_N 0x6C00
 #define VMX_HOST_CR3_N 0x6C02
 #define VMX_HOST_CR4_N 0x6C04
-#define VMX_HOST_FS_N 0x6C06
-#define VMX_HOST_GS_N 0x6C08
-#define VMX_HOST_TR_N 0x6C0A
-#define VMX_HOST_GDTR_N 0x6C0C
-#define VMX_HOST_IDTR_N 0x6C0E
+#define VMX_HOST_FS_BASE_N 0x6C06
+#define VMX_HOST_GS_BASE_N 0x6C08
+#define VMX_HOST_TR_BASE_N 0x6C0A
+#define VMX_HOST_GDTR_BASE_N 0x6C0C
+#define VMX_HOST_IDTR_BASE_N 0x6C0E
 #define VMX_HOST_IA32_SYSTENTER_ESP_N 0x6C10
 #define VMX_HOST_IA32_SYSTENTER_EIP_N 0x6C12
 #define VMX_HOST_RSP_N 0x6C14
@@ -56,6 +58,37 @@ uint64_t vmx_vmread(uint64_t vmcs_id);
 #define VMX_HOST_GS_W 0xC0A
 #define VMX_HOST_TR_W 0xC0C
 
+#define VMX_HOST_FS_BASE_N 0x6C06
+#define VMX_HOST_GS_BASE_N 0x6C08
+#define VMX_HOST_TR_BASE_N 0x6C0A
+#define VMX_HOST_GDTR_BASE_N 0x6C0C
+#define VMX_HOST_IDTR_BASE_N 0x6C0E
+
+#define VMX_GUEST_CR3_T_COUNT_D 0x400A
+#define VMX_EXIT_MSR_STORE_COUNT_D 0x400E
+#define VMX_EXIT_MSR_LOAD_COUNT_D 0x4010
+#define VMX_ENTRY_MSR_LOAD_COUNT_D 0x4014
+
 #define VMX_GUEST_CR0_N 0x6800
+#define VMX_GUEST_CR3_N 0x6802
+#define VMX_GUEST_CR4_N 0x6804
+#define VMX_GUEST_DR7_N 0x681A
+#define VMX_GUEST_ES_BASE_N 0x6806
+#define VMX_GUEST_CS_BASE_N 0x6808
+#define VMX_GUEST_SS_BASE_N 0x680A
+#define VMX_GUEST_DS_BASE_N 0x680C
+#define VMX_GUEST_FS_BASE_N 0x680E
+#define VMX_GUEST_GS_BASE_N 0x6810
+#define VMX_GUEST_TR_BASE_N 0x6814
+#define VMX_GUEST_GDTR_BASE_N 0x6816
+#define VMX_GUEST_IDTR_BASE_N 0x6818
+#define VMX_GUEST_RFLAGS_N 0x6820
+
+#define VMX_GUEST_ES_W 0x800
+#define VMX_GUEST_CS_W 0x802
+#define VMX_GUEST_SS_W 0x804
+#define VMX_GUEST_DS_W 0x806
+#define VMX_GUEST_FS_W 0x808
+#define VMX_GUEST_GS_W 0x80A
 
 #endif

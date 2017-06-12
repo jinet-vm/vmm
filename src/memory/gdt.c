@@ -12,13 +12,13 @@
 /**
  * @brief      Will be sent to GDTR.
  */
-struct GDTP
-{
-	uint16_t size; ///< Size of GDT
-	uint64_t off; ///< Offset of GDT
-} __attribute__((packed));
+// struct GDTP
+// {
+// 	uint16_t size; ///< Size of GDT
+// 	uint64_t off; ///< Offset of GDT
+// } __attribute__((packed));
 
-struct GDTP* gdtp;
+// struct GDTP* gdtp;
 
 #define GDTP_GDT_GAP 8
 

@@ -49,6 +49,12 @@ start:
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
 	;mbp
+
+	; mov si, vesa_sig
+	; mov cx, 4
+	; call print_str
+	; jmp $
+
 	mov si, DAP
 	mov ah, 0x42
 	mov dl, [drive] ; Floppy
@@ -209,18 +215,27 @@ itoa:
 
 
 print_str: ; esi - ptr, ecx - count
-	push es
-	mov ax, 0xb800
-	mov es, ax
-	mov di, 0x3e8
-	mov ah, 0x0A
-	.lp:
-		lodsb
-		stosw
-	loop .lp
-	pop es
+	; push es
+	; mov ax, 0xb800
+	; mov es, ax
+	; mov di, 0x3e8
+	; mov ah, 0x0A
+	; .lp:
+	; 	lodsb
+	; 	stosw
+	; loop .lp
+	; pop es
+	; ret
+	pushad
+	mov bp, si
+	mov dh, 10
+	mov dl, 10
+	mov bl, 0x0A
+	mov al, 1
+	mov ah, 13h
+	int 10h
+	popad
 	ret
-
 
 ; print_mode(cx: mode)
 print_mode:
@@ -257,7 +272,7 @@ print_mode:
 	call print_str
 	pop cx
 	ret
-	.str: db 'mode 0000h: 0000x0000x00bpp (press ENTER)'
+	.str: db 0x6d, 0x6f, 0x64, 0x65, 0x20, 0x30, 0x30, 0x30, 0x30, 0x68, 0x3a, 0x20, 0x30, 0x30, 0x30, 0x30, 0x78, 0x30, 0x30, 0x30, 0x30, 0x78, 0x30, 0x30, 0x62, 0x70, 0x70, 0x20, 0x28, 0x70, 0x72, 0x65, 0x73, 0x73, 0x20, 0x45, 0x4e, 0x54, 0x45, 0x52, 0x29
 
 ; >>>> 32bit code
 

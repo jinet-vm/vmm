@@ -12,6 +12,16 @@ void initGDTR();
 void gdt_set_code(int num);
 void gdt_set_data(int num);
 
+struct GDTP
+{
+	uint16_t size; ///< Size of GDT
+	uint64_t off; ///< Offset of GDT
+} __attribute__((packed));
+
+struct GDTP* gdtp;
+
+// todo: make GDT saner -- use it in .data
+
 // typedef struct gdt_entry
 // {
 // 	uint16_t limit_low;

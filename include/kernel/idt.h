@@ -10,6 +10,8 @@ struct idt_header {
 	uint64_t base;
 } __attribute__((packed));
 
+volatile struct idt_header idtr;
+
 struct idt_entry {
 	uint16_t offset_low;
 	uint16_t selector;

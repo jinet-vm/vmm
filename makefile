@@ -136,8 +136,8 @@ obj/vmx_enable.o: src/vmx/vmx_enable.c obj/regs.o
 obj/regs.o: src/regs.c
 	$(CC) $(CFLAGS) -c src/regs.c -o obj/regs.o
 
-obj/font.o: src/vga/font.c
-	$(CC) $(CFLAGS) -c src/vga/font.c -o obj/font.o
+obj/font.o: data/font.c
+	$(CC) $(CFLAGS) -c data/font.c -o obj/font.o
 
 enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/

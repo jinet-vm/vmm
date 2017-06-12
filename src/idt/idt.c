@@ -3,7 +3,6 @@
 #include <kernel/printf.h>
 #include <kernel/debug.h>
 
-volatile static struct idt_header idtr;
 int delimit;
 volatile static struct idt_entry IDT[IDT_ENTRIES];
 
