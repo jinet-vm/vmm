@@ -3,6 +3,8 @@
 #include <kernel/printf.h>
 #include <kernel/debug.h>
 #include <kernel/regs.h>
+#include <kernel/gdt.h>
+#include <kernel/idt.h>
 
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
@@ -44,18 +46,44 @@ int vmx_vmptrld(uint64_t vmcs)
 	return err ? -1 : 0;
 }
 
+int vmx_vmclear(uint64_t vmcs)
+{
+	unsigned char err;
+	asm volatile ("vmclear %1; setna %0"
+		: "=r"(err)
+		: "m"(vmcs)
+		: "memory", "cc");
+	return err ? -1 : 0;
+}
+
 int vmptrld(uint64_t vmcs, char debug)
 {
 	if(!debug) return vmx_vmptrld(vmcs);
 	int vmxon_res = vmx_vmptrld(vmcs);
 	if(!vmxon_res)
 	{
-		printf("vmxon successful\n");
+		printf("vmptrld successful\n");
 		return 0;
 	}
 	else
 	{
-		printf("vmxon: VMFailInvalid\n");
+		printf("vmptrld: VMFailInvalid\n");
+		return vmxon_res;
+	}
+}
+
+int vmclear(uint64_t vmcs, char debug)
+{
+	if(!debug) return vmx_vmclear(vmcs);
+	int vmxon_res = vmx_vmclear(vmcs);
+	if(!vmxon_res)
+	{
+		printf("vmclear successful\n");
+		return 0;
+	}
+	else
+	{
+		printf("vmclear: VMFailInvalid\n");
 		return vmxon_res;
 	}
 }
@@ -155,6 +183,8 @@ int virt_init()
 	// vmcs: setting revision
 	rev = VMCS_L+0x1000;
 	*rev = revision;
+	// vmclear the vmcs
+	vmclear(VMCS_P+0x1000, 1);
 
 	// vmptrld: loading vmcs pointer
 	vmptrld(VMCS_P+0x1000, 1);
@@ -270,9 +300,34 @@ int virt_init()
 			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
 	}
 
-	// host cs
+	// host seg regs
 	{
 		if(!vmx_vmwrite(VMX_HOST_CS_W, cs_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+
+		if(!vmx_vmwrite(VMX_HOST_DS_W, ds_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+
+		if(!vmx_vmwrite(VMX_HOST_ES_W, es_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+
+		if(!vmx_vmwrite(VMX_HOST_GS_W, gs_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+
+		if(!vmx_vmwrite(VMX_HOST_FS_W, fs_get()))
+			printf("vmwrite: OK!\n");
+		else
+			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
+
+		if(!vmx_vmwrite(VMX_HOST_SS_W, ss_get()))
 			printf("vmwrite: OK!\n");
 		else
 			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
@@ -287,10 +342,60 @@ int virt_init()
 			printf("vmwrite: VMFail\nReason: %s", vmx_reason());
 	}
 
-	asm("xchg %bx, %bx");
+	// cr3 target count and other counts
+	{
+		vmx_vmwrite(VMX_GUEST_CR3_T_COUNT_D, 0);
+		vmx_vmwrite(VMX_EXIT_MSR_STORE_COUNT_D,0);
+		vmx_vmwrite(VMX_EXIT_MSR_LOAD_COUNT_D,0);
+		vmx_vmwrite(VMX_ENTRY_MSR_LOAD_COUNT_D,0);
+	}
+
+	{ // host cr3
+		vmx_vmwrite(VMX_HOST_CR3_N, cr3_get());
+	}
+
+	{ // host bases
+		vmx_vmwrite(VMX_HOST_FS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_HOST_GS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_HOST_TR_BASE_N, 0xffff800000000000);
+		vmx_vmwrite(VMX_HOST_GDTR_BASE_N, gdtp);
+		vmx_vmwrite(VMX_HOST_IDTR_BASE_N, &idtr); // todo: this is what a better approach to desc. tables looks like
+	}
+
+	{
+		vmx_vmwrite(VMX_HOST_IA32_SYSTENTER_ESP_N,msr_get(IA32_SYSENTER_ESP));
+		vmx_vmwrite(VMX_HOST_IA32_SYSTENTER_EIP_N,msr_get(IA32_SYSENTER_EIP));
+	}
+
+	{
+		vmx_vmwrite(VMX_HOST_RSP_N,virt_exit);
+		vmx_vmwrite(VMX_HOST_RIP_N,virt_exit);
+	}
+
+	vmx_vmwrite(VMX_GUEST_RFLAGS_N, 1 << 1);
+	vmx_vmwrite(VMX_GUEST_CR3_N, cr3_get()); // just pass by... please
+	vmx_vmwrite(VMX_GUEST_CR4_N, cr4_get()); // just pass by... please
+	vmx_vmwrite(VMX_GUEST_DR7_N, 0x400);
+	vmx_vmwrite(VMX_GUEST_ES_W, es_get());
+	vmx_vmwrite(VMX_GUEST_CS_W, cs_get());
+	vmx_vmwrite(VMX_GUEST_SS_W, ss_get());
+	vmx_vmwrite(VMX_GUEST_DS_W, ds_get());
+	vmx_vmwrite(VMX_GUEST_FS_W, fs_get());
+	vmx_vmwrite(VMX_GUEST_GS_W, gs_get());
 	vmx_vmwrite(0x681E, 0xffff800000000000);
-	// vm_launch
-	return 0;
+	
+	{ // guest bases
+		vmx_vmwrite(VMX_GUEST_ES_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_GUEST_CS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_GUEST_SS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_GUEST_DS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_GUEST_FS_BASE_N, 0); // flat
+		vmx_vmwrite(VMX_GUEST_GS_BASE_N, 0); // flat
+
+		vmx_vmwrite(VMX_GUEST_GDTR_BASE_N, gdtp);
+	}
+
+	//return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else
@@ -308,6 +413,7 @@ int vmx_vmwrite(uint64_t vmcs_id, uint64_t value)
 
 int vmx_vmlaunch()
 {
+	asm("xchg %bx, %bx");
 	char err;
 	asm("vmlaunch; setna %0"
 		: "=r"(err));
@@ -322,4 +428,11 @@ uint64_t vmx_vmread(uint64_t vmcs_id)
 		: "=r"(value)
 		: "r"(vmcs_id));
 	return value;
+}
+
+uint8_t exit_stack[1024];
+void virt_exit()
+{
+	tty_puts("FUCK!\n");
+	for(;;);
 }
