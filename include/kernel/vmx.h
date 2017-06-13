@@ -15,12 +15,13 @@ extern char vmx_check();
 
 // vmx_enable.c
 int virt_init();
+char* virt_reason();
 void virt_crinit();
 int vmx_vmxon();
 int vmx_vmwrite(uint64_t vmcs_id, uint64_t value);
 int vmx_vmwrite16(uint64_t vmcs_id, uint16_t value);
 uint64_t vmx_vmread(uint64_t vmcs_id);
-
+int vmwrite(uint64_t vmcs_id, uint64_t value, char debug);
 void virt_exit();
 
 // >> vmcs fields

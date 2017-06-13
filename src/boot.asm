@@ -171,6 +171,7 @@ vesa_sig: db "vbe2"
 ; itoa(eax : number, ecx : width, ebx :  radix, edi : dest) -- stack
 ; Format number as string of width in radix. Returns pointer to string.
 itoa:
+	; mov eax, 420
 	; push cx
 	; push ax
 	; push di
@@ -181,9 +182,9 @@ itoa:
 	; pop di
 	; pop ax
 	; pop cx
-	push ebp
+	;ret
+	pushad
 	mov ebp, esp
-	push esi
 	; Start at end of output string and work backwards.
 	; lea edi, [output + 32]
 	add edi, ecx
@@ -199,17 +200,21 @@ itoa:
 		; Divide number by radix.
 		div ebx
 		; Use remainder to set digit in output string.
-		lea esi, [digits+edx]
-		movsb
+		xor esi, esi
+		mov si, digits
+		add si, dx
+		push eax
+		lodsb
+		stosb
+		pop eax
 	loop .loop
 	; The last movsb brought us too far back.
 	lea eax, [edi + 1]
 	cld
-	pop esi
 	mov esp, ebp
-	pop ebp
+	popad
 	ret
-	digits db "0123456789ABCDEF"
+	digits: db "0123456789ABCDEF"
 
 
 print_str: ; esi - ptr, ecx - count
@@ -363,6 +368,8 @@ entry_pm:
 	mov ss, ax
 	mov ds, ax
 	mov es, ax
+	mov gs, ax
+	mov fs, ax
 	mov esp, 0x7C00
 
 	; >> checking cpuid

@@ -41,30 +41,30 @@ struct vbe_info {
    uint8_t reserved1[206];
 } __attribute__ ((packed));
 
-typedef enum vga_color {
-   VC_BLACK = 0,
-   VC_BLUE = 1,
-   VC_GREEN = 2,
-   VC_CYAN = 3,
-   VC_RED = 4,
-   VC_MAGENTA = 5,
-   VC_BROWN = 6,
-   VC_LIGHT_GREY = 7,
-   VC_DARK_GREY = 8,
-   VC_LIGHT_BLUE = 9,
-   VC_LIGHT_GREEN = 10,
-   VC_LIGHT_CYAN = 11,
-   VC_LIGHT_RED = 12,
-   VC_LIGHT_MAGENTA = 13,
-   VC_LIGHT_BROWN = 14,
-   VC_WHITE = 15,
-} vga_color;
+#define vga_color uint8_t
+#define VC_BLACK 0
+#define VC_BLUE 1
+#define VC_GREEN 2,
+#define VC_CYAN 3,
+#define VC_RED 4,
+#define VC_MAGENTA 5
+#define VC_BROWN 6
+#define VC_LIGHT_GREY 7
+#define VC_DARK_GREY 8
+#define VC_LIGHT_BLUE 9
+#define VC_LIGHT_GREEN 10
+#define VC_LIGHT_CYAN 11
+#define VC_LIGHT_RED 12
+#define VC_LIGHT_MAGENTA 13
+#define VC_LIGHT_YELLOW 14
+#define VC_WHITE 15
+// } vga_color; // todo: bg/fg colors (two nibbles)
 
 int VGA_WIDTH, VGA_HEIGHT; // vga_init
 
 void vga_init();
 
 void (*vga_put_pixel)(int x, int y, vga_color color); // vga_init
-void vga_putc(unsigned char c, unsigned char color, int x, int y);
+void vga_putc(unsigned char c, vga_color color, int x, int y);
 
 #endif

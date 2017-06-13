@@ -35,7 +35,7 @@ void vga_init()
 		vga_put_pixel = vga_put_pixel_4;
 	else if(vga_bpp == 8)
 		vga_put_pixel = vga_put_pixel_8;
-	else //if(vga_bpp == 24)
+	else //a tif(vga_bpp == 24)
 		vga_put_pixel = vga_put_pixel_24;
 }
 /**
@@ -78,7 +78,7 @@ void vga_set_cursor(int row, int col)
  * @param[in]  x      The row of the cursor
  * @param[in]  y      The column of the cursor
  */
-void vga_putc(unsigned char c, unsigned char color, int tty_x, int tty_y)
+void vga_putc(unsigned char c, vga_color color, int tty_x, int tty_y)
 {
 	//vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
 	for(int j = 0; j<16; j++)
@@ -87,6 +87,8 @@ void vga_putc(unsigned char c, unsigned char color, int tty_x, int tty_y)
 		for(int i = 0; i<8; i++)
 			if((line >> (8-i)) & 1)
 				vga_put_pixel(tty_x*8+i,tty_y*16+j,color);
+			else
+				vga_put_pixel(tty_x*8+i,tty_y*16+j,VC_BLACK); // todo: bg/fg
 	}
 }
 
@@ -99,26 +101,9 @@ static void vga_put_pixel_4(int x, int y, vga_color color)
 
 static void vga_put_pixel_8(int x, int y, vga_color color)
 {
-	static uint8_t colors[16] = {
-		0x00,
-		0x01,
-		0x02,
-		0x03,
-		0x04,
-		0x05,
-		0x14,
-		0x07,
-		0x38,
-		0x39,
-		0x3A,
-		0x3B,
-		0x3C,
-		0x3D,
-		0x3E,
-		0x3F};
 	uint64_t t = (uint64_t)vga_buffer+x+VGA_WIDTH*y;
 	volatile uint8_t* s = t;
-	*s = colors[color];
+	*s = color;
 }
 
 static void vga_put_pixel_15(int x, int y, vga_color color)
