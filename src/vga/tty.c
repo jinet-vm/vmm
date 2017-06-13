@@ -105,7 +105,7 @@ void tty_putc(uint8_t a)
 	{
 		tty_x = 0;
 		tty_y = VGA_HEIGHT - 1;
-		vga_scroll_row();
+		//vga_scroll_row();
 		//tty_refresh_all();
 	}
 }
