@@ -75,39 +75,34 @@ start:
 	int 10h ; getting info
 	cmp ax, 4fh
 	jne $
-	;xchg bx, bx
-key_before:
-	mov si, 0x700E ; address of modes pointer
+
+lvbe_init:
+	mov si, 0x700E
 	lodsd
 	mov si, ax
 	shr eax, 16
 	mov ds, ax
-	;xchg bx, bx
-key_loop:
-	; modes in ds:si
-	lodsw
-	test ax, 0xFFFF
-	jz key_before
-	mov cx, ax
-	push cx
-	;xchg bx, bx
-	push esi
-	call print_mode
-	pop esi
-	mov ah, 0h
-	int 16h
+	push 0x100
 	xchg bx, bx
-	cmp ah, 0x48
-	jne notup
-.up: ; todo: zero up
-	sub si, 4
-	pop cx
-	jmp key_loop
-notup:
-	cmp al, 0x0D
-	jz setup
-	pop cx
-jmp key_loop
+loop_vbe:
+	xchg bx, bx
+	lodsw
+	cmp ax, 0xFFFF
+	jz lvbe_end
+	mov cx, ax
+	call load_mode
+	xchg bx, bx
+	mov al, [0x6F00+25] ; bpp
+	cmp al, 8
+	jz lvbe_push
+	cmp al, 24
+	jz lvbe_push
+	jmp loop_vbe
+lvbe_push:
+	mov [esp], cx
+	jmp loop_vbe
+lvbe_end:
+	xchg bx, bx
 setup:
 	xchg bx, bx
 	mov ax, 4F02h
@@ -240,42 +235,14 @@ print_str: ; esi - ptr, ecx - count
 	popad
 	ret
 
-; print_mode(cx: mode)
-print_mode:
-	push cx
-	movzx eax, cx
-	mov ecx, 4
-	mov ebx, 16
-	mov edi, .str+5
-	call itoa
-	;xchg bx, bx
+; load_mode(cx: mode)
+load_mode:
+	pushad
 	mov ax, 0x4F01
-	mov cx, [esp]
 	mov di, 0x6F00
 	int 10h
-	;xchg bx, bx
-	movzx eax, word [0x6F00+18] ; width
-	mov ecx, 4
-	mov ebx, 10
-	mov edi, .str+12
-	call itoa
-	movzx eax, word [0x6F00+20] ; height 
-	mov ecx, 4
-	mov ebx, 10
-	mov edi, .str+17
-	call itoa
-	movzx eax, byte [0x6F00+25] ; bpp
-	mov ecx, 2
-	mov ebx, 10
-	mov edi, .str+22
-	call itoa
-	mov esi, .str
-	mov ecx, 41
-	;xchg bx, bx
-	call print_str
-	pop cx
+	popad
 	ret
-	.str: db "mode 0000h: 0000x0000x00bpp (press ENTER)"
 
 ; >>>> 32bit code
 
