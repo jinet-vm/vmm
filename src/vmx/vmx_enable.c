@@ -220,7 +220,7 @@ int virt_init()
 		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		zero = pinb & 0xffffffff, one = pinb >> 32;
 		printf("0x%x & 0x%x\n", zero, one);
-		pinbvm |= zero;
+		pinbvm = one;
 
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
@@ -262,8 +262,8 @@ int virt_init()
 		printf("0x%x & 0x%x\n", zero, one);
 		vmenvm = 0;
 		vmenvm |= zero;
+		vmenvm |= (1 << 9); // IA-32e mode guest
 		//vmenvm |= one;
-
 		vmwrite(VMX_VMENTRY_CTLS_D, vmenvm, VMX_DEBUG);
 	}
 
@@ -271,7 +271,7 @@ int virt_init()
 	{
 		uint32_t zero = msr_get(IA32_VMX_CR0_FIXED0);
 		uint32_t one = msr_get(IA32_VMX_CR0_FIXED1);
-		uint64_t vmcr0 = zero;
+		uint64_t vmcr0 = cr0_get() & zero;
 
 		vmwrite(VMX_GUEST_CR0_N, vmcr0, VMX_DEBUG);
 	}
@@ -279,8 +279,8 @@ int virt_init()
 	// host cr0
 	//vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
 	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
-	// host cr4
-	vmwrite(VMX_HOST_CR4_N, msr_get(IA32_VMX_CR4_FIXED1), VMX_DEBUG);
+	// host cr4 - msr_get(IA32_VMX_CR4_FIXED1)
+	vmwrite(VMX_HOST_CR4_N, cr4_get(), VMX_DEBUG);
 
 	// host seg regs
 	{
@@ -290,6 +290,13 @@ int virt_init()
 		vmwrite(VMX_HOST_GS_W, gs_get(), VMX_DEBUG);
 		vmwrite(VMX_HOST_FS_W, fs_get(), VMX_DEBUG);
 		vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
+
+		vmwrite(VMX_HOST_CS_AR_D, lar(cs_get()), VMX_DEBUG);
+		vmwrite(VMX_HOST_DS_AR_D, lar(ds_get()), VMX_DEBUG);
+		vmwrite(VMX_HOST_ES_AR_D, lar(es_get()), VMX_DEBUG);
+		vmwrite(VMX_HOST_GS_AR_D, lar(gs_get()), VMX_DEBUG);
+		vmwrite(VMX_HOST_FS_AR_D, lar(fs_get()), VMX_DEBUG);
+		vmwrite(VMX_HOST_SS_AR_D, lar(ss_get()), VMX_DEBUG);
 	}
 
 	// host tr
@@ -340,6 +347,8 @@ int virt_init()
 	vmwrite(VMX_GUEST_GS_W, gs_get(), VMX_DEBUG);
 	vmwrite(0x681E, 0xffff800000000000, VMX_DEBUG);
 	
+	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
+
 	{ // guest bases
 		vmwrite(VMX_GUEST_ES_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_CS_BASE_N, 0, VMX_DEBUG); // flat
@@ -348,6 +357,7 @@ int virt_init()
 		vmwrite(VMX_GUEST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_BASE_N, idtr.base, VMX_DEBUG);
 	}
 
 	//return 0;
