@@ -4,7 +4,7 @@
 #include <kernel/tty.h>
 #include <kernel/vga.h>
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #define mbp
 #ifdef DEBUG

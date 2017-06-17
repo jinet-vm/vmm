@@ -181,7 +181,7 @@ isr19:
 	push 19
 	jmp isr_common_stub
 
-; 20: Reserved
+; 20: Virtualization
 isr20:
 	cli
 	push 0

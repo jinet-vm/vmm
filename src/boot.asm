@@ -83,33 +83,42 @@ lvbe_init:
 	shr eax, 16
 	mov ds, ax
 	push 0x100
-	xchg bx, bx
+	;xchg bx, bx
 loop_vbe:
-	xchg bx, bx
+	;xchg bx, bx
 	lodsw
 	cmp ax, 0xFFFF
 	jz lvbe_end
 	mov cx, ax
-	call load_mode
-	xchg bx, bx
+	mov ax, 0x4F01
+	mov di, 0x6F00
+	int 10h
+	cmp ax, 4fh
+	jne loop_vbe
 	mov al, [0x6F00+25] ; bpp
-	cmp al, 8
-	jz lvbe_push
+	; cmp al, 8
+	; jz lvbe_push
 	cmp al, 24
+	jz lvbe_push
+	cmp al, 32
 	jz lvbe_push
 	jmp loop_vbe
 lvbe_push:
 	mov [esp], cx
 	jmp loop_vbe
 lvbe_end:
-	xchg bx, bx
+	;xchg bx, bx
 setup:
-	xchg bx, bx
+	;mov cx, 417fh ; mode for lit comp
+	mov cx, [esp]
+	or cx, 4000h
+	call load_mode
+	;xchg bx, bx
 	mov ax, 4F02h
 	pop bx
 	or bx, 4000h
 	int 10h ; set it
-	xchg bx, bx
+	;xchg bx, bx
 	; loading GDT
 	lgdt    fword   [GDTR]
 
@@ -330,7 +339,7 @@ entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
 	; cs already defined
-	mbp
+	;mbp
 	mov ax, sel_data
 	mov ss, ax
 	mov ds, ax
@@ -443,7 +452,7 @@ efer_lme = 0x00000100
 cr0_bit = 0x80000000
 
 	lm_enable:
-		mbp
+		;mbp
 		mov eax, cr4_pae_bit ; PAE 
 		mov cr4, eax
 

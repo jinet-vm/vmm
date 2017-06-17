@@ -78,6 +78,10 @@ kernel_paging_setup:
 	stosq
 	mov rax, cr3
 	mov cr3, rax
+
+	; identity page [0, 0xffffffff] just for the sake of paging
+
+
 	; stosq
 	
 	; ; now we'll map the kernel

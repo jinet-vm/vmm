@@ -17,9 +17,10 @@ int VGA_WIDTH, VGA_HEIGHT;
  * @brief      Initialize VGA.
  */
 
-static void vga_put_pixel_4(int x, int y, vga_color color);
+//static void vga_put_pixel_4(int x, int y, vga_color color);
 static void vga_put_pixel_8(int x, int y, vga_color color);
 static void vga_put_pixel_24(int x, int y, vga_color color);
+static void vga_put_pixel_32(int x, int y, vga_color color);
 
 void vga_init()
 {
@@ -28,15 +29,23 @@ void vga_init()
 	vga_pitch = vbm->pitch;
 	VGA_WIDTH = vbm->width;
 	VGA_HEIGHT = vbm->height;
-	vga_bpp = vbm->bpp;
-	vga_clear();
-	vga_set_cursor(0,0);
-	if(vga_bpp == 4)
-		vga_put_pixel = vga_put_pixel_4;
-	else if(vga_bpp == 8)
+	//vga_bpp = vbm->bpp;
+	unsigned volatile int *s = (uint64_t)vga_buffer;
+	/* for(unsigned int i = 0; i<1920*1080*4; i++)
+	{
+		*s = i;
+		s++;
+	}
+	for(;;);*/
+	//vga_clear();
+	//vga_set_cursor(0,0);
+	if(vga_bpp == 8)
 		vga_put_pixel = vga_put_pixel_8;
-	else //a tif(vga_bpp == 24)
+	else if(vga_bpp == 24)
 		vga_put_pixel = vga_put_pixel_24;
+	else // if(vga_bpp == 32)
+		vga_put_pixel = vga_put_pixel_32;
+	//vga_put_pixel = vga_put_pixel_32;
 }
 /**
  * @brief      Scroll one row in VGA buffer.
@@ -106,30 +115,6 @@ static void vga_put_pixel_8(int x, int y, vga_color color)
 	*s = color;
 }
 
-static void vga_put_pixel_15(int x, int y, vga_color color)
-{
-	static uint16_t colors[16] = {
-		0x00,
-		0x01,
-		0x02,
-		0x03,
-		0x04,
-		0x05,
-		0x14,
-		0x07,
-		0x38,
-		0x39,
-		0x3A,
-		0x3B,
-		0x3C,
-		0x3D,
-		0x3E,
-		0x3F};
-	uint64_t t = vga_buffer+15*VGA_WIDTH*y+15*x;
-	volatile uint16_t* s = t;
-	*s = color;
-}
-
 static void vga_put_pixel_24(int x, int y, vga_color color)
 {
 	static uint32_t colors[16] = { // colors work
@@ -153,6 +138,31 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 	volatile uint32_t* s = t;
 	*s |= colors[color];
 }
+
+static void vga_put_pixel_32(int x, int y, vga_color color)
+{
+	static uint32_t colors[16] = { // colors work
+		0xff000000,
+		0xff0000aa,
+		0xff00aa00,
+		0xff00aaaa,
+		0xffaa0000,
+		0xffaa00aa,
+		0xffaa5500,
+		0xffaaaaaa,
+		0xff555555,
+		0xff5555ff,
+		0xff55ff55,
+		0xff55ffff,
+		0xffff5555,
+		0xffff55ff,
+		0xffffff55,
+		0xffffffff};
+	uint64_t t = (uint64_t)vga_buffer+4*VGA_WIDTH*y+4*x;
+	volatile uint32_t* s = t;
+	*s = colors[color];
+}
+
 
 /**
  * @brief      Clears everything in VGA buffer.

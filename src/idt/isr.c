@@ -95,7 +95,7 @@ static unsigned char *exception_messages[] =
 	"Alignment Check",
 	"Machine Check",
 	"Reserved",
-	"Reserved",
+	"Virtualization",
 	"Reserved",
 	"Reserved",
 	"Reserved",
@@ -116,7 +116,6 @@ void fault_handler(struct regs *r)
 		//tty_setcolor(vga_color(VC_RED, VC_BLACK));
 		printf("\n%s Exception. System Halted!\n", exception_messages[r->int_no]);
 		printf("RIP=%08x%08x\n", r->rip >> 32, r->rip);
-		asm("xchg %bx, %bx");
 		printf("CS=%08x%08x\n", r->cs >> 32, r->cs);
 		printf("USERRSP = %08x%08x\n", r->userrsp >> 32, r->userrsp);
 		printf("Error code: 0x%x", r-> err_code);

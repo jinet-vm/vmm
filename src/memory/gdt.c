@@ -9,14 +9,8 @@
 #include <stdint.h>
 #include <kernel/printf.h>
 
-/**
- * @brief      Will be sent to GDTR.
- */
-// struct GDTP
-// {
-// 	uint16_t size; ///< Size of GDT
-// 	uint64_t off; ///< Offset of GDT
-// } __attribute__((packed));
+static uint64_t gdt[GDT_SEGS];
+static struct GDTP gdtp;
 
 // struct GDTP* gdtp;
 
@@ -30,8 +24,13 @@ extern char* setGDTR(struct GDTP* gdtp);
 void initGDTR()
 {
 	mbp;
-	gdtp = GDT_VMA_ADDR;
-	gdtp->off = GDT_VMA_ADDR+GDTP_GDT_GAP; // right after gdtp
+	gdtp.off = gdt; // right after gdtp
+	gdtp.size = GDT_SEGS*8;
+}
+
+struct GDTP* getGDTP()
+{
+	return &gdtp;
 }
 
 // TODO: all the structure stuff and its memory WHATEVER
@@ -44,7 +43,7 @@ void initGDTR()
  */
 uint16_t GDT_size()
 {
-	return gdtp->size;
+	return gdtp.size;
 }
 
 /**
@@ -54,52 +53,11 @@ uint16_t GDT_size()
  */
 uint32_t GDT_offset()
 {
-	return gdtp->off;
+	return gdtp.off;
 }
-
-/**
- * @brief      Sets GDT entry.
- *
- * @param[in]  num     The number of GDT entry
- * @param[in]  base    The base of GDT entry
- * @param[in]  limit   The limit of GDT entry
- * @param[in]  access  The access flags of GDT entry
- * @param[in]  gran    The granularity flags of GDT entry
- */
-// void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
-// {
-// 	gdt_entry* gdte = gdtp->off+num*8;
-//     //mbp;
-//     gdte->base_low = (base & 0xFFFF);
-//     gdte->base_middle = (base >> 16) & 0xFF;
-//     gdte->base_high = (base >> 24) & 0xFF;
-//     /* Setup the descriptor limits */
-//     gdte->limit_low = (limit & 0xFFFF);
-//     gdte->granularity = ((limit >> 16) & 0x0F);
-//     /* Finally, set up the granularity and access flags */
-//     gdte->granularity |= (gran & 0xF0);
-//     gdte->access = access;
-// }
-
-// void gdt_set_tss(int num, unsigned long base, unsigned long limit, unsigned char gran)
-// {
-//     gdt_entry* gdte = gdtp->off+num*8;
-//     //mbp;
-//     gdte->base_low = (base & 0xFFFF);
-//     gdte->base_middle = (base >> 16) & 0xFF;
-//     gdte->base_high = (base >> 24) & 0xFF;
-//     /* Setup the descriptor limits */
-//     gdte->limit_low = (limit & 0xFFFF);
-//     gdte->granularity = ((limit >> 16) & 0x0F);
-//     gdte->granularity |= 
-//     /* Finally, set up the granularity and access flags */
-//     gdte->granularity |= (gran & 0xF0);
-//     gdte->access = access;
-// }
 
 void gdt_set_code(int num) // 64 bit, we live in a FLAT
 {
-	uint64_t* gdte = gdtp->off+num*8;
 	uint64_t s;
 	s = 0;
 	//gdte |= (limit & 0xffff) << 0; // seg.limit [15:00]
@@ -114,12 +72,12 @@ void gdt_set_code(int num) // 64 bit, we live in a FLAT
 	s |= 0 << 55; // granularity
 	//printf("fuck off code: 0x%x%08x\n", (uint64_t)(s) >> 32, (uint32_t)(s));
 	//gdte |= (base && 0xff000000) << 32;
-	*gdte = s;
+	gdt[num] = s;
 }
 
 void gdt_set_data(int num) // 64 bit, we live in a FLAT
 {
-	uint64_t* gdte = gdtp->off+num*8;
+	//uint64_t* gdte = gdtp->off+num*8;
 	uint64_t s;
 	s = 0;
 	//gdte |= (limit & 0xffff) << 0; // seg.limit [15:00]
@@ -134,12 +92,11 @@ void gdt_set_data(int num) // 64 bit, we live in a FLAT
 	s |= 0 << 55; // granularity
 	//printf("fuck off code: 0x%x%08x\n", (uint64_t)(s) >> 32, (uint32_t)(s));
 	//gdte |= (base && 0xff000000) << 32;
-	*gdte = s;
+	gdt[num] = s;
 }
 
 void gdt_set_tss(int num, uint32_t limit, uint64_t base)
 {
-	uint64_t* gdte = gdtp->off+num*8;
 	uint64_t s;
 	uint64_t t;
 	s = 0;
@@ -156,9 +113,8 @@ void gdt_set_tss(int num, uint32_t limit, uint64_t base)
 	s |= (base && 0xff000000lu) << 32lu;
 	t = 0;
 	t |= (base >> 32);
-	*gdte = s;
-	gdte++;
-	*gdte = t;
+	gdt[num] = s;
+	gdt[num+1] = t;
 }
 
 
@@ -167,11 +123,9 @@ void gdt_set_tss(int num, uint32_t limit, uint64_t base)
  *
  * @param[in]  num   The number of GDT entries.
  */
-void gdt_flush(int num)
+void gdt_flush()
 {
-	gdtp->size = num*8;
 	//printf("fuck off: 0x%x%08x\n", (uint64_t)(gdtp) >> 32, (uint32_t)(gdtp->off));
-	asm("xchg %bx, %bx");
 	asm("lgdt %0"
-		: : "m"(*gdtp));
+		: : "m"(gdtp));
 }

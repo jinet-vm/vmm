@@ -92,7 +92,7 @@ void kernel_start()
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	init_printf(NULL,putc);
 	printf("VGA terminal initialized.\n");
-	//for(;;);
+	// for(;;);
 	// IDT
 	idt_init();
 	isr_install();
@@ -124,8 +124,9 @@ void kernel_start()
 	gdt_set_code(1);
 	gdt_set_data(2);
 	gdt_set_tss(3,104,0xffff800000000000);
-	gdt_flush(5);
+	gdt_flush();
 	//for(;;);
+	//asm("int $20");
 	asm("xchg %bx, %bx");
 	tr_set(SEG(3));
 	virt_init();

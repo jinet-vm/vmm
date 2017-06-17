@@ -76,7 +76,7 @@ static void tty_putsymb(uint8_t c, vga_color color, int x, int y)
 	s->symb = c;
 	s->color = color;
 	//vga_putc(s->symb, s->color, x, y);
-	tty_refresh_sym(x,y);
+	//tty_refresh_sym(x,y);
 }
 
 void tty_refresh_sym(int x, int y)
@@ -86,12 +86,16 @@ void tty_refresh_sym(int x, int y)
 	vga_putc(s->symb, s->color, x, y);
 }
 
+void tty_scroll_row();
+
 void tty_putc(uint8_t a)
 {
 	if(a == '\n') tty_y++, tty_x = 0;
 	else
 	{
-		tty_putsymb(a,tty_color,tty_x,tty_y);
+		tty_putsymb(a, tty_color, tty_x, tty_y);
+		// vga_putc(a, tty_color, tty_x, tty_y);
+		tty_refresh_sym(tty_x, tty_y);
 		tty_x++;
 	}
 
@@ -105,10 +109,29 @@ void tty_putc(uint8_t a)
 	{
 		tty_x = 0;
 		tty_y = VGA_HEIGHT - 1;
-		//vga_scroll_row();
-		//tty_refresh_all();
+		//tty_scroll_row();
+		tty_refresh_all();
 	}
+	//tty_refresh_all();
 }
+
+void tty_scroll_row()
+{
+	for(int x = 0; x < TTY_WIDTH; x++)
+	{
+		for(int y = 1; y < TTY_HEIGHT; y++)
+		{
+			tty_char *s = TTY_BUFFER;
+			s += (y-1)*TTY_WIDTH+x;
+			tty_char *k = s;
+			s += TTY_WIDTH;
+			*s = *k;
+		}
+	}
+	memset(TTY_BUFFER+sizeof(tty_char)*(VGA_HEIGHT-1)*VGA_WIDTH,0,sizeof(tty_char)*VGA_WIDTH);
+	//vga_set_cursor(0,VGA_HEIGHT-2);
+}
+
 
 /**
  * @brief      Puts a null-terminated string on terminal

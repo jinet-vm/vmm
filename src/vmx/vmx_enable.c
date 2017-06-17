@@ -108,36 +108,36 @@ void virt_crinit()
 }
 
 static const char* rsns[]=
-	{
-		"",
-		"VMCALL executed in VMX root operation",
-		"VMCLEAR with invalid physical address",
-		"VMCLEAR with VMXON pointer",
-		"VMLAUNCH with non-clear VMCS",
-		"VMRESUME with non-launched VMCS",
-		"VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME)",
-		"VM entry with invalid control field(s)",
-		"VM entry with invalid host-state field(s)",
-		"VMPTRLD with invalid physical address",
-		"VMPTRLD with VMXON pointer",
-		"VMPTRLD with incorrect VMCS revision identifier",
-		"VMREAD/VMWRITE from/to unsupported VMCS component",
-		"VMWRITE to read-only VMCS component",
-		"",
-		"VMXON executed in VMX root operation",
-		"VM entry with invalid executive-VMCS pointer",
-		"VM entry with non-launched executive VMCS",
-		"VM entry with executive-VMCS pointer not VMXON pointer (when attempting to deactivate the dual-monitor treatment of SMIs and SMM)",
-		"VMCALL with non-clear VMCS (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-		"VMCALL with invalid VM-exit control fields",
-		"",
-		"VMCALL with incorrect MSEG revision identifier (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-		"VMXOFF under dual-monitor treatment of SMIs and SMM",
-		"VMCALL with invalid SMM-monitor features (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-		"VM entry with invalid VM-execution control fields in executive VMCS (when attempting to return from SMM)",
-		"VM entry with events blocked by MOV SS.",
-		"",
-		"Invalid operand to INVEPT/INVVPID."
+{
+	"",
+	"VMCALL executed in VMX root operation",
+	"VMCLEAR with invalid physical address",
+	"VMCLEAR with VMXON pointer",
+	"VMLAUNCH with non-clear VMCS",
+	"VMRESUME with non-launched VMCS",
+	"VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME)",
+	"VM entry with invalid control field(s)",
+	"VM entry with invalid host-state field(s)",
+	"VMPTRLD with invalid physical address",
+	"VMPTRLD with VMXON pointer",
+	"VMPTRLD with incorrect VMCS revision identifier",
+	"VMREAD/VMWRITE from/to unsupported VMCS component",
+	"VMWRITE to read-only VMCS component",
+	"",
+	"VMXON executed in VMX root operation",
+	"VM entry with invalid executive-VMCS pointer",
+	"VM entry with non-launched executive VMCS",
+	"VM entry with executive-VMCS pointer not VMXON pointer (when attempting to deactivate the dual-monitor treatment of SMIs and SMM)",
+	"VMCALL with non-clear VMCS (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+	"VMCALL with invalid VM-exit control fields",
+	"",
+	"VMCALL with incorrect MSEG revision identifier (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+	"VMXOFF under dual-monitor treatment of SMIs and SMM",
+	"VMCALL with invalid SMM-monitor features (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+	"VM entry with invalid VM-execution control fields in executive VMCS (when attempting to return from SMM)",
+	"VM entry with events blocked by MOV SS.",
+	"",
+	"Invalid operand to INVEPT/INVVPID."
 };
 
 char* virt_reason()
@@ -147,7 +147,9 @@ char* virt_reason()
 	return rsns[reason];
 }
 
-#define VMX_DEBUG 1
+#define VMX_DEBUG 0
+
+static uint8_t exit_stack[1024];
 
 int virt_init()
 {
@@ -200,26 +202,27 @@ int virt_init()
 	{
 		uint64_t pinb;
 		uint32_t zero, one, pinbvm;
-		if(Truth)
-		{
-			// todo:
-			//printf("forming vmx pin-based controls from IA32_VMX_TRUE_PINBASED_CTLS\n");
-			pinb = msr_get(IA32_VMX_TRUE_PINBASED_CTLS);
-		}
-		else
-		{
-			// todo: understand it? see 3D, page 183
-			//printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
-			pinb = msr_get(IA32_VMX_PINBASED_CTLS);
-			zero = pinb & 0xffffffff, one = pinb >> 32;
-			printf("0x%x & 0x%x\n", zero, one);
-			pinbvm |= zero;
-		}
+		// if(Truth)
+		// {
+		// 	// todo:
+		// 	//printf("forming vmx pin-based controls from IA32_VMX_TRUE_PINBASED_CTLS\n");
+		// 	pinb = msr_get(IA32_VMX_TRUE_PINBASED_CTLS);
+		// }
+		// else
+		// {
+		// 	// todo: understand it? see 3D, page 183
+		// 	//printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
+		// 	pinb = msr_get(IA32_VMX_PINBASED_CTLS);
+		// 	zero = pinb & 0xffffffff, one = pinb >> 32;
+		// 	printf("0x%x & 0x%x\n", zero, one);
+		// 	pinbvm |= zero;
+		// }
+		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
+		zero = pinb & 0xffffffff, one = pinb >> 32;
+		printf("0x%x & 0x%x\n", zero, one);
+		pinbvm |= zero;
 
-		if(!vmx_vmwrite(VMX_PINBASED_CTLS_D, pinbvm))
-			printf("vmwrite: OK!\n");
-		else
-			printf("vmwrite: VMFail\nReason: %s", virt_reason());
+		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
 	
 	// proc-based
@@ -274,7 +277,8 @@ int virt_init()
 	}
 
 	// host cr0
-	vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
+	//vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
+	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
 	// host cr4
 	vmwrite(VMX_HOST_CR4_N, msr_get(IA32_VMX_CR4_FIXED1), VMX_DEBUG);
 
@@ -310,8 +314,8 @@ int virt_init()
 		vmwrite(VMX_HOST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_HOST_GS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_HOST_TR_BASE_N, 0xffff800000000000, VMX_DEBUG);
-		vmwrite(VMX_HOST_GDTR_BASE_N, gdtp, VMX_DEBUG);
-		vmwrite(VMX_HOST_IDTR_BASE_N, &idtr, VMX_DEBUG); // todo: this is what a better approach to desc. tables looks like
+		vmwrite(VMX_HOST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
+		vmwrite(VMX_HOST_IDTR_BASE_N, idtr.base, VMX_DEBUG); // todo: this is what a better approach to desc. tables looks like
 	}
 
 	{
@@ -320,8 +324,8 @@ int virt_init()
 	}
 
 	{
-		vmwrite(VMX_HOST_RSP_N,virt_exit, VMX_DEBUG);
-		vmwrite(VMX_HOST_RIP_N,virt_exit, VMX_DEBUG);
+		vmwrite(VMX_HOST_RIP_N, virt_exit, VMX_DEBUG);
+		vmwrite(VMX_HOST_RSP_N, exit_stack+1023, VMX_DEBUG);
 	}
 
 	vmwrite(VMX_GUEST_RFLAGS_N, 1 << 1, VMX_DEBUG);
@@ -343,10 +347,10 @@ int virt_init()
 		vmwrite(VMX_GUEST_DS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GS_BASE_N, 0, VMX_DEBUG); // flat
-		vmwrite(VMX_GUEST_GDTR_BASE_N, gdtp, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
 	}
 
-	return 0;
+	//return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");
 	else
@@ -397,7 +401,6 @@ uint64_t vmx_vmread(uint64_t vmcs_id)
 	return value;
 }
 
-uint8_t exit_stack[1024];
 void virt_exit()
 {
 	tty_puts("FUCK!\n");
