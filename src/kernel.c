@@ -86,7 +86,8 @@ void kernel_start()
 	tty_setcolor(VC_LIGHT_BLUE);
 	for(int i = 0; i<title_lines; i++)
 		tty_puts(title[i]);
-	tty_reset_color();
+	tty_setcolor(VC_DEFAULT);
+	//tty_reset_color();
 	//for(;;);
 	//tty_setcolor(VC_DEFAULT);
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));

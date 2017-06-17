@@ -147,7 +147,7 @@ char* virt_reason()
 	return rsns[reason];
 }
 
-#define VMX_DEBUG 0
+#define VMX_DEBUG 1
 
 static uint8_t exit_stack[1024];
 
