@@ -22,6 +22,10 @@ int vmx_vmwrite(uint64_t vmcs_id, uint64_t value);
 int vmx_vmwrite16(uint64_t vmcs_id, uint16_t value);
 uint64_t vmx_vmread(uint64_t vmcs_id);
 int vmwrite(uint64_t vmcs_id, uint64_t value, char debug);
+int vmx_vmlaunch();
+int vmx_vmresum();
+int vmlaunch(char debug);
+int vmresum(char debug);
 void virt_exit();
 
 // >> vmcs fields
@@ -88,6 +92,9 @@ void virt_exit();
 #define VMX_GUEST_IDTR_BASE_N 0x6818
 #define VMX_GUEST_RFLAGS_N 0x6820
 
+#define VMX_GUEST_RSP_N 0x681C
+#define VMX_GUEST_RIP_N 0x681E
+
 #define VMX_GUEST_LDTR_W 0x80C
 
 #define VMX_GUEST_ES_W 0x800
@@ -125,5 +132,7 @@ void virt_exit();
 
 #define VMX_GUEST_ACTIVITY_STATE_D 0x4826
 #define VMX_GUEST_INTERRUPTIBILITY_STATE 0x4824
+
+#define VMX_EXIT_REASON_D 0x4402
 
 #endif

@@ -5,7 +5,7 @@
 #include <kernel/regs.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
-
+#include <kernel/memory.h>
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
 #define VMCS_P 0x410000
@@ -107,41 +107,41 @@ void virt_crinit()
 		);
 }
 
-static const char* rsns[]=
-{
-	"",
-	"VMCALL executed in VMX root operation",
-	"VMCLEAR with invalid physical address",
-	"VMCLEAR with VMXON pointer",
-	"VMLAUNCH with non-clear VMCS",
-	"VMRESUME with non-launched VMCS",
-	"VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME)",
-	"VM entry with invalid control field(s)",
-	"VM entry with invalid host-state field(s)",
-	"VMPTRLD with invalid physical address",
-	"VMPTRLD with VMXON pointer",
-	"VMPTRLD with incorrect VMCS revision identifier",
-	"VMREAD/VMWRITE from/to unsupported VMCS component",
-	"VMWRITE to read-only VMCS component",
-	"",
-	"VMXON executed in VMX root operation",
-	"VM entry with invalid executive-VMCS pointer",
-	"VM entry with non-launched executive VMCS",
-	"VM entry with executive-VMCS pointer not VMXON pointer (when attempting to deactivate the dual-monitor treatment of SMIs and SMM)",
-	"VMCALL with non-clear VMCS (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-	"VMCALL with invalid VM-exit control fields",
-	"",
-	"VMCALL with incorrect MSEG revision identifier (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-	"VMXOFF under dual-monitor treatment of SMIs and SMM",
-	"VMCALL with invalid SMM-monitor features (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
-	"VM entry with invalid VM-execution control fields in executive VMCS (when attempting to return from SMM)",
-	"VM entry with events blocked by MOV SS.",
-	"",
-	"Invalid operand to INVEPT/INVVPID."
-};
-
 char* virt_reason()
 {
+
+	static const char* rsns[]=
+	{
+		"Reserved",
+		"VMCALL executed in VMX root operation",
+		"VMCLEAR with invalid physical address",
+		"VMCLEAR with VMXON pointer",
+		"VMLAUNCH with non-clear VMCS",
+		"VMRESUME with non-launched VMCS",
+		"VMRESUME after VMXOFF (VMXOFF and VMXON between VMLAUNCH and VMRESUME)",
+		"VM entry with invalid control field(s)",
+		"VM entry with invalid host-state field(s)",
+		"VMPTRLD with invalid physical address",
+		"VMPTRLD with VMXON pointer",
+		"VMPTRLD with incorrect VMCS revision identifier",
+		"VMREAD/VMWRITE from/to unsupported VMCS component",
+		"VMWRITE to read-only VMCS component",
+		"Reserved",
+		"VMXON executed in VMX root operation",
+		"VM entry with invalid executive-VMCS pointer",
+		"VM entry with non-launched executive VMCS",
+		"VM entry with executive-VMCS pointer not VMXON pointer (when attempting to deactivate the dual-monitor treatment of SMIs and SMM)",
+		"VMCALL with non-clear VMCS (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VMCALL with invalid VM-exit control fields",
+		"Reserved",
+		"VMCALL with incorrect MSEG revision identifier (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VMXOFF under dual-monitor treatment of SMIs and SMM",
+		"VMCALL with invalid SMM-monitor features (when attempting to activate the dual-monitor treatment of SMIs and SMM)",
+		"VM entry with invalid VM-execution control fields in executive VMCS (when attempting to return from SMM)",
+		"VM entry with events blocked by MOV SS.",
+		"Reserved",
+		"Invalid operand to INVEPT/INVVPID."
+	};
 	uint64_t reason = vmx_vmread(0x4400);
 	if(reason > 28) reason = 0;
 	return rsns[reason];
@@ -150,7 +150,20 @@ char* virt_reason()
 #define VMX_DEBUG 1
 
 static uint8_t exit_stack[1024];
+static uint8_t vm1_stack[1024];
+static uint8_t vm2_stack[1024];
 
+
+void virt_loop()
+{
+	for(;;)
+	{
+		asm("vmcall");
+	}
+}
+asm("virt_loop_end:");
+
+extern uint64_t virt_loop_end;
 int virt_init()
 {
 	uint32_t vmcs_size, revision;
@@ -286,6 +299,8 @@ int virt_init()
 		vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
 	}
 
+	//printf("0x%x",lar(cs_get));
+
 	vmwrite(VMX_GUEST_CS_AR_D, lar(cs_get()) | 1, VMX_DEBUG);
 	vmwrite(VMX_GUEST_DS_AR_D, lar(ds_get()) | 1, VMX_DEBUG);
 	vmwrite(VMX_GUEST_ES_AR_D, lar(es_get()) | 1, VMX_DEBUG);
@@ -346,16 +361,18 @@ int virt_init()
 	vmwrite(VMX_GUEST_DS_W, ds_get(), VMX_DEBUG);
 	vmwrite(VMX_GUEST_FS_W, fs_get(), VMX_DEBUG);
 	vmwrite(VMX_GUEST_GS_W, gs_get(), VMX_DEBUG);
-	vmwrite(0x681E, 0xffff800000000000, VMX_DEBUG);
-	
+
+	vmwrite(VMX_GUEST_RSP_N, 0x8000, VMX_DEBUG);
+	vmwrite(VMX_GUEST_RIP_N, 0x7000, VMX_DEBUG);
+
 	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
 
-	vmwrite(VMX_GUEST_ES_LIMIT_D,0,VMX_DEBUG);
-	vmwrite(VMX_GUEST_CS_LIMIT_D,0,VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_LIMIT_D,0,VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_LIMIT_D,0,VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_LIMIT_D,0,VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_ES_LIMIT_D,0xfffff,VMX_DEBUG);
+	vmwrite(VMX_GUEST_CS_LIMIT_D,0xfffff,VMX_DEBUG);
+	vmwrite(VMX_GUEST_SS_LIMIT_D,0xfffff,VMX_DEBUG);
+	vmwrite(VMX_GUEST_DS_LIMIT_D,0xfffff,VMX_DEBUG);
+	vmwrite(VMX_GUEST_FS_LIMIT_D,0xfffff,VMX_DEBUG);
+	vmwrite(VMX_GUEST_GS_LIMIT_D,0xfffff,VMX_DEBUG);
 
 	{ // guest bases
 		vmwrite(VMX_GUEST_ES_BASE_N, 0, VMX_DEBUG); // flat
@@ -386,14 +403,14 @@ int virt_init()
 	vmwrite(VMX_GUEST_PENDING_DBG_EXCEPTIONS_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_ACTIVITY_STATE_D, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_INTERRUPTIBILITY_STATE, 0, VMX_DEBUG);
+
+	memcpy(0x7000lu, virt_loop, 0x100); // 'cause compatibility mode; btw, WHY?!
+
 	asm("xchg %bx, %bx");
 	uint16_t tmp = lar(es_get());
 	printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
 	//return 0;
-	if(!vmx_vmlaunch())
-		printf("vmlaunch successful");
-	else
-		printf("vmlaunch: VMFail\nReason: %s", virt_reason());
+	vmlaunch(1);
 }
 
 int vmx_vmwrite(uint64_t vmcs_id, uint64_t value)
@@ -411,13 +428,47 @@ int vmwrite(uint64_t vmcs_id, uint64_t value, char debug)
 	int vmwrite_res = vmx_vmwrite(vmcs_id, value);
 	if(!vmwrite_res)
 	{
-		printf("vmwrite (vmcs field encoding 0x%x) successful\n", vmcs_id);
+		printf("Y(%x) ", vmcs_id);
 		return 0;
 	}
 	else
 	{
-		printf("vmwrite: VMFail; reason: %s", virt_reason());
+		printf("N(%x) ", vmcs_id);
 		return vmwrite_res;
+	}
+}
+
+int vmlaunch(char debug)
+{
+	if(!debug) return vmx_vmlaunch();
+	int vmlaunch_res = vmx_vmlaunch();
+	if(!vmlaunch_res)
+	{
+		return 0;
+	}
+	else
+	{
+		//printf("vmlaunch failed: %s\n", virt_reason());
+		char* rsn = virt_reason();
+		printf("vmlaunch failed: %s\n", rsn);
+		return vmlaunch_res;
+	}
+}
+
+int vmresume(char debug)
+{
+	if(!debug) return vmx_vmresume();
+	int vmresume_res = vmx_vmresume();
+	if(!vmresume_res)
+	{
+		return 0;
+	}
+	else
+	{
+		//printf("vmlaunch failed: %s\n", virt_reason());
+		char* rsn = virt_reason();
+		printf("vmresume failed: %s\n", rsn);
+		return vmresume_res;
 	}
 }
 
@@ -426,6 +477,16 @@ int vmx_vmlaunch()
 	asm("xchg %bx, %bx");
 	char err;
 	asm("vmlaunch; setna %0"
+		: "=r"(err));
+	return err ? -1 : 0;
+}
+
+
+int vmx_vmresume()
+{
+	asm("xchg %bx, %bx");
+	char err;
+	asm("vmresume; setna %0"
 		: "=r"(err));
 	return err ? -1 : 0;
 }
@@ -440,8 +501,76 @@ uint64_t vmx_vmread(uint64_t vmcs_id)
 	return value;
 }
 
+
 void virt_exit()
 {
-	tty_puts("FUCK!\n");
+	static const char* vmexit_reasons[] = 
+	{	"Exception or non-maskable interrupt (NMI)",
+		"External interrupt",
+		"Triple fault",
+		"INIT signal",
+		"Start-up IPI (SIPI)",
+		"I/O system-management interrupt (SMI)",
+		"Other SMI",
+		"Interrupt window",
+		"NMI window",
+		"Task switch",
+		"CPUID",
+		"GETSEC",
+		"HLT",
+		"INVD",
+		"INVLPG",
+		"RDPMC",
+		"RDTSC",
+		"RSM",
+		"VMCALL",
+		"VMCLEAR",
+		"VMLAUNCH",
+		"VMPTRLD",
+		"VMPTRST",
+		"VMREAD",
+		"VMRESUME",
+		"VMWRITE",
+		"VMXOFF",
+		"VMXON",
+		"Control-register accesses",
+		"MOV DR",
+		"I/O instruction",
+		"RDMSR",
+		"WRMSR",
+		"VM-entry failure due to invalid guest state",
+		"VM-entry failure due to MSR loading",
+		"Reserved",
+		"MWAIT",
+		"Monitor trap flag",
+		"MONITOR",
+		"PAUSE",
+		"VM-entry failure due to machine-check event",
+		"Reserved",
+		"TPR below threshold",
+		"APIC access",
+		"Virtualized EOI",
+		"Access to GDTR or IDTR",
+		"Access to LDTR or TR",
+		"EPT violation",
+		"EPT misconfiguration",
+		"INVEPT",
+		"RDTSCP",
+		"VMX-preemption timer expired",
+		"INVVPID",
+		"WBINVD",
+		"XSETBV",
+		"APIC write",
+		"RDRAND",
+		"INVPCID",
+		"VMFUNC",
+		"ENCLS",
+		"RDSEED",
+		"XSAVES",
+		"XRSTORS"};
+	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
+	printf("VMexit (0x%x): ",res);
+	printf("%s\n", vmexit_reasons[res]);
+	vmresume(1);
 	for(;;);
 }
