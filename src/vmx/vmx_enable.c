@@ -276,6 +276,23 @@ int virt_init()
 		vmwrite(VMX_GUEST_CR0_N, vmcr0, VMX_DEBUG);
 	}
 
+	{
+		// host seg regs
+		vmwrite(VMX_HOST_CS_W, cs_get(), VMX_DEBUG);
+		vmwrite(VMX_HOST_DS_W, ds_get(), VMX_DEBUG);
+		vmwrite(VMX_HOST_ES_W, es_get(), VMX_DEBUG);
+		vmwrite(VMX_HOST_GS_W, gs_get(), VMX_DEBUG);
+		vmwrite(VMX_HOST_FS_W, fs_get(), VMX_DEBUG);
+		vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
+	}
+
+	vmwrite(VMX_GUEST_CS_AR_D, lar(cs_get()) | 1, VMX_DEBUG);
+	vmwrite(VMX_GUEST_DS_AR_D, lar(ds_get()) | 1, VMX_DEBUG);
+	vmwrite(VMX_GUEST_ES_AR_D, lar(es_get()) | 1, VMX_DEBUG);
+	vmwrite(VMX_GUEST_GS_AR_D, lar(gs_get()) | 1, VMX_DEBUG);
+	vmwrite(VMX_GUEST_FS_AR_D, lar(fs_get()) | 1, VMX_DEBUG);
+	vmwrite(VMX_GUEST_SS_AR_D, lar(ss_get()) | 1, VMX_DEBUG);
+
 	// host cr0
 	//vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
 	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
@@ -304,7 +321,7 @@ int virt_init()
 	{ // host bases
 		vmwrite(VMX_HOST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_HOST_GS_BASE_N, 0, VMX_DEBUG); // flat
-		vmwrite(VMX_HOST_TR_BASE_N, 0xffff800000000000, VMX_DEBUG);
+		vmwrite(VMX_HOST_TR_BASE_N, (uint64_t)0x3000, VMX_DEBUG);
 		vmwrite(VMX_HOST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
 		vmwrite(VMX_HOST_IDTR_BASE_N, idtr.base, VMX_DEBUG); // todo: this is what a better approach to desc. tables looks like
 	}
@@ -333,6 +350,13 @@ int virt_init()
 	
 	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
 
+	vmwrite(VMX_GUEST_ES_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_CS_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_SS_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_DS_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_FS_LIMIT_D,0,VMX_DEBUG);
+	vmwrite(VMX_GUEST_GS_LIMIT_D,0,VMX_DEBUG);
+
 	{ // guest bases
 		vmwrite(VMX_GUEST_ES_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_CS_BASE_N, 0, VMX_DEBUG); // flat
@@ -341,25 +365,22 @@ int virt_init()
 		vmwrite(VMX_GUEST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
-		vmwrite(VMX_GUEST_GDTR_BASE_N, idtr.base, VMX_DEBUG);
+		vmwrite(VMX_GUEST_IDTR_BASE_N, idtr.base, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0xffff, VMX_DEBUG);
+		vmwrite(VMX_GUEST_IDTR_LIMIT_D, 0xffff, VMX_DEBUG);
 	}
 
-	// host seg regs
-	vmwrite(VMX_HOST_CS_W, cs_get(), VMX_DEBUG);
-	vmwrite(VMX_HOST_DS_W, ds_get(), VMX_DEBUG);
-	vmwrite(VMX_HOST_ES_W, es_get(), VMX_DEBUG);
-	vmwrite(VMX_HOST_GS_W, gs_get(), VMX_DEBUG);
-	vmwrite(VMX_HOST_FS_W, fs_get(), VMX_DEBUG);
-	vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
+	// we are DOOMED - even LDTR is here
+	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // todo: why?! (just bochs?!!1) go to hell, intel sdm
 
-	vmwrite(VMX_HOST_CS_AR_D, lar(cs_get()), VMX_DEBUG);
-	vmwrite(VMX_HOST_DS_AR_D, lar(ds_get()), VMX_DEBUG);
-	vmwrite(VMX_HOST_ES_AR_D, lar(es_get()), VMX_DEBUG);
-	vmwrite(VMX_HOST_GS_AR_D, lar(gs_get()), VMX_DEBUG);
-	vmwrite(VMX_HOST_FS_AR_D, lar(fs_get()), VMX_DEBUG);
-	vmwrite(VMX_HOST_SS_AR_D, lar(ss_get()), VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_BASE_N, 0xffff800000000100, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_AR_D, lar(tr_get()), VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_LIMIT_D, 0x68, VMX_DEBUG);
 
-	printf("CS: %04x\n", cs_get());
+	asm("xchg %bx, %bx");
+	uint16_t tmp = lar(es_get());
+	printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
 	//return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");

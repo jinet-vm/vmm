@@ -39,6 +39,7 @@ void virt_exit();
 #define VMX_VMENTRY_CTLS_D 0x4012
 
 #define VMX_GUEST_GDTR_LIMIT_D 0x4810
+#define VMX_GUEST_IDTR_LIMIT_D 0x4812
 
 #define VMX_HOST_CR0_N 0x6C00
 #define VMX_HOST_CR3_N 0x6C02
@@ -87,6 +88,8 @@ void virt_exit();
 #define VMX_GUEST_IDTR_BASE_N 0x6818
 #define VMX_GUEST_RFLAGS_N 0x6820
 
+#define VMX_GUEST_LDTR_W 0x80C
+
 #define VMX_GUEST_ES_W 0x800
 #define VMX_GUEST_CS_W 0x802
 #define VMX_GUEST_SS_W 0x804
@@ -94,12 +97,22 @@ void virt_exit();
 #define VMX_GUEST_FS_W 0x808
 #define VMX_GUEST_GS_W 0x80A
 
-#define VMX_HOST_ES_AR_D 0x4814 // todo: WHY?! the ar is a _byte_
-#define VMX_HOST_CS_AR_D 0x4816
-#define VMX_HOST_SS_AR_D 0x4818
-#define VMX_HOST_DS_AR_D 0x481A
-#define VMX_HOST_FS_AR_D 0x481C
-#define VMX_HOST_GS_AR_D 0x481E
-#define VMX_HOST_TR_AR_D 0x4822
+#define VMX_GUEST_ES_AR_D 0x4814 // todo: WHY?! the ar is a _byte_
+#define VMX_GUEST_CS_AR_D 0x4816
+#define VMX_GUEST_SS_AR_D 0x4818
+#define VMX_GUEST_DS_AR_D 0x481A
+#define VMX_GUEST_FS_AR_D 0x481C
+#define VMX_GUEST_GS_AR_D 0x481E
+#define VMX_GUEST_TR_AR_D 0x4822
+
+#define VMX_GUEST_ES_LIMIT_D 0x00004800
+#define VMX_GUEST_CS_LIMIT_D 0x00004802
+#define VMX_GUEST_SS_LIMIT_D 0x00004804
+#define VMX_GUEST_DS_LIMIT_D 0x00004806
+#define VMX_GUEST_FS_LIMIT_D 0x00004808
+#define VMX_GUEST_GS_LIMIT_D 0x0000480A
+#define VMX_GUEST_TR_LIMIT_D 0x0000480E
+
+#define VMX_GUEST_LDTR_AR_D 0x4820
 
 #endif
