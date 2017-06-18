@@ -571,6 +571,7 @@ void virt_exit()
 	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
 	printf("VMexit (0x%x): ",res);
 	printf("%s\n", vmexit_reasons[res]);
+	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, VMX_DEBUG);
 	vmresume(1);
 	for(;;);
 }
