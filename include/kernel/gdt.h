@@ -6,7 +6,7 @@
 #define SEG(i) (i << 3)
 #define TSS_SEG 3
 
-#define GDT_SEGS 8
+#define GDT_SEGS 10
 
 struct GDTP
 {

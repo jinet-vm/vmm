@@ -122,9 +122,11 @@ void kernel_start()
 	//printf("hey!\n");
 	//volatile int a = 1/0;
 	initGDTR();
-	gdt_set_code(1);
-	gdt_set_data(2);
-	gdt_set_tss(3,104,0xffff800000000000);
+	gdt_set_code(1); // 0x8
+	gdt_set_data(2); // 0x10
+	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
+	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
+	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
 	//for(;;);
 	//asm("int $20");

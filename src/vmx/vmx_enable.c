@@ -372,12 +372,20 @@ int virt_init()
 
 	// we are DOOMED - even LDTR is here
 	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
-	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // todo: why?! (just bochs?!!1) go to hell, intel sdm
+	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // todo: why?! (just bochs?!!1) go to hell, intel sdm; says not usable
 
+	vmwrite(VMX_GUEST_TR_W, 0x20, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_BASE_N, 0xffff800000000100, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_AR_D, lar(tr_get()), VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_AR_D, 11 | (lar(0x28) & ~0xf), VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_LIMIT_D, 0x68, VMX_DEBUG);
 
+	vmwrite(VMX_GUEST_IA32_SYSENTER_ESP_MSR_N, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_IA32_SYSENTER_EIP_MSR_N, 0, VMX_DEBUG); // todo: don't use it now
+
+	vmwrite(VMX_GUEST_VMCS_LINK_PTR_Q, 0xFFFFFFFFFFFFFFFF, VMX_DEBUG); // why? f*ck you that's why
+	vmwrite(VMX_GUEST_PENDING_DBG_EXCEPTIONS_N, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_ACTIVITY_STATE_D, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_INTERRUPTIBILITY_STATE, 0, VMX_DEBUG);
 	asm("xchg %bx, %bx");
 	uint16_t tmp = lar(es_get());
 	printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
