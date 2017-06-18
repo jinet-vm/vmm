@@ -281,23 +281,7 @@ int virt_init()
 	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
 	// host cr4 - msr_get(IA32_VMX_CR4_FIXED1)
 	vmwrite(VMX_HOST_CR4_N, cr4_get(), VMX_DEBUG);
-
-	// host seg regs
-	{
-		vmwrite(VMX_HOST_CS_W, cs_get(), VMX_DEBUG);
-		vmwrite(VMX_HOST_DS_W, ds_get(), VMX_DEBUG);
-		vmwrite(VMX_HOST_ES_W, es_get(), VMX_DEBUG);
-		vmwrite(VMX_HOST_GS_W, gs_get(), VMX_DEBUG);
-		vmwrite(VMX_HOST_FS_W, fs_get(), VMX_DEBUG);
-		vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
-
-		vmwrite(VMX_HOST_CS_AR_D, lar(cs_get()), VMX_DEBUG);
-		vmwrite(VMX_HOST_DS_AR_D, lar(ds_get()), VMX_DEBUG);
-		vmwrite(VMX_HOST_ES_AR_D, lar(es_get()), VMX_DEBUG);
-		vmwrite(VMX_HOST_GS_AR_D, lar(gs_get()), VMX_DEBUG);
-		vmwrite(VMX_HOST_FS_AR_D, lar(fs_get()), VMX_DEBUG);
-		vmwrite(VMX_HOST_SS_AR_D, lar(ss_get()), VMX_DEBUG);
-	}
+	
 
 	// host tr
 	{
@@ -360,6 +344,22 @@ int virt_init()
 		vmwrite(VMX_GUEST_GDTR_BASE_N, idtr.base, VMX_DEBUG);
 	}
 
+	// host seg regs
+	vmwrite(VMX_HOST_CS_W, cs_get(), VMX_DEBUG);
+	vmwrite(VMX_HOST_DS_W, ds_get(), VMX_DEBUG);
+	vmwrite(VMX_HOST_ES_W, es_get(), VMX_DEBUG);
+	vmwrite(VMX_HOST_GS_W, gs_get(), VMX_DEBUG);
+	vmwrite(VMX_HOST_FS_W, fs_get(), VMX_DEBUG);
+	vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
+
+	vmwrite(VMX_HOST_CS_AR_D, lar(cs_get()), VMX_DEBUG);
+	vmwrite(VMX_HOST_DS_AR_D, lar(ds_get()), VMX_DEBUG);
+	vmwrite(VMX_HOST_ES_AR_D, lar(es_get()), VMX_DEBUG);
+	vmwrite(VMX_HOST_GS_AR_D, lar(gs_get()), VMX_DEBUG);
+	vmwrite(VMX_HOST_FS_AR_D, lar(fs_get()), VMX_DEBUG);
+	vmwrite(VMX_HOST_SS_AR_D, lar(ss_get()), VMX_DEBUG);
+
+	printf("CS: %04x\n", cs_get());
 	//return 0;
 	if(!vmx_vmlaunch())
 		printf("vmlaunch successful");

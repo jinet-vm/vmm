@@ -94,20 +94,12 @@ void virt_exit();
 #define VMX_GUEST_FS_W 0x808
 #define VMX_GUEST_GS_W 0x80A
 
-#define VMX_HOST_ES_W 0xC00
-#define VMX_HOST_CS_W 0xC02
-#define VMX_HOST_SS_W 0xC04
-#define VMX_HOST_DS_W 0xC06
-#define VMX_HOST_FS_W 0xC08
-#define VMX_HOST_GS_W 0xC0A
-#define VMX_HOST_TR_W 0xC0C
-
-#define VMX_HOST_ES_AR_D 0xC00
-#define VMX_HOST_CS_AR_D 0xC02
-#define VMX_HOST_SS_AR_D 0xC04
-#define VMX_HOST_DS_AR_D 0xC06
-#define VMX_HOST_FS_AR_D 0xC08
-#define VMX_HOST_GS_AR_D 0xC0A
-#define VMX_HOST_TR_AR_D 0xC0C
+#define VMX_HOST_ES_AR_D 0x4814 // todo: WHY?! the ar is a _byte_
+#define VMX_HOST_CS_AR_D 0x4816
+#define VMX_HOST_SS_AR_D 0x4818
+#define VMX_HOST_DS_AR_D 0x481A
+#define VMX_HOST_FS_AR_D 0x481C
+#define VMX_HOST_GS_AR_D 0x481E
+#define VMX_HOST_TR_AR_D 0x4822
 
 #endif
