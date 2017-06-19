@@ -3,11 +3,22 @@
 
 #include <kernel/vga.h>
 
-void tty_init();
-void tty_setcolor(char color); // vga colors
-void tty_puts(char* src);
-void tty_putc(char a);
 
-#define VC_DEFAULT vga_color(VC_LIGHT_GREY,VC_BLACK)
+typedef struct tty_char
+{
+	uint8_t symb;
+	vga_color color;
+} __attribute__((packed)) tty_char;
+
+void tty_init();
+void tty_setcolor(vga_color color); // vga colors
+void tty_reset_color();
+void tty_puts(char* src);
+void tty_putc(unsigned char a);
+
+#define TTY_WIDTH (VGA_WIDTH/8)
+#define TTY_HEIGHT (VGA_HEIGHT/16)
+
+//#define VC_DEFAULT vga_color(VC_LIGHT_GREY,VC_BLACK)
 
 #endif
