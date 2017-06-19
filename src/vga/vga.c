@@ -45,6 +45,7 @@ void vga_init()
 		vga_put_pixel = vga_put_pixel_24;
 	else // if(vga_bpp == 32)
 		vga_put_pixel = vga_put_pixel_32;
+	vga_put_pixel = vga_put_pixel_8;
 	//vga_put_pixel = vga_put_pixel_32;
 }
 /**

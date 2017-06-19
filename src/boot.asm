@@ -74,40 +74,41 @@ start:
 	mov ax, 0x4f00
 	int 10h ; getting info
 	cmp ax, 4fh
-	jne $
+; 	jne $
 
-lvbe_init:
-	mov si, 0x700E
-	lodsd
-	mov si, ax
-	shr eax, 16
-	mov ds, ax
-	push 0x100
-	;xchg bx, bx
-loop_vbe:
-	;xchg bx, bx
-	lodsw
-	cmp ax, 0xFFFF
-	jz lvbe_end
-	mov cx, ax
-	mov ax, 0x4F01
-	mov di, 0x6F00
-	int 10h
-	cmp ax, 4fh
-	jne loop_vbe
-	mov al, [0x6F00+25] ; bpp
-	; cmp al, 8
-	; jz lvbe_push
-	cmp al, 24
-	jz lvbe_push
-	cmp al, 32
-	jz lvbe_push
-	jmp loop_vbe
-lvbe_push:
-	mov [esp], cx
-	jmp loop_vbe
-lvbe_end:
-	;xchg bx, bx
+; lvbe_init:
+; 	mov si, 0x700E
+; 	lodsd
+; 	mov si, ax
+; 	shr eax, 16
+; 	mov ds, ax
+; 	push 0x100
+; 	;xchg bx, bx
+; loop_vbe:
+; 	;xchg bx, bx
+; 	lodsw
+; 	cmp ax, 0xFFFF
+; 	jz lvbe_end
+; 	mov cx, ax
+; 	mov ax, 0x4F01
+; 	mov di, 0x6F00
+; 	int 10h
+; 	cmp ax, 4fh
+; 	jne loop_vbe
+; 	mov al, [0x6F00+25] ; bpp
+; 	; cmp al, 8
+; 	; jz lvbe_push
+; 	cmp al, 24
+; 	jz lvbe_push
+; 	cmp al, 32
+; 	jz lvbe_push
+; 	jmp loop_vbe
+; lvbe_push:
+; 	mov [esp], cx
+; 	jmp loop_vbe
+; lvbe_end:
+; 	;xchg bx, bx
+	push 107h
 setup:
 	;mov cx, 417fh ; mode for lit comp
 	mov cx, [esp]

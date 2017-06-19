@@ -154,19 +154,18 @@ static uint8_t vm1_stack[1024];
 static uint8_t vm2_stack[1024];
 
 
-void virt_loop()
-{
-	for(;;)
-	{
-		asm("vmcall");
-	}
-}
-asm("virt_loop_end:");
+asm("vm1_inside: .incbin \"bin/vm1.bin\"");
+asm("vm2_inside: .incbin \"bin/vm2.bin\"");
 
-extern uint64_t virt_loop_end;
+extern void* vm1_inside;
+extern void* vm2_inside;
+
 int virt_init()
 {
 	uint32_t vmcs_size, revision;
+
+	memcpy(0x7000lu, &vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
+	memcpy(0x7100lu, &vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
 	// checking vmx
 	if(!vmx_check()) return -1;
@@ -362,7 +361,7 @@ int virt_init()
 	vmwrite(VMX_GUEST_FS_W, fs_get(), VMX_DEBUG);
 	vmwrite(VMX_GUEST_GS_W, gs_get(), VMX_DEBUG);
 
-	vmwrite(VMX_GUEST_RSP_N, 0x8000, VMX_DEBUG);
+	vmwrite(VMX_GUEST_RSP_N, 0x7200, VMX_DEBUG);
 	vmwrite(VMX_GUEST_RIP_N, 0x7000, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
@@ -404,11 +403,12 @@ int virt_init()
 	vmwrite(VMX_GUEST_ACTIVITY_STATE_D, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_INTERRUPTIBILITY_STATE, 0, VMX_DEBUG);
 
-	memcpy(0x7000lu, virt_loop, 0x100); // 'cause compatibility mode; btw, WHY?!
+	// memcpy(0x7000lu, vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
+	// memcpy(0x7100lu, vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
 	asm("xchg %bx, %bx");
 	uint16_t tmp = lar(es_get());
-	printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
+	//printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
 	//return 0;
 	vmlaunch(1);
 }

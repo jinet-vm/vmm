@@ -130,7 +130,7 @@ obj/pit.o: obj/io.o obj/irq.o obj/printf.o src/devices/pit.c
 obj/vmx_init.o: src/vmx/vmx_init.asm
 	$(AS) src/vmx/vmx_init.asm obj/vmx_init.o
 
-obj/vmx_enable.o: src/vmx/vmx_enable.c obj/regs.o
+obj/vmx_enable.o: src/vmx/vmx_enable.c obj/regs.o bin/vm1.bin bin/vm2.bin
 	$(CC) $(CFLAGS) -c src/vmx/vmx_enable.c -o obj/vmx_enable.o
 
 obj/regs.o: src/regs.c
@@ -138,6 +138,12 @@ obj/regs.o: src/regs.c
 
 obj/font.o: data/font.c
 	$(CC) $(CFLAGS) -c data/font.c -o obj/font.o
+
+bin/vm1.bin: src/vm1.asm
+	$(AS) src/vm1.asm bin/vm1.bin
+
+bin/vm2.bin: src/vm2.asm
+	$(AS) src/vm2.asm bin/vm2.bin
 
 enterlm.img: src/enterlm.asm kernel
 	mkdir -p obj/enterlm/
