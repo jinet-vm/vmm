@@ -165,10 +165,10 @@ extern void* vm2_inside;
 
 extern void (*vmx_return)();
 
+int virt_setup_vm();
+uint32_t vmcs_size, revision;
 int virt_init()
-{
-	uint32_t vmcs_size, revision;
-
+{	
 	memcpy(0x7000lu, &vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 	memcpy(0x7100lu, &vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
@@ -186,6 +186,11 @@ int virt_init()
 	printf("VMX revision: 0x%08x\n", revision);
 	printf("VMCS size: 0x%d\n",vmcs_size);
 
+	virt_setup_vm();
+}
+
+int virt_setup_vm()
+{
 	// vmxon region
 	uint32_t* rev= VMCS_L;
 	*rev = revision;
