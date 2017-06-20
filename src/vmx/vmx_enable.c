@@ -1,5 +1,6 @@
 #include <kernel/vmx.h>
 #include <kernel/msr.h>
+#include <kernel/tty.h>
 #include <kernel/printf.h>
 #include <kernel/debug.h>
 #include <kernel/regs.h>
@@ -236,7 +237,7 @@ int virt_init()
 		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		zero = pinb & 0xffffffff, one = pinb >> 32;
 		printf("0x%x & 0x%x\n", zero, one);
-		pinbvm = one;// | (1 << 6);
+		pinbvm = one | (1 << 0);
 
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
@@ -418,7 +419,8 @@ int virt_init()
 	uint16_t tmp = lar(es_get());
 	//printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
 	//return 0;
-	//asm("sti");
+	printf("\n");
+	asm("sti");
 	vmlaunch(1);
 }
 
@@ -583,8 +585,19 @@ void virt_exit()
 	if(res == 18) // vmcall
 	{
 		int ax = gr.rax & 0xffff;
-		if(ax == 42) printf("good");
-		else printf("bad");
+		int si = gr.rsi & 0xffff;
+		int cx = gr.rcx & 0xffff;
+		int bx = gr.rbx & 0xffff;
+		if(ax == 42)
+		{
+			tty_setcolor(bx);
+			char* s = si;
+			for(int i = 0; i<cx; i++)
+				tty_putc(*s++);
+			tty_putc('\n');
+			tty_reset_color();
+		}
+		else printf("bad request");
 	}
 	else
 	{
@@ -592,4 +605,5 @@ void virt_exit()
 		printf("%s\n", vmexit_reasons[res]);
 	}
 	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
+	return;
 }

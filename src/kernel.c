@@ -129,9 +129,9 @@ void kernel_start()
 	pit_init();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,34,0,0,0,0,0,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
-	// ints_sti(); - something wrong with eoi
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
+	//ints_sti(); //- something wrong with eoi
 	//for(;;)
 	//pit_init();
 	asm("xchg %bx, %bx");
