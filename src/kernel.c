@@ -94,6 +94,16 @@ void kernel_start()
 	printf("VGA terminal initialized.\n");
 	// for(;;);
 	// IDT
+	initGDTR();
+	gdt_set_code(1);
+	gdt_set_data(2);
+	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
+	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
+	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
+	asm("xchg %bx, %bx");
+	gdt_flush();
+	asm("xchg %bx, %bx");
+	tr_set(SEG(3));
 	idt_init();
 	isr_install();
 	irq_install();
@@ -103,34 +113,37 @@ void kernel_start()
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
-	// detect_rsdt();
-	// print_sdts();
-	// uint32_t madtb = detect_madt();
-	// lapic_setup(); // TODO: apic 32bit bochs error
+	detect_rsdt();
+	print_sdts();
+	uint32_t madtb = detect_madt();
+	lapic_setup(); // TODO: apic 32bit bochs error
 	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	// printf("MADT & LAPIC initialized.\n");
 	// tty_setcolor(VC_DEFAULT);
 	// asm("xchg %bx, %bx");
 	//printf("MADT & LAPIC initialized.\n");
-	//pic_disable();
-	//ioapic_setup();
-	//asm("sti");
+	pic_enable();
+	pic_disable();
+	ioapic_setup();
+	// initGDTR();
+	pit_init();
+	for(uint8_t i = 0; i<=23; i++)
+		ioapic_set_gate(i,34,0,0,0,0,0,0); // just to be on a safe side
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
+	//irq_install_handler(1, keyboard_handler);
+	// ints_sti(); - something wrong with eoi
+	//for(;;)
+	//pit_init();
+	asm("xchg %bx, %bx");
+	//ints_sti();
+	//for(;;);
 	//pit_init();
 	// todo: crazy stuff here!
 	// VMX
 	//printf("hey!\n");
 	//volatile int a = 1/0;
-	initGDTR();
-	gdt_set_code(1);
-	gdt_set_data(2);
-	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
-	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
-	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
-	gdt_flush();
-	//for(;;);
 	//asm("int $20");
 	asm("xchg %bx, %bx");
-	tr_set(SEG(3));
 	virt_init();
 	for(;;);
 }

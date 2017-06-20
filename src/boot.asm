@@ -470,7 +470,7 @@ cr0_bit = 0x80000000
 		mov cr0, ebx
 
 		;jmp $
-
+		xchg bx,bx
 		lgdt [GDT.Pointer]
 .exit:
 	jmp sel_code32:LongMode

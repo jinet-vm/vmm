@@ -107,6 +107,8 @@ void virt_crinit()
 		);
 }
 
+
+
 char* virt_reason()
 {
 
@@ -159,6 +161,8 @@ asm("vm2_inside: .incbin \"bin/vm2.bin\"");
 
 extern void* vm1_inside;
 extern void* vm2_inside;
+
+extern void (*vmx_return)();
 
 int virt_init()
 {
@@ -232,7 +236,7 @@ int virt_init()
 		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		zero = pinb & 0xffffffff, one = pinb >> 32;
 		printf("0x%x & 0x%x\n", zero, one);
-		pinbvm = one;
+		pinbvm = one;// | (1 << 6);
 
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
@@ -346,7 +350,7 @@ int virt_init()
 	}
 
 	{
-		vmwrite(VMX_HOST_RIP_N, virt_exit, VMX_DEBUG);
+		vmwrite(VMX_HOST_RIP_N, &vmx_return, VMX_DEBUG);
 		vmwrite(VMX_HOST_RSP_N, exit_stack+1023, VMX_DEBUG);
 	}
 
@@ -406,10 +410,15 @@ int virt_init()
 	// memcpy(0x7000lu, vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 	// memcpy(0x7100lu, vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
+	//vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 1, VMX_DEBUG);
+
+
+
 	asm("xchg %bx, %bx");
 	uint16_t tmp = lar(es_get());
 	//printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
 	//return 0;
+	//asm("sti");
 	vmlaunch(1);
 }
 
@@ -502,6 +511,8 @@ uint64_t vmx_vmread(uint64_t vmcs_id)
 }
 
 
+extern struct guest_regs gr;
+
 void virt_exit()
 {
 	static const char* vmexit_reasons[] = 
@@ -569,9 +580,16 @@ void virt_exit()
 		"XSAVES",
 		"XRSTORS"};
 	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
-	printf("VMexit (0x%x): ",res);
-	printf("%s\n", vmexit_reasons[res]);
-	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, VMX_DEBUG);
-	vmresume(1);
-	for(;;);
+	if(res == 18) // vmcall
+	{
+		int ax = gr.rax & 0xffff;
+		if(ax == 42) printf("good");
+		else printf("bad");
+	}
+	else
+	{
+		printf("VMexit (0x%x): ",res);
+		printf("%s\n", vmexit_reasons[res]);
+	}
+	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
 }

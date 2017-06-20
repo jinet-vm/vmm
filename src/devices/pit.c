@@ -65,6 +65,7 @@ static uint64_t count = 0;
 
 void pit_irq(struct regs *r)
 {
+	//if(count % 1000 == 0) printf("a");
 	count++;
 }
 

@@ -3,5 +3,5 @@ floppya: 1_44=final.img, status=inserted
 ata0-master: type=disk, mode=flat, path=final.img, cylinders=2, heads=1, spt=9
 boot: disk
 clock:           sync=realtime, time0=local
-cpu:             count=2, ips=1000000
+cpu:             count=1, ips=1000000
 display_library: sdl

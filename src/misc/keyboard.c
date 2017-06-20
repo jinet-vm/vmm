@@ -3,6 +3,7 @@
 #include <kernel/tty.h>
 #include <kernel/io.h>
 #include <kernel/irq.h>
+#include <kernel/printf.h>
 
 unsigned char kbdus[128] =
 {
@@ -119,6 +120,7 @@ unsigned char kbdus[128] =
 
 void keyboard_handler(struct regs *r)
 {
+	asm("xchg %bx, %bx");
 	const char shift = 0;
 	static char flags = 0;
 	unsigned char scancode = inb(0x60);
