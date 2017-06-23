@@ -2,7 +2,7 @@
 
 SHELL=bash
 CC=gcc
-CFLAGS = -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic
+CFLAGS = -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive
 KERNEL_START = 0x0
 AS=fasm
 

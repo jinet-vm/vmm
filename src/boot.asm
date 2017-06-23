@@ -108,7 +108,7 @@ start:
 ; 	jmp loop_vbe
 ; lvbe_end:
 ; 	;xchg bx, bx
-	push 107h
+	push 0x17F
 setup:
 	;mov cx, 417fh ; mode for lit comp
 	mov cx, [esp]
