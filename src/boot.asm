@@ -50,13 +50,7 @@ start:
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
 	;mbp
-	mov si, DAP
-	mov ah, 0x42
-	mov dl, [drive] ; Floppy
-	int 0x13
-	
-	;mbp
-	; memory map
+
 ; memory_map:
 ; 	xor ebx, ebx
 ; 	xor bp, bp
@@ -68,9 +62,20 @@ start:
 ; 		mov ecx, 20
 ; 		mov edx, 534D4150h
 ; 		mov eax, 0xe820
-; 		int 15h
+; 		;int 15h
+; 		nop
+; 		nop
 ; 		test ebx, ebx
 ; 	jnz .lp
+
+	mov si, DAP
+	mov ah, 0x42
+	mov dl, [drive] ; Floppy
+	int 0x13
+	
+	;mbp
+	; memory map
+
 
 	;mbp
 
@@ -92,6 +97,7 @@ start:
 	or  al,1     
 	mov cr0,eax
 	;mbp
+	nop ; die. me.
 	; O32 jmp far
 	db  66h ; O32
 	db  0eah ; JMP FAR
@@ -108,7 +114,9 @@ DAP:
 			dd 0
 
 ; the same is done in desc.asm - for better migration to >1MB memspace
-
+; todo: fix the alignment?
+align 4
+db 0
 GDTTable:   ;таблица GDT
 ; zero seg
 d_zero:		db  0,0,0,0,0,0,0,0     
@@ -119,6 +127,8 @@ d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
 GDTSize     =   $-GDTTable
 times 5 db 0,0,0,0,0,0,0,0
 
+align 4
+db 0
 GDTR:
 g_size:     dw  GDTSize-1
 g_base:     dd  GDTTable
