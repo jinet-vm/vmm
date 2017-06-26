@@ -10,9 +10,10 @@ Use16
 
 org 0x7c00 ; why?! loop problems
 
+; demos
 public start
 start:
-	;xchg bx, bx
+	;mbp
 	mov [drive], dl
 	cli		     ; disabling interrupts
 	mov     ax, cs	  ; segment registers' init
@@ -21,8 +22,8 @@ start:
 	mov     ss, ax
 	mov     sp, 0x7C00      ; stack backwards => ok
 
-	; shl eax,4       ;умножаем на 16
-	; mov ebx,eax     ;копируем в регистр EBX
+	shl eax,4       ;умножаем на 16
+	mov ebx,eax     ;копируем в регистр EBX
 	; why?!
 
 	; push dx, bx, ax, cx
@@ -49,77 +50,30 @@ start:
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
 	;mbp
-
-	; mov si, vesa_sig
-	; mov cx, 4
-	; call print_str
-	; jmp $
-
 	mov si, DAP
 	mov ah, 0x42
 	mov dl, [drive] ; Floppy
 	int 0x13
+	
+	;mbp
+	; memory map
+; memory_map:
+; 	xor ebx, ebx
+; 	xor bp, bp
+; 	mov edx, 534D4150h
+; 	mov eax, 0xe820
+; 	mov edi, 0xF000-20
+; 	.lp:
+; 		add edi, 20
+; 		mov ecx, 20
+; 		mov edx, 534D4150h
+; 		mov eax, 0xe820
+; 		int 15h
+; 		test ebx, ebx
+; 	jnz .lp
 
-	; TODO: proper check
-	; get vbe info -- mode
-	mov ax, 0
-	mov di, 0x7000
-	mov cx, 256
-	rep stosw ; zeroing
-	mov si, vesa_sig
-	mov cx, 4
-	mov di, 0x7000
-	rep movsb ; signature
-	mov di, 0x7000
-	mov ax, 0x4f00
-	int 10h ; getting info
-	cmp ax, 4fh
-; 	jne $
+	;mbp
 
-; lvbe_init:
-; 	mov si, 0x700E
-; 	lodsd
-; 	mov si, ax
-; 	shr eax, 16
-; 	mov ds, ax
-; 	push 0x100
-; 	;xchg bx, bx
-; loop_vbe:
-; 	;xchg bx, bx
-; 	lodsw
-; 	cmp ax, 0xFFFF
-; 	jz lvbe_end
-; 	mov cx, ax
-; 	mov ax, 0x4F01
-; 	mov di, 0x6F00
-; 	int 10h
-; 	cmp ax, 4fh
-; 	jne loop_vbe
-; 	mov al, [0x6F00+25] ; bpp
-; 	; cmp al, 8
-; 	; jz lvbe_push
-; 	cmp al, 24
-; 	jz lvbe_push
-; 	cmp al, 32
-; 	jz lvbe_push
-; 	jmp loop_vbe
-; lvbe_push:
-; 	mov [esp], cx
-; 	jmp loop_vbe
-; lvbe_end:
-; 	;xchg bx, bx
-	push 0x17F
-setup:
-	;mov cx, 417fh ; mode for lit comp
-	mov cx, [esp]
-	or cx, 4000h
-	call load_mode
-	;xchg bx, bx
-	mov ax, 4F02h
-	pop bx
-	or bx, 4000h
-	int 10h ; set it
-	;xchg bx, bx
 	; loading GDT
 	lgdt    fword   [GDTR]
 
@@ -128,10 +82,10 @@ setup:
 	or  al,80h
 	out 70h,al
 
-	; ; enable a20 no need for this
-	; in  al,92h
-	; or  al,2
-	; out 92h,al
+	; enable a20
+	in  al,92h
+	or  al,2
+	out 92h,al
 	
 	; get into PM
 	mov eax,cr0
@@ -145,7 +99,7 @@ setup:
 	dw  sel_code32 ; selector
 
 DAP:
-	.size:	db 0xff
+	.size:	db 10h
 	.zero:	db 0
 	.num:	dw 100
 	.addr:	dw 0x7e00
@@ -155,8 +109,6 @@ DAP:
 
 ; the same is done in desc.asm - for better migration to >1MB memspace
 
-modes_ptr: dd 0
-
 GDTTable:   ;таблица GDT
 ; zero seg
 d_zero:		db  0,0,0,0,0,0,0,0     
@@ -165,94 +117,11 @@ d_code32:	db  0ffh,0ffh,0,0,0,10011010b,11001111b,0
 ; data
 d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
 GDTSize     =   $-GDTTable
-times 2 db 0,0,0,0,0,0,0,0
+times 5 db 0,0,0,0,0,0,0,0
 
 GDTR:
 g_size:     dw  GDTSize-1
 g_base:     dd  GDTTable
-
-vesa_sig: db "vbe2"
-
-; itoa(eax : number, ecx : width, ebx :  radix, edi : dest) -- stack
-; Format number as string of width in radix. Returns pointer to string.
-itoa:
-	; mov eax, 420
-	; push cx
-	; push ax
-	; push di
-	; 	mov di, output
-	; 	mov cx, 31
-	; 	mov al, '0'
-	; 	rep stosb
-	; pop di
-	; pop ax
-	; pop cx
-	;ret
-	pushad
-	mov ebp, esp
-	; Start at end of output string and work backwards.
-	; lea edi, [output + 32]
-	add edi, ecx
-	dec edi
-	std
-	; Load number and radix for division and iteration.
-	; number eax
-	; width ebx
-	; radix ecx
-	.loop:
-		; Clear remainder / upper bits of dividend.
-		xor edx, edx
-		; Divide number by radix.
-		div ebx
-		; Use remainder to set digit in output string.
-		xor esi, esi
-		mov si, digits
-		add si, dx
-		push eax
-		lodsb
-		stosb
-		pop eax
-	loop .loop
-	; The last movsb brought us too far back.
-	lea eax, [edi + 1]
-	cld
-	mov esp, ebp
-	popad
-	ret
-	digits: db "0123456789ABCDEF"
-
-
-print_str: ; esi - ptr, ecx - count
-	; push es
-	; mov ax, 0xb800
-	; mov es, ax
-	; mov di, 0x3e8
-	; mov ah, 0x0A
-	; .lp:
-	; 	lodsb
-	; 	stosw
-	; loop .lp
-	; pop es
-	; ret
-	pushad
-	mov bp, si
-	mov dh, 10
-	mov dl, 10
-	mov bl, 0x0A
-	mov al, 1
-	mov ah, 13h
-	int 10h
-	popad
-	ret
-
-; load_mode(cx: mode)
-load_mode:
-	pushad
-	mov ax, 0x4F01
-	mov di, 0x6F00
-	int 10h
-	popad
-	ret
 
 ; >>>> 32bit code
 
@@ -274,40 +143,40 @@ align   10h         ;код должен выравниваться по гра�
 
 extrn LongMode
 
-; _write: esi -> src, eax -> x, ebx -> y, edx -> color
-_write:
-	; esi contains src of string
-	mov edi, ebx
-	imul edi, 160
-	add edi, 0xB8000
-	add edi, eax
-	add edi, eax
-	mov ah, dl
-	.loop:		     ;цикл вывода сообщения
-	lodsb			    ;считываем очередной символ строки
-	test al, al		    ;если встретили 0
-	jz   .exit		    ;прекращаем вывод
-	stosw
-	jmp  .loop
-	.exit:
-	ret
+; ; _write: esi -> src, eax -> x, ebx -> y, edx -> color
+; _write:
+; 	; esi contains src of string
+; 	mov edi, ebx
+; 	imul edi, 160
+; 	add edi, 0xB8000
+; 	add edi, eax
+; 	add edi, eax
+; 	mov ah, dl
+; 	.loop:		     ;цикл вывода сообщения
+; 	lodsb			    ;считываем очередной символ строки
+; 	test al, al		    ;если встретили 0
+; 	jz   .exit		    ;прекращаем вывод
+; 	stosw
+; 	jmp  .loop
+; 	.exit:
+; 	ret
 
-_hex_f:
-	add edi, 7
-	std
-	;mbp
-	mov ecx, 8
-	.lp:
-		mov edx, eax
-		and eax, 0xF
-		mov al, [.symbt+eax]
-		stosb
-		mov eax, edx
-		shr eax, 4
-	loop .lp
-	cld
-	ret
-	.symbt: db '0123456789ABCDEF'
+; _hex_f:
+; 	add edi, 7
+; 	std
+; 	;mbp
+; 	mov ecx, 8
+; 	.lp:
+; 		mov edx, eax
+; 		and eax, 0xF
+; 		mov al, [.symbt+eax]
+; 		stosb
+; 		mov eax, edx
+; 		shr eax, 4
+; 	loop .lp
+; 	cld
+; 	ret
+; 	.symbt: db '0123456789ABCDEF'
 
 VMX_ECX = 100000b
 PAGE_PRESENT = 01b
@@ -339,6 +208,7 @@ include 'inc/consts.inc'
 entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
+	jmp $
 	; cs already defined
 	;mbp
 	mov ax, sel_data
@@ -360,7 +230,6 @@ entry_pm:
 			mov eax, 0
 			mov ebx, 0
 			mov edx, red
-			call _write
 		.exit_cpuid_vmx:
 	; > lm support check
 	cpuid_lm:
@@ -377,8 +246,6 @@ entry_pm:
 			mov eax, 0
 			mov ebx, 1
 			mov edx, red
-			call _write
-			; that's essential
 			jmp $
 		.exit_cpuid_lm:
 
