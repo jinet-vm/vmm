@@ -83,7 +83,7 @@ start:
 	int 10h ; getting info
 	cmp ax, 4fh
 
-	times 51 nop
+	;times 51 nop
 
 	mov si, DAP
 	mov ah, 0x42
@@ -143,7 +143,8 @@ DAP:
 ; the same is done in desc.asm - for better migration to >1MB memspace
 ; todo: fix the alignment?
 ;align 32
-db 0xff
+align 4
+db 0,0
 GDTTable:   ;таблица GDT
 ; zero seg
 d_zero:		db  0,0,0,0,0,0,0,0     
