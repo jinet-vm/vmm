@@ -5,7 +5,7 @@ include 'inc/macro.inc'
 
 ; >>>> 16bit code
 
-section '.text16' executable
+section '.text16' executable align 100h
 Use16
 
 org 0x7c00 ; why?! loop problems
@@ -49,7 +49,7 @@ start:
 	; mov es, bx   ; Segment 0x2000
 	; mov bx, 0x7e00      ;  again remember segments but must be loaded from non immediate data
 	; int 13h
-	;mbp
+	; mbp
 
 ; memory_map:
 ; 	xor ebx, ebx
@@ -68,6 +68,23 @@ start:
 ; 		test ebx, ebx
 ; 	jnz .lp
 
+	; TODO: proper check
+	; get vbe info -- mode
+	mov ax, 0
+	mov di, 0x7000
+	mov cx, 256
+	rep stosw ; zeroing
+	mov si, vesa_sig
+	mov cx, 4
+	mov di, 0x7000
+	rep movsb ; signature
+	mov di, 0x7000
+	mov ax, 0x4f00
+	int 10h ; getting info
+	cmp ax, 4fh
+
+	times 51 nop
+
 	mov si, DAP
 	mov ah, 0x42
 	mov dl, [drive] ; Floppy
@@ -76,6 +93,16 @@ start:
 	;mbp
 	; memory map
 
+	setup:
+	;mov cx, 417fh ; mode for lit comp
+	mov cx, 0x17D
+	or cx, 4000h
+	call load_mode
+	;xchg bx, bx
+	mov ax, 4F02h
+	mov bx, 0x17D
+	or bx, 4000h
+	int 10h ; set it
 
 	;mbp
 
@@ -115,8 +142,8 @@ DAP:
 
 ; the same is done in desc.asm - for better migration to >1MB memspace
 ; todo: fix the alignment?
-align 4
-db 0
+;align 32
+db 0xff
 GDTTable:   ;таблица GDT
 ; zero seg
 d_zero:		db  0,0,0,0,0,0,0,0     
@@ -127,11 +154,20 @@ d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
 GDTSize     =   $-GDTTable
 times 5 db 0,0,0,0,0,0,0,0
 
-align 4
-db 0
 GDTR:
 g_size:     dw  GDTSize-1
 g_base:     dd  GDTTable
+
+vesa_sig: db "vbe2"
+
+; load_mode(cx: mode)
+load_mode:
+	pushad
+	mov ax, 0x4F01
+	mov di, 0x6F00
+	int 10h
+	popad
+	ret
 
 ; >>>> 32bit code
 
@@ -218,7 +254,6 @@ include 'inc/consts.inc'
 entry_pm:
 	; >>> setting up all the basic stuff
 	cli		     ; disabling interrupts
-	jmp $
 	; cs already defined
 	;mbp
 	mov ax, sel_data

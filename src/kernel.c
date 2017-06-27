@@ -143,6 +143,7 @@ void kernel_start()
 	//printf("hey!\n");
 	//volatile int a = 1/0;
 	//asm("int $20");
+	for(;;);
 	asm("xchg %bx, %bx");
 	virt_init();
 	for(;;);

@@ -29,7 +29,7 @@ void vga_init()
 	vga_pitch = vbm->pitch;
 	VGA_WIDTH = vbm->width;
 	VGA_HEIGHT = vbm->height;
-	//vga_bpp = vbm->bpp;
+	vga_bpp = vbm->bpp;
 	unsigned volatile int *s = (uint64_t)vga_buffer;
 	/* for(unsigned int i = 0; i<1920*1080*4; i++)
 	{
@@ -45,7 +45,7 @@ void vga_init()
 		vga_put_pixel = vga_put_pixel_24;
 	else // if(vga_bpp == 32)
 		vga_put_pixel = vga_put_pixel_32;
-	vga_put_pixel = vga_put_pixel_8;
+	//vga_put_pixel = vga_put_pixel_8;
 	//vga_put_pixel = vga_put_pixel_32;
 }
 /**
