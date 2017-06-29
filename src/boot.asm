@@ -92,15 +92,15 @@ start:
 	
 	;mbp
 	; memory map
-
+	push 17Fh
 	setup:
 	;mov cx, 417fh ; mode for lit comp
-	mov cx, 0x17D
+	mov cx, [esp]
 	or cx, 4000h
 	call load_mode
 	;xchg bx, bx
 	mov ax, 4F02h
-	mov bx, 0x17D
+	pop bx
 	or bx, 4000h
 	int 10h ; set it
 

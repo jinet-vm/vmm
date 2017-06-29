@@ -109,20 +109,20 @@ void tty_putc(uint8_t a)
 	{
 		tty_x = 0;
 		tty_y = VGA_HEIGHT - 1;
-		//tty_scroll_row();
+		tty_scroll_row();
 		tty_refresh_all();
 	}
 	//tty_refresh_all();
 }
 
-void tty_scroll_row()
+void tty_scroll_row() // todo
 {
 	for(int x = 0; x < TTY_WIDTH; x++)
 	{
-		for(int y = 1; y < TTY_HEIGHT; y++)
+		for(int y = 0; y < TTY_HEIGHT-1; y++)
 		{
 			tty_char *s = TTY_BUFFER;
-			s += (y-1)*TTY_WIDTH+x;
+			s += y*TTY_WIDTH+x;
 			tty_char *k = s;
 			s += TTY_WIDTH;
 			*s = *k;

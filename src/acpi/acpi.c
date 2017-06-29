@@ -52,7 +52,7 @@ void print_sdts() // living in RSDT 32-bit world. THIS SUCKS!
 	for(int i = 0; i<ent; i++)
 	{
 		struct sdt_header* sh = RSDT->sdt_p[i];
-		printf("Found %.4s\n", sh->sig);
+		printf("Found %c%c%c%c\n", sh->sig[0], sh->sig[1], sh->sig[2], sh->sig[3]);
 	}
 	return 0;
 }
