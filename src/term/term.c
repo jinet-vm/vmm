@@ -1,4 +1,6 @@
 #include <kernel/term.h>
+#include <stdarg.h>
+#include <kernel/printf.h>
 
 static struct term_dev terms[MAXTERMS];
 static unsigned char termsI = 0;
@@ -36,4 +38,16 @@ void term_print(char *s)
 	for(unsigned char ti = 0; ti < termsI; ti++)
 		while(*c != 0)
 			terms[ti].putc(&terms[ti], *c++);
+}
+
+int printk(char *fmt, ...)
+{
+	va_list va;
+	va_start(va, fmt);
+	for(unsigned char ti = 0; ti < termsI; ti++)
+	{
+		init_printf(&terms[ti], terms[ti].putc);
+		printf(fmt, va);
+	}
+	va_end(va);
 }

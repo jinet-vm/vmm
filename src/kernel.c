@@ -51,12 +51,20 @@ struct term_dev vga =
 	.putc = term_vga_putc
 };
 
+struct term_dev com_port =
+{
+	.name = "COM_PORT",
+	.type = TERM_SERIAL_IO,
+	.addr = 0x3F8,
+	.init = term_serial_io_init,
+	.putc = term_serial_io_putc
+};
+
 void kernel_start()
 {
 	// VGA
 	term_add(vga);
-	for(;;);
-	init_printf(NULL,putc);
+	term_add(com_port);
 	// tty_putc('\n');
 	// tty_putc('\n');
 	// struct vga_pixel white;
@@ -73,7 +81,7 @@ void kernel_start()
 	// 	s <<= 4;
 	// 	s += j;
 	// 	uint8_t line = the_font[s];
-	// 	printf("%x and\n",line);
+	// 	printk("%x and\n",line);
 	// 	for(int i = 0; i<8; i++)
 	// 		if((line >> (8-i)) & 1)
 	// 			vga_put_pixel(0*8+i,0*16+j,white);
@@ -90,18 +98,18 @@ void kernel_start()
 	// // }
 	
 	// for(int i = 0; i<16; i++)
-	// 	printf("%02x ", the_font[0xdb0+i]);
-	// printf("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
+	// 	printk("%02x ", the_font[0xdb0+i]);
+	// printk("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
 	// for(;;);
-	tty_setcolor(VC_LIGHT_BLUE);
-	for(int i = 0; i<title_lines; i++)
-		tty_puts(title[i]);
-	tty_reset_color();
+	// tty_setcolor(VC_LIGHT_BLUE);
+	// for(int i = 0; i<title_lines; i++)
+	// 	tty_puts(title[i]);
+	// tty_reset_color();
 	//for(;;);
 	//tty_setcolor(VC_DEFAULT);
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	init_printf(NULL,putc);
-	printf("VGA terminal initialized.\n");
+	//init_printf(NULL,putc);
+	printk("VGA terminal initialized.\n");
 	// for(;;);
 	// IDT
 	initGDTR();
@@ -119,7 +127,7 @@ void kernel_start()
 	irq_install();
 	idt_flush();
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	printf("IDT initialized.\n");
+	printk("IDT initialized.\n");
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
@@ -128,10 +136,10 @@ void kernel_start()
 	uint32_t madtb = detect_madt();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	// printf("MADT & LAPIC initialized.\n");
+	// printk("MADT & LAPIC initialized.\n");
 	// tty_setcolor(VC_DEFAULT);
 	// asm("xchg %bx, %bx");
-	//printf("MADT & LAPIC initialized.\n");
+	//printk("MADT & LAPIC initialized.\n");
 	pic_enable();
 	pic_disable();
 	ioapic_setup();
@@ -150,12 +158,12 @@ void kernel_start()
 	//pit_init();
 	// todo: crazy stuff here!
 	// VMX
-	//printf("hey!\n");
+	//printk("hey!\n");
 	//volatile int a = 1/0;
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
-	printf("VIRT INIT\n");
+	printk("VIRT INIT\n");
 	virt_init();
 	for(;;);
 }
