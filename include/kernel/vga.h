@@ -66,5 +66,6 @@ void vga_init();
 
 void (*vga_put_pixel)(int x, int y, vga_color color); // vga_init
 void vga_putc(unsigned char c, vga_color color, int x, int y);
+void vga_scroll_row(int shift);
 
 #endif

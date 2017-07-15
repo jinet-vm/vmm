@@ -5,7 +5,7 @@
 void _mprint(char* m, char* fmt, ...)
 {
 	va_list va;
-	term_printk("[%6s] ", m);
+	term_printk("[%8s] ", m);
 	va_start(va, fmt);
 	term_vprintk(fmt, va);
 	va_end(va);

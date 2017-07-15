@@ -3,6 +3,7 @@
 
 #include <kernel/vga.h>
 
+#define TTY_MAX_LINES 256
 
 typedef struct tty_char
 {

@@ -8,11 +8,10 @@ static unsigned char termsI = 0;
 
 MODULE("TERM");
 
-static void term_putc(void* s, char c);
-
 int term_init()
 {
 	init_printf(NULL, term_putc);
+	return 0;
 }
 
 int term_add(struct term_dev t)
@@ -44,7 +43,7 @@ void term_print(char *s)
 		term_putc(NULL, *c++);
 }
 
-static void term_putc(void* s, char c)
+void term_putc(void* s, char c)
 {
 	for(unsigned char ti = 0; ti < termsI; ti++)
 		terms[ti].putc(&terms[ti], c);

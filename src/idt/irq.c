@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <kernel/debug.h>
 #include <kernel/apic.h>
+#include <kernel/term.h>
 
 extern void irq0();
 extern void irq1();
@@ -119,7 +120,7 @@ void irq_handler(struct regs *r)
 {
 	//printf("irq %d", r->int_no);
 	void (*handler)(struct regs*);
-
+	//term_printk("%d ", r->int_no);
 	if (r->int_no >= INTS_MAX_IRQ)
 	{
 		lapic_eoi_send();

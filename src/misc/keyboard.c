@@ -141,6 +141,6 @@ void keyboard_handler(struct regs *r)
 		if(('a' <= inp && inp <= 'z') ||
 			('0' <= inp && inp <= '9') ||
 			inp == '\n' || inp == ' ')
-			tty_putc(inp+(flags & (1 << shift) ? 'A'-'a' : 0));
+			term_putc(inp+(flags & (1 << shift) ? 'A'-'a' : 0));
 	}
 }

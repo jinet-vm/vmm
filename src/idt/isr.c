@@ -1,8 +1,10 @@
 #include <kernel/isr.h>
 #include <kernel/ints.h>
 #include <kernel/tty.h>
-#include <kernel/printf.h>
+#include <kernel/module.h>
 #include <stdint.h>
+
+MODULE("IDT");
 
 extern void isr0();
 extern void isr1();
@@ -114,15 +116,11 @@ void fault_handler(struct regs *r)
 	if(r->int_no < INTS_MAX_ISR)
 	{
 		//tty_setcolor(vga_color(VC_RED, VC_BLACK));
-		printf("\n%s Exception. System Halted!\n", exception_messages[r->int_no]);
-		printf("RIP=%08x%08x\n", r->rip >> 32, r->rip);
-		printf("CS=%08x%08x\n", r->cs >> 32, r->cs);
-		printf("USERRSP = %08x%08x\n", r->userrsp >> 32, r->userrsp);
-		printf("Error code: 0x%x", r-> err_code);
-		//printf("RAX=%08x%08x RBX=%08x%08x\nRCX=%08x%08x RDX=%08x%08x\n",r->rax >> 32, r->rax, r->rbx >> 32, r->rbx, r->rcx >> 32, r->rcx, r->rdx >> 32, r->rdx);
-		//printf("RSP=%08x%08x RBP=%08x%08x RSI=%08x%08x RDI=%08x%08x\n",r->rsp, r->rsp >> 32, r->rbp, r->rsi, r->rdi);
-		
-		
-		for (;;);
+		mprint("%s Exception. System Halted!", exception_messages[r->int_no]);
+		mprint("RIP=%08x%08x", r->rip >> 32, r->rip);
+		mprint("CS=%08x%08x", r->cs >> 32, r->cs);
+		mprint("USERRSP = %08x%08x", r->userrsp >> 32, r->userrsp);
+		mprint("Error code: 0x%x", r-> err_code);
+		for(;;);
 	}
 }

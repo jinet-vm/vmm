@@ -29,14 +29,9 @@ void vga_init()
 	vga_pitch = vbm->pitch;
 	VGA_WIDTH = vbm->width;
 	VGA_HEIGHT = vbm->height;
+	//VGA_HEIGHT -= VGA_HEIGHT % 16;
 	vga_bpp = vbm->bpp;
 	unsigned volatile int *s = (uint64_t)vga_buffer;
-	/* for(unsigned int i = 0; i<1920*1080*4; i++)
-	{
-		*s = i;
-		s++;
-	}
-	for(;;);*/
 	//vga_clear();
 	//vga_set_cursor(0,0);
 	if(vga_bpp == 8)
@@ -48,17 +43,22 @@ void vga_init()
 	//vga_put_pixel = vga_put_pixel_8;
 	//vga_put_pixel = vga_put_pixel_32;
 }
-/**
- * @brief      Scroll one row in VGA buffer.
- */
-void vga_scroll_row()
+
+void vga_scroll_row(int shift)
 {
-	for(int x = 0; x < VGA_WIDTH; x++)
-	{
-		for(int y = 1; y < VGA_HEIGHT; y++)
-			vga_buffer[(y-1)*VGA_WIDTH+x]=vga_buffer[y*VGA_WIDTH+x];
-	}
-	memset(vga_buffer+(VGA_HEIGHT-1)*VGA_WIDTH,0,4*VGA_WIDTH);
+	uint8_t* vb = vga_buffer;
+	uint16_t gone = VGA_HEIGHT % 16 + shift*16;
+	char k = vga_bpp/8;
+	for(int x = 0; x<VGA_WIDTH; x++)
+		for(int y = 16*shift-16; y < VGA_HEIGHT - gone; y++)
+			for(int b = 0; b < k; b++)
+				vb[k*((y-16*shift)*VGA_WIDTH+x)+b] = vb[k*(y*VGA_WIDTH+x)+b];
+	// for(int x = 0; x < VGA_WIDTH; x++)
+	// {
+	// 	for(int y = 1; y < VGA_HEIGHT; y++)
+	// 		vga_buffer[(y-1)*VGA_WIDTH+x]=vga_buffer[y*VGA_WIDTH+x];
+	// }
+	//memset(vb+k*(VGA_HEIGHT-gone)*VGA_WIDTH,0,k*gone*VGA_WIDTH);
 	//vga_set_cursor(0,VGA_HEIGHT-2);
 }
 
@@ -95,8 +95,8 @@ void vga_putc(unsigned char c, vga_color color, int tty_x, int tty_y)
 	{
 		uint8_t line = *(the_font+(c<<4)+j);
 		for(int i = 0; i<8; i++)
-			if((line >> (8-i)) & 1)
-				vga_put_pixel(tty_x*8+i,tty_y*16+j,color);
+			if((line >> (7-i)) & 1)
+				vga_put_pixel(tty_x*8+i,tty_y*16+j,VC_WHITE);
 			else
 				vga_put_pixel(tty_x*8+i,tty_y*16+j,VC_BLACK); // todo: bg/fg
 	}
@@ -106,7 +106,7 @@ static void vga_put_pixel_4(int x, int y, vga_color color)
 {
 	uint64_t t = vga_buffer+(VGA_WIDTH*y+x)/2;
 	volatile unsigned char* s = t;
-	*s |= 0xff;
+	*s = 0xff;
 }
 
 static void vga_put_pixel_8(int x, int y, vga_color color)
@@ -135,9 +135,10 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 		0xff55ff,
 		0xffff55,
 		0xffffff};
-	uint64_t t = (uint64_t)vga_buffer+3*VGA_WIDTH*y+3*x;
+	uint64_t t = (uint64_t)vga_buffer;
+	t += 3*(VGA_WIDTH*y+x);
 	volatile uint32_t* s = t;
-	*s |= colors[color];
+	*s = colors[color];
 }
 
 static void vga_put_pixel_32(int x, int y, vga_color color)
@@ -164,11 +165,18 @@ static void vga_put_pixel_32(int x, int y, vga_color color)
 	*s = colors[color];
 }
 
-
 /**
  * @brief      Clears everything in VGA buffer.
  */
+
+void vga_fill(vga_color color)
+{
+	for(int x = 0; x < VGA_WIDTH; x++)
+		for(int y = 0; y<VGA_HEIGHT; y++)
+			vga_put_pixel(x,y,color);
+}
 void vga_clear()
 {
-	memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*vga_bpp);
+	vga_fill(VC_BLUE);
+	//memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*vga_bpp);
 }

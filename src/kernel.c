@@ -69,9 +69,9 @@ void kernel_start()
 	term_init();
 	term_add(vga);
 	term_add(com_port);
-	mprint("VGA terminal initialized.");
-	panic("FUCK!");
-	// for(;;);
+	for(int i = 1; i<=90; i++)
+	 	mprint("%d",i);
+	for(;;);
 	// IDT
 	initGDTR();
 	gdt_set_code(1);
@@ -79,14 +79,16 @@ void kernel_start()
 	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
 	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
-	asm("xchg %bx, %bx");
 	gdt_flush();
-	asm("xchg %bx, %bx");
+	mprint("GDT flushed");
 	tr_set(SEG(3));
+	mprint("TSS set");
 	idt_init();
 	isr_install();
 	irq_install();
 	idt_flush();
+	mprint("IDT flushed");
+	//volatile int s = 1/0;
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	mprint("IDT initialized.\n");
 	//tty_setcolor(VC_DEFAULT);
@@ -111,9 +113,10 @@ void kernel_start()
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
 	//ints_sti(); //- something wrong with eoi
+	//for(;;);
 	//for(;;)
 	//pit_init();
-	asm("xchg %bx, %bx");
+	//asm("xchg %bx, %bx");
 	//ints_sti();
 	//for(;;);
 	//pit_init();

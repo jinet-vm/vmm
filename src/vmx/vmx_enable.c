@@ -1,15 +1,17 @@
 #include <kernel/vmx.h>
 #include <kernel/msr.h>
 #include <kernel/tty.h>
-#include <kernel/printf.h>
 #include <kernel/debug.h>
 #include <kernel/regs.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/memory.h>
+#include <kernel/module.h>
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
 #define VMCS_P 0x410000
+
+MODULE("VMX_ENABLE");
 
 int vmx_vmxon(uint64_t paddr)
 {
@@ -27,12 +29,12 @@ int vmxon(uint64_t paddr, char debug)
 	int vmxon_res = vmx_vmxon(VMCS_P);
 	if(!vmxon_res)
 	{
-		printf("vmxon successful\n");
+		mprint("vmxon successful");
 		return 0;
 	}
 	else
 	{
-		printf("vmxon: VMFailInvalid\n");
+		mprint("vmxon: VMFailInvalid");
 		return vmxon_res;
 	}
 }
@@ -63,12 +65,12 @@ int vmptrld(uint64_t vmcs, char debug)
 	int vmxon_res = vmx_vmptrld(vmcs);
 	if(!vmxon_res)
 	{
-		printf("vmptrld successful\n");
+		mprint("vmptrld successful");
 		return 0;
 	}
 	else
 	{
-		printf("vmptrld: VMFailInvalid\n");
+		mprint("vmptrld: VMFailInvalid");
 		return vmxon_res;
 	}
 }
@@ -79,12 +81,12 @@ int vmclear(uint64_t vmcs, char debug)
 	int vmxon_res = vmx_vmclear(vmcs);
 	if(!vmxon_res)
 	{
-		printf("vmclear successful\n");
+		mprint("vmclear successful");
 		return 0;
 	}
 	else
 	{
-		printf("vmclear: VMFailInvalid\n");
+		mprint("vmclear: VMFailInvalid");
 		return vmxon_res;
 	}
 }
@@ -93,17 +95,17 @@ void virt_crinit()
 {
 	// I HATE INLINE AT&T ASM!
 	// I need it though.
-	// todo: why does multiline-inline-assembly need '\n' ?
+	// todo: why does multiline-inline-assembly need '' ?
 	asm("movq %%cr4, %%rax\n"
 		"bts $13, %%rax\n"
-		"movq %%rax, %%cr4\n"
+		"movq %%rax, %%cr4"
 		: :	:"%rax"
 		);
 	//cr0_set(cr0_get() | (1 << 5));
 	//cr0_get();
 	asm("movq %%cr0, %%rax\n"
 		"bts $5, %%rax\n"
-		"movq %%rax, %%cr0\n"
+		"movq %%rax, %%cr0"
 		: :	:"%rax"
 		);
 }
@@ -174,7 +176,7 @@ int virt_init()
 
 	// checking vmx
 	if(!vmx_check()) return -1;
-	printf("VMX supported!\n");
+	mprint("VMX supported!");
 
 	// cr0 & cr4 init
 	virt_crinit();
@@ -183,8 +185,8 @@ int virt_init()
 	uint64_t vmxBasic =msr_get(IA32_VMX_BASIC);
 	vmcs_size = (vmxBasic >> 32) & 0x1fff;
 	revision = vmxBasic & 0x7fffffff;
-	printf("VMX revision: 0x%08x\n", revision);
-	printf("VMCS size: 0x%d\n",vmcs_size);
+	mprint("VMX revision: 0x%08x", revision);
+	mprint("VMCS size: 0x%d",vmcs_size);
 
 	virt_setup_vm();
 }
@@ -197,7 +199,7 @@ int virt_setup_vm()
 
 	// setting IA32_FEATURE_CONTROL
 	uint64_t ifc = msr_get(IA32_FEATURE_CONTROL);
-	printf("IA32_FEATURE_CONTROL: 0x%x%x\n", ifc >> 32, ifc);
+	mprint("IA32_FEATURE_CONTROL: 0x%x%x", ifc >> 32, ifc);
 	if(ifc % 2 == 0)
 	{
 		ifc |= (1 << 0) | (1 << 1) | (1 << 2); // locked!
@@ -227,21 +229,21 @@ int virt_setup_vm()
 		// if(Truth)
 		// {
 		// 	// todo:
-		// 	//printf("forming vmx pin-based controls from IA32_VMX_TRUE_PINBASED_CTLS\n");
+		// 	//mprint("forming vmx pin-based controls from IA32_VMX_TRUE_PINBASED_CTLS");
 		// 	pinb = msr_get(IA32_VMX_TRUE_PINBASED_CTLS);
 		// }
 		// else
 		// {
 		// 	// todo: understand it? see 3D, page 183
-		// 	//printf("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS\n");
+		// 	//mprint("forming vmx pin-based controls from IA32_VMX_PINBASED_CTLS");
 		// 	pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		// 	zero = pinb & 0xffffffff, one = pinb >> 32;
-		// 	printf("0x%x & 0x%x\n", zero, one);
+		// 	mprint("0x%x & 0x%x", zero, one);
 		// 	pinbvm |= zero;
 		// }
 		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		zero = pinb & 0xffffffff, one = pinb >> 32;
-		printf("0x%x & 0x%x\n", zero, one);
+		mprint("0x%x & 0x%x", zero, one);
 		pinbvm = one | (1 << 0);
 
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
@@ -253,7 +255,7 @@ int virt_setup_vm()
 		uint32_t zero, one, procbvm;
 		procb = msr_get(IA32_VMX_PROCBASED_CTLS);
 		zero = procb & 0xffffffff, one = procb >> 32;
-		printf("0x%x & 0x%x\n", zero, one);
+		mprint("0x%x & 0x%x", zero, one);
 		procbvm |= ~zero;
 		procbvm |= one;
 		vmwrite(VMX_PROCBASED_CTLS_D, procb, VMX_DEBUG);
@@ -265,13 +267,13 @@ int virt_setup_vm()
 		uint32_t zero, one, vmexvm;
 		vmex = msr_get(IA32_VMX_EXIT_CTLS);
 		zero = vmex & 0xffffffff, one = vmex >> 32;
-		printf("0x%x & 0x%x\n", zero, one);
+		mprint("0x%x & 0x%x", zero, one);
 
 		vmexvm = 0;
 		vmexvm |= zero;
 		vmexvm |= (1 << 9); // Host address-space size
 
-		//printf("vmexit_ctrls: %08x\n", pinbvm);
+		//mprint("vmexit_ctrls: %08x", pinbvm);
 		vmwrite(VMX_VMEXIT_CTLS_D, vmexvm, VMX_DEBUG);
 	}
 
@@ -281,7 +283,7 @@ int virt_setup_vm()
 		uint32_t zero, one, vmenvm;
 		vmen = msr_get(IA32_VMX_ENTRY_CTLS);
 		zero = vmen & 0xffffffff, one = vmen >> 32;
-		printf("0x%x & 0x%x\n", zero, one);
+		mprint("0x%x & 0x%x", zero, one);
 		vmenvm = 0;
 		vmenvm |= zero;
 		vmenvm |= (1 << 9); // IA-32e mode guest
@@ -308,7 +310,7 @@ int virt_setup_vm()
 		vmwrite(VMX_HOST_SS_W, ss_get(), VMX_DEBUG);
 	}
 
-	//printf("0x%x",lar(cs_get));
+	//mprint("0x%x",lar(cs_get));
 
 	vmwrite(VMX_GUEST_CS_AR_D, lar(cs_get()) | 1, VMX_DEBUG);
 	vmwrite(VMX_GUEST_DS_AR_D, lar(ds_get()) | 1, VMX_DEBUG);
@@ -326,7 +328,7 @@ int virt_setup_vm()
 
 	// host tr
 	{
-		printf("tr selector: %x\n", tr_get());
+		mprint("tr selector: %x", tr_get());
 		vmwrite(VMX_HOST_TR_W, tr_get(), VMX_DEBUG);
 	}
 
@@ -422,9 +424,9 @@ int virt_setup_vm()
 
 	asm("xchg %bx, %bx");
 	uint16_t tmp = lar(es_get());
-	//printf("CS: %04x; es ar: %x\n", cs_get(), lar(es_get()));
+	//mprint("CS: %04x; es ar: %x", cs_get(), lar(es_get()));
 	//return 0;
-	printf("\n");
+	mprint("");
 	asm("sti");
 	vmlaunch(1);
 }
@@ -444,12 +446,12 @@ int vmwrite(uint64_t vmcs_id, uint64_t value, char debug)
 	int vmwrite_res = vmx_vmwrite(vmcs_id, value);
 	if(!vmwrite_res)
 	{
-		printf("Y(%x) ", vmcs_id);
+		mprint("Y(%x) ", vmcs_id);
 		return 0;
 	}
 	else
 	{
-		printf("N(%x) ", vmcs_id);
+		mprint("N(%x) ", vmcs_id);
 		return vmwrite_res;
 	}
 }
@@ -464,9 +466,9 @@ int vmlaunch(char debug)
 	}
 	else
 	{
-		//printf("vmlaunch failed: %s\n", virt_reason());
+		//mprint("vmlaunch failed: %s", virt_reason());
 		char* rsn = virt_reason();
-		printf("vmlaunch failed: %s\n", rsn);
+		mprint("vmlaunch failed: %s", rsn);
 		return vmlaunch_res;
 	}
 }
@@ -481,9 +483,9 @@ int vmresume(char debug)
 	}
 	else
 	{
-		//printf("vmlaunch failed: %s\n", virt_reason());
+		//mprint("vmlaunch failed: %s", virt_reason());
 		char* rsn = virt_reason();
-		printf("vmresume failed: %s\n", rsn);
+		mprint("vmresume failed: %s", rsn);
 		return vmresume_res;
 	}
 }
@@ -599,15 +601,14 @@ void virt_exit()
 			char* s = si;
 			for(int i = 0; i<cx; i++)
 				tty_putc(*s++);
-			tty_putc('\n');
 			tty_reset_color();
 		}
-		else printf("bad request");
+		else mprint("bad request");
 	}
 	else
 	{
-		printf("VMexit (0x%x): ",res);
-		printf("%s\n", vmexit_reasons[res]);
+		mprint("VMexit (0x%x): ",res);
+		mprint("%s", vmexit_reasons[res]);
 		for(;;);
 	}
 	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
