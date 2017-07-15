@@ -69,9 +69,6 @@ void kernel_start()
 	term_init();
 	term_add(vga);
 	term_add(com_port);
-	for(int i = 1; i<=90; i++)
-	 	mprint("%d",i);
-	for(;;);
 	// IDT
 	initGDTR();
 	gdt_set_code(1);
@@ -90,7 +87,7 @@ void kernel_start()
 	mprint("IDT flushed");
 	//volatile int s = 1/0;
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	mprint("IDT initialized.\n");
+	mprint("IDT initialized.");
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
@@ -127,7 +124,7 @@ void kernel_start()
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
-	mprint("VIRT INIT\n");
+	mprint("VIRT INIT");
 	virt_init();
 	for(;;);
 }

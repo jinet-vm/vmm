@@ -597,11 +597,11 @@ void virt_exit()
 		int bx = gr.rbx & 0xffff;
 		if(ax == 42)
 		{
-			tty_setcolor(bx);
+			//tty_setcolor(bx);
 			char* s = si;
 			for(int i = 0; i<cx; i++)
 				tty_putc(*s++);
-			tty_reset_color();
+			//tty_reset_color();
 		}
 		else mprint("bad request");
 	}

@@ -1,9 +1,11 @@
 #include <kernel/madt.h>
 #include <kernel/acpi.h>
-#include <kernel/printf.h>
+#include <kernel/module.h>
 #include <stdint.h>
 
 // http://www.acpi.info/DOWNLOADS/ACPI_5_Errata A.pdf - 5.2.12.2 and upper
+
+MODULE("ACPIMADT");
 
 #define TYPE_LAPIC 0
 #define TYPE_IOAPIC 1
@@ -63,11 +65,11 @@ uint32_t madt_ioapic_base()
 void detect_cpu_topology()
 {
 	detect_madt();
-	printf("MADT sig: %.4s; len: %d bytes\n", MADT->h.sig, MADT->h.length);
+	mprint("MADT sig: %.4s; len: %d bytes", MADT->h.sig, MADT->h.length);
 	uint32_t madt_beg = MADT;
 	uint32_t madt_end = madt_beg+MADT->h.length;
-	printf("MADT at [0x%08x; 0x%08x]\n",madt_beg,madt_end);
-	printf("LAPIC base: 0x%08x\n",MADT->lapic_off);
+	mprint("MADT at [0x%08x; 0x%08x]",madt_beg,madt_end);
+	mprint("LAPIC base: 0x%08x",MADT->lapic_off);
 	char* p = MADT->data;
 	struct lapic* cl;
 	struct ioapic* ioa;
@@ -77,18 +79,18 @@ void detect_cpu_topology()
 		{
 			case TYPE_LAPIC:
 				cl = p;
-				printf("LAPIC detected; APIC ID: %xh\n", cl->apic_id);
+				mprint("LAPIC detected; APIC ID: %xh", cl->apic_id);
 			break;
 			
 			case TYPE_IOAPIC:
 				ioa = p;
-				printf("IOAPIC detected; IOAPIC ID: 0x%x\noffset: 0x%x\n", ioa->ioapic_id, ioa->ioapic_off);
+				mprint("IOAPIC detected; IOAPIC ID: 0x%xoffset: 0x%x", ioa->ioapic_id, ioa->ioapic_off);
 				IOAPIC_ADDR = ioa->ioapic_off;
 			break;
 
 			default:
 				ioa = p;
-				printf("Unknown entry; type: %d, length: %d bytes\n", ioa->type, ioa->length);
+				mprint("Unknown entry; type: %d, length: %d bytes", ioa->type, ioa->length);
 			break;
 		}
 		ioa = p; // a hacker solution
