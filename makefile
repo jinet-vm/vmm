@@ -52,7 +52,7 @@ obj/sys_enter.o: src/usermode/sys_enter.asm
 
 # obj/main.o: src/kernel.c obj/boot.o obj/tty.o obj/stack.o obj/enable_paging.o obj/gdt.o obj/tss.o obj/vga.o obj/memtab.o obj/paging.o obj/msr.o obj/ints.o obj/keyboard.o obj/printf.o
 #	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
-obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o obj/ioapic.o obj/pit.o obj/vmx_init.o obj/vmx_enable.o obj/msr.o obj/gdt.o
+obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o obj/ioapic.o obj/pit.o obj/vmx_init.o obj/vmx_enable.o obj/msr.o obj/gdt.o obj/term.o obj/term_vga.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
 obj/memory.o: src/memory/memory.c include/kernel/memory.h
@@ -138,6 +138,12 @@ obj/regs.o: src/regs.c
 
 obj/font.o: data/font.c
 	$(CC) $(CFLAGS) -c data/font.c -o obj/font.o
+
+obj/term.o: src/term/term.c
+	$(CC) $(CFLAGS) -c src/term/term.c -o obj/term.o
+
+obj/term_vga.o: src/term/term_vga.c
+	$(CC) $(CFLAGS) -c src/term/term_vga.c -o obj/term_vga.o
 
 bin/vm1.bin: src/vm1.asm
 	$(AS) src/vm1.asm bin/vm1.bin

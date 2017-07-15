@@ -20,6 +20,7 @@
 #include <kernel/vmx.h>
 #include <kernel/gdt.h>
 #include <kernel/font.h>
+#include <kernel/term.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -41,11 +42,20 @@ void putc(void* none, char c)
 	tty_putc(c);
 }
 
+struct term_dev vga =
+{
+	.name = "VBE_TERM",
+	.type = TERM_VGA,
+	.addr = 0x7c00,
+	.init = term_vga_init,
+	.putc = term_vga_putc
+};
+
 void kernel_start()
 {
 	// VGA
-	vga_init();
-	tty_init();
+	term_add(vga);
+	for(;;);
 	init_printf(NULL,putc);
 	// tty_putc('\n');
 	// tty_putc('\n');
