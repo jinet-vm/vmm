@@ -1,26 +1,31 @@
 #include <kernel/term.h>
-#include <stdarg.h>
 #include <kernel/printf.h>
+#include <kernel/module.h>
+#include <stdarg.h>
 
 static struct term_dev terms[MAXTERMS];
 static unsigned char termsI = 0;
 
+MODULE("TERM");
+
+static void term_putc(void* s, char c);
+
+int term_init()
+{
+	init_printf(NULL, term_putc);
+}
+
 int term_add(struct term_dev t)
 {
-	const char w1[] = "[  TERM] Terminal ", w2[] = " initialized\n", w3[] = " failed to initialize\n";
 	int r = t.init(&t);
 	if(!r) // all good
 		terms[termsI++] = t;
-	
 	#ifdef TERM_ADD_RES_PRINT
-	term_print(w1);
-	term_print(t.name);
 	if(!r)
-		term_print(w2);
+		mprint("Terminal %s successfully initialized", t.name);
 	else
-		term_print(w3);
+		mprint("Terminal %s failed to initialize", t.name);
 	#endif
-
 	return r;
 }
 
@@ -35,19 +40,25 @@ void term_write(char *s, size_t l)
 void term_print(char *s)
 {
 	char *c = s;
-	for(unsigned char ti = 0; ti < termsI; ti++)
-		while(*c != 0)
-			terms[ti].putc(&terms[ti], *c++);
+	while(*c != 0)
+		term_putc(NULL, *c++);
 }
 
-int printk(char *fmt, ...)
+static void term_putc(void* s, char c)
+{
+	for(unsigned char ti = 0; ti < termsI; ti++)
+		terms[ti].putc(&terms[ti], c);
+}
+
+int term_vprintk(char *fmt, va_list va)
+{
+	tfp_vprintf(fmt, va);
+}
+
+int term_printk(char *fmt, ...)
 {
 	va_list va;
 	va_start(va, fmt);
-	for(unsigned char ti = 0; ti < termsI; ti++)
-	{
-		init_printf(&terms[ti], terms[ti].putc);
-		printf(fmt, va);
-	}
+	tfp_vprintf(fmt, va);
 	va_end(va);
 }

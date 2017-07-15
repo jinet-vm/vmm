@@ -437,6 +437,12 @@ void tfp_printf(char *fmt, ...)
     tfp_format(stdout_putp, stdout_putf, fmt, va);
     va_end(va);
 }
+
+void tfp_vprintf(char *fmt, va_list va)
+{
+    tfp_format(stdout_putp, stdout_putf, fmt, va);
+}
+
 #endif
 
 #if TINYPRINTF_DEFINE_TFP_SPRINTF

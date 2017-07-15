@@ -21,6 +21,7 @@
 #include <kernel/gdt.h>
 #include <kernel/font.h>
 #include <kernel/term.h>
+#include <kernel/module.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -60,56 +61,16 @@ struct term_dev com_port =
 	.putc = term_serial_io_putc
 };
 
+MODULE("MAIN");
+
 void kernel_start()
 {
 	// VGA
+	term_init();
 	term_add(vga);
 	term_add(com_port);
-	// tty_putc('\n');
-	// tty_putc('\n');
-	// struct vga_pixel white;
-	// white.r=white.g=white.b=0xff;
-	// vga_putc(0xdb,white,0,0);
-	// for(;;);
-	//  // vga_put_pixel(0,0,white);
-	//  // vga_put_pixel(0,1,white);
-	//  // vga_put_pixel(0,2,white);
-	// unsigned char c = 0xDB;
-	// for(int j = 0; j<16; j++)
-	// {
-	// 	int s = c;
-	// 	s <<= 4;
-	// 	s += j;
-	// 	uint8_t line = the_font[s];
-	// 	printk("%x and\n",line);
-	// 	for(int i = 0; i<8; i++)
-	// 		if((line >> (8-i)) & 1)
-	// 			vga_put_pixel(0*8+i,0*16+j,white);
-	// }
-	// asm("xchg %bx, %bx");
-	// //for(;;);
-	// //vga_putc(176,white,0,0);
-	// // for(int i = 0; i<16; i++)
-	// // {
-	// // 	for(int j=0; j<16; j++)
-	// // 		if((i*16 + j) == '\n') vga_putc(' ');
-	// // 		else tty_putc(0xb7);
-	// // 	tty_putc('\n');
-	// // }
-	
-	// for(int i = 0; i<16; i++)
-	// 	printk("%02x ", the_font[0xdb0+i]);
-	// printk("\nADDRESS: 0x%x%08x",((uint64_t)the_font+'Z'*3lu)>>32,((uint64_t)the_font+'Z'*3lu));
-	// for(;;);
-	// tty_setcolor(VC_LIGHT_BLUE);
-	// for(int i = 0; i<title_lines; i++)
-	// 	tty_puts(title[i]);
-	// tty_reset_color();
-	//for(;;);
-	//tty_setcolor(VC_DEFAULT);
-	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	//init_printf(NULL,putc);
-	printk("VGA terminal initialized.\n");
+	mprint("VGA terminal initialized.");
+	panic("FUCK!");
 	// for(;;);
 	// IDT
 	initGDTR();
@@ -127,7 +88,7 @@ void kernel_start()
 	irq_install();
 	idt_flush();
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	printk("IDT initialized.\n");
+	mprint("IDT initialized.\n");
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
@@ -136,10 +97,10 @@ void kernel_start()
 	uint32_t madtb = detect_madt();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	// printk("MADT & LAPIC initialized.\n");
+	// mprint("MADT & LAPIC initialized.\n");
 	// tty_setcolor(VC_DEFAULT);
 	// asm("xchg %bx, %bx");
-	//printk("MADT & LAPIC initialized.\n");
+	//mprint("MADT & LAPIC initialized.\n");
 	pic_enable();
 	pic_disable();
 	ioapic_setup();
@@ -158,12 +119,12 @@ void kernel_start()
 	//pit_init();
 	// todo: crazy stuff here!
 	// VMX
-	//printk("hey!\n");
+	//mprint("hey!\n");
 	//volatile int a = 1/0;
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
-	printk("VIRT INIT\n");
+	mprint("VIRT INIT\n");
 	virt_init();
 	for(;;);
 }
