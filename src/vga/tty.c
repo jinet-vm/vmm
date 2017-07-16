@@ -30,6 +30,9 @@ Once bottom boundary of the owindow hits the buffer's bottom we do:
 #include <kernel/tty.h>
 #include <kernel/vga.h>
 #include <kernel/memory.h>
+#include <kernel/module.h>
+
+MODULE("TTYVGA");
 
 static size_t tty_x, tty_y;
 static vga_color tty_color;
@@ -71,9 +74,21 @@ void tty_refresh_sym(int x, int y)
 	vga_putc(s->symb, s->color, x, y);
 }
 
+static void tty_half_mix()
+{
+    if(TTY_OFFSET <= TTY_MAX_LINES / 2) return;
+    tty_char* s = TTY_BUFFER;
+    s += TTY_WIDTH*TTY_MAX_LINES/2;
+    memcpy(TTY_BUFFER, (void *)s, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
+    memset(s, 0, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
+    tty_y -= TTY_MAX_LINES/2;
+    TTY_OFFSET -= TTY_MAX_LINES/2;
+    tty_refresh_all();
+}
 
 void tty_putc(uint8_t a)
 {
+    static int fuck = 0;
 	if(a == '\n') {tty_y++, tty_x = 0; }
 	if(tty_x > TTY_WIDTH - 1) tty_x = 0, tty_y++;
 	if(a != '\n')
@@ -84,10 +99,11 @@ void tty_putc(uint8_t a)
 	}
 	if(tty_y - TTY_OFFSET > TTY_HEIGHT-1)
 	{
-        //vga_scroll_row(10);
         TTY_OFFSET+=10;
         tty_refresh_all();
 	}
+    if(TTY_MAX_LINES - tty_y < 10) // critical
+        tty_half_mix();
 }
 
 void tty_reset_color()
