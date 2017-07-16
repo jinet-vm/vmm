@@ -2,6 +2,7 @@
 
 #include <kernel/term.h>
 #include <kernel/io.h>
+#include <stdint.h>
 
 // todo: make ioremap-like thing
 
@@ -17,17 +18,17 @@
 #define LSR_OFF 0x14
 #define MSR_OFF 0x18
 
-void* PORT;
+uint64_t PORT;
 
-inline uint8_t serial_in(u8 off)
+static inline uint8_t serial_in(uint64_t off)
 {
 	uint8_t *r = PORT+off;
 	return *r;
 }
 
-inline void serial_out(u8 off, u8 val)
+static inline void serial_out(uint64_t off, uint8_t val)
 {
-	uint8_t *r = PORT+off;
+	uint64_t *r = PORT+off;
 	*r = val;
 }
 
@@ -45,16 +46,15 @@ int term_serial_mmio_init(struct term_dev* t)
 	return 0;
 }
 
-static int is_transmit_empty(unsigned short PORT)
+static int is_transmit_empty(void)
 {
 	return serial_in(LSR_OFF) & 0x20;
 }
 
-int term_serial_io_putc(struct term_dev* t, char c)
+int term_serial_mmio_putc(struct term_dev* t, char c)
 {
-	unsigned short PORT = t->addr;
-	while (is_transmit_empty(PORT) == 0);
-	outb(PORT, c);
+	while (is_transmit_empty() == 0);
+	serial_out(THR_OFF, c);
 	if(c == '\n')
 		term_serial_io_putc(t, '\r');
 	return 0;

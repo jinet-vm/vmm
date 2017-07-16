@@ -61,17 +61,27 @@ struct term_dev com_port =
 	.putc = term_serial_io_putc
 };
 
+struct term_dev dell_serial =
+{
+	.name = "E5470_SERIAL",
+	.type = TERM_SERIAL_MMIO,
+	.addr = 0xef253000,
+	.init = term_serial_mmio_init,
+	.putc = term_serial_mmio_putc
+};
+
 MODULE("MAIN");
 
 void kernel_start()
 {
 	// VGA
 	term_init();
+	//term_add(com_port);
+	term_add(dell_serial);
 	term_add(vga);
-	term_add(com_port);
-	for(int i = 0; i<1000; i++)
-		mprint("%d",i);
-	for(;;);
+	// for(int i = 0; i<1000; i++)
+	// 	mprint("%d",i);
+	// for(;;);
 	// IDT
 	initGDTR();
 	gdt_set_code(1);
