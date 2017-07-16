@@ -69,7 +69,7 @@ void kernel_start()
 	term_init();
 	term_add(vga);
 	term_add(com_port);
-	for(int i = 0; i<400; i++)
+	for(int i = 0; i<1000; i++)
 		mprint("%d",i);
 	for(;;);
 	// IDT

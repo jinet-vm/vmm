@@ -1,13 +1,11 @@
 /*
 
-how this thing works (actually, should work YET):
-
+how this thing works:
 
 	+-----------+
 	|  our own  |
 	|  text     |
 	|  buffer   |
-	|           |
 	|           |
   #=|===========|=#
   I |           | I
