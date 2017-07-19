@@ -45,6 +45,7 @@ void term_print(char *s)
 
 void term_putc(void* s, char c)
 {
+
 	for(unsigned char ti = 0; ti < termsI; ti++)
 		terms[ti].putc(&terms[ti], c);
 }

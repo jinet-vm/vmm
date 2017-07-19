@@ -76,10 +76,13 @@ void kernel_start()
 {
 	// VGA
 	term_init();
-	//term_add(com_port);
-	term_add(dell_serial);
+	term_add(com_port);
+	//term_add(dell_serial);
 	term_add(vga);
-	// for(int i = 0; i<1000; i++)
+	// for(int i = 0; i<8; i++)
+	// 	printf("Hello \e[4%d;3%d;1mWorld\e[0m! \n", i, i);
+	// for(;;);
+	//for(int i = 0; i<1000; i++)
 	// 	mprint("%d",i);
 	// for(;;);
 	// IDT

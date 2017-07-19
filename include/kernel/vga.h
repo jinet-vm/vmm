@@ -42,22 +42,38 @@ struct vbe_info {
 } __attribute__ ((packed));
 
 #define vga_color uint8_t
+// #define VC_BLACK 0 - old vga
+// #define VC_BLUE 1
+// #define VC_GREEN 2
+// #define VC_CYAN 3
+// #define VC_RED 4
+// #define VC_MAGENTA 5
+// #define VC_BROWN 6
+// #define VC_LIGHT_GREY 7
+// #define VC_DARK_GREY 8
+// #define VC_LIGHT_BLUE 9
+// #define VC_LIGHT_GREEN 10
+// #define VC_LIGHT_CYAN 11
+// #define VC_LIGHT_RED 12
+// #define VC_LIGHT_MAGENTA 13
+// #define VC_LIGHT_YELLOW 14
+// #define VC_WHITE 15
 #define VC_BLACK 0
-#define VC_BLUE 1
-#define VC_GREEN 2,
-#define VC_CYAN 3,
-#define VC_RED 4,
+#define VC_RED 1
+#define VC_GREEN 2
+#define VC_YELLOW 3
+#define VC_BLUE 4
 #define VC_MAGENTA 5
-#define VC_BROWN 6
-#define VC_LIGHT_GREY 7
-#define VC_DARK_GREY 8
-#define VC_LIGHT_BLUE 9
-#define VC_LIGHT_GREEN 10
-#define VC_LIGHT_CYAN 11
-#define VC_LIGHT_RED 12
-#define VC_LIGHT_MAGENTA 13
-#define VC_LIGHT_YELLOW 14
-#define VC_WHITE 15
+#define VC_CYAN 6
+#define VC_WHITE 7
+#define VC_BRIGHT_BLACK 8
+#define VC_BRIGHT_RED 9
+#define VC_BRIGHT_GREEN 10
+#define VC_BRIGHT_YELLOW 11
+#define VC_BRIGHT_BLUE 12
+#define VC_BRIGHT_MAGENTA 13
+#define VC_BRIGHT_CYAN 14
+#define VC_BRIGHT_WHITE 15
 // } vga_color; // todo: bg/fg colors (two nibbles)
 
 int VGA_WIDTH, VGA_HEIGHT; // vga_init
@@ -65,7 +81,7 @@ int VGA_WIDTH, VGA_HEIGHT; // vga_init
 void vga_init();
 
 void (*vga_put_pixel)(int x, int y, vga_color color); // vga_init
-void vga_putc(unsigned char c, vga_color color, int x, int y);
+void vga_putc(unsigned char c, vga_color bg, vga_color fg, int x, int y);
 void vga_scroll_row(int shift);
 
 #endif

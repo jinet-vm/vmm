@@ -33,13 +33,13 @@ Once bottom boundary of the owindow hits the buffer's bottom we do:
 MODULE("TTYVGA");
 
 static size_t tty_x, tty_y;
-static vga_color tty_color;
+static vga_color tty_bg, tty_fg;
 static const uint64_t TTY_BUFFER = 0x7c00;
 static int TTY_OFFSET = 0;
 
 
 void tty_clear();
-static void tty_putsymb(uint8_t c, vga_color color, int x, int y);
+static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y);
 
 void tty_init()
 {
@@ -47,7 +47,7 @@ void tty_init()
 	tty_reset_color();
 	for(int x = 0; x<TTY_WIDTH; x++)
 		for(int y = 0; y<TTY_MAX_LINES; y++)
-			tty_putsymb(0,VC_BLACK,x,y);
+			tty_putsymb(0,tty_bg, tty_fg,x,y);
 }
 
 void tty_clear()
@@ -57,19 +57,20 @@ void tty_clear()
 	memset(TTY_BUFFER,0,sizeof(tty_char)*TTY_WIDTH*TTY_HEIGHT);
 }
 
-static void tty_putsymb(uint8_t c, vga_color color, int x, int y)
+static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y)
 {
 	volatile tty_char* s = (uint64_t)TTY_BUFFER;
 	s += TTY_WIDTH*y+x;
 	s->symb = c;
-	s->color = color;
+	s->bg = bg;
+	s->fg = fg;
 }
 
 void tty_refresh_sym(int x, int y)
 {
 	volatile tty_char *s = (uint64_t)TTY_BUFFER;
 	s += TTY_WIDTH*(y+TTY_OFFSET)+x;
-	vga_putc(s->symb, s->color, x, y);
+	vga_putc(s->symb, s->bg, s->fg, x, y);
 }
 
 static void tty_half_mix()
@@ -91,7 +92,7 @@ void tty_putc(uint8_t a)
 	if(tty_x > TTY_WIDTH - 1) tty_x = 0, tty_y++;
 	if(a != '\n')
 	{
-		tty_putsymb(a, tty_color, tty_x, tty_y);
+		tty_putsymb(a, tty_bg, tty_fg, tty_x, tty_y);
 		tty_refresh_sym(tty_x, tty_y - TTY_OFFSET);
         tty_x++;
 	}
@@ -106,7 +107,29 @@ void tty_putc(uint8_t a)
 
 void tty_reset_color()
 {
-	tty_color = VC_WHITE;
+	tty_bg = VC_BLACK;
+	tty_fg = VC_WHITE;
+}
+
+
+void tty_setfg(vga_color fg)
+{
+	tty_fg = fg;
+}
+
+vga_color tty_getfg()
+{
+	return tty_fg;
+}
+
+void tty_setbg(vga_color bg)
+{
+	tty_bg = bg;
+}
+
+vga_color tty_getbg()
+{
+	return tty_bg;
 }
 
 void tty_refresh_all()

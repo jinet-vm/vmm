@@ -18,15 +18,15 @@
 #define LSR_OFF 0x14
 #define MSR_OFF 0x18
 
-uint64_t PORT;
+static uint64_t PORT;
 
-static inline uint8_t serial_in(uint64_t off)
+static uint8_t serial_in(uint64_t off)
 {
 	uint8_t *r = PORT+off;
 	return *r;
 }
 
-static inline void serial_out(uint64_t off, uint8_t val)
+static void serial_out(uint64_t off, uint8_t val)
 {
 	uint64_t *r = PORT+off;
 	*r = val;
@@ -56,6 +56,6 @@ int term_serial_mmio_putc(struct term_dev* t, char c)
 	while (is_transmit_empty() == 0);
 	serial_out(THR_OFF, c);
 	if(c == '\n')
-		term_serial_io_putc(t, '\r');
+		term_serial_mmio_putc(t, '\r');
 	return 0;
 }

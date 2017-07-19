@@ -88,7 +88,7 @@ void vga_set_cursor(int row, int col)
  * @param[in]  x      The row of the cursor
  * @param[in]  y      The column of the cursor
  */
-void vga_putc(unsigned char c, vga_color color, int tty_x, int tty_y)
+void vga_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
 {
 	//vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
 	for(int j = 0; j<16; j++)
@@ -96,9 +96,9 @@ void vga_putc(unsigned char c, vga_color color, int tty_x, int tty_y)
 		uint8_t line = *(the_font+(c<<4)+j);
 		for(int i = 0; i<8; i++)
 			if((line >> (7-i)) & 1)
-				vga_put_pixel(tty_x*8+i,tty_y*16+j,VC_WHITE);
+				vga_put_pixel(tty_x*8+i,tty_y*16+j,fg);
 			else
-				vga_put_pixel(tty_x*8+i,tty_y*16+j,VC_BLACK); // todo: bg/fg
+				vga_put_pixel(tty_x*8+i,tty_y*16+j,bg); // todo: bg/fg
 	}
 }
 
@@ -108,32 +108,31 @@ static void vga_put_pixel_4(int x, int y, vga_color color)
 	volatile unsigned char* s = t;
 	*s = 0xff;
 }
-
 static void vga_put_pixel_8(int x, int y, vga_color color)
 {
 	uint64_t t = (uint64_t)vga_buffer+x+VGA_WIDTH*y;
 	volatile uint8_t* s = t;
-	*s = color;
+	*s = 0xff;
 }
-
 static void vga_put_pixel_24(int x, int y, vga_color color)
 {
 	static uint32_t colors[16] = { // colors work
 		0x000000,
-		0x0000aa,
-		0x00aa00,
-		0x00aaaa,
-		0xaa0000,
-		0xaa00aa,
-		0xaa5500,
-		0xaaaaaa,
-		0x555555,
-		0x5555ff,
-		0x55ff55,
-		0x55ffff,
-		0xff5555,
-		0xff55ff,
-		0xffff55,
+		0x800000,
+		0x008000,
+		0x808000,
+		0x000080,
+		0x800080,
+		0x008080,
+		0xC0C0C0,
+
+		0x808080,
+		0xff0000,
+		0x00ff00,
+		0xffff00,
+		0x0000ff,
+		0xff00ff,
+		0x00ffff,
 		0xffffff};
 	uint64_t t = (uint64_t)vga_buffer;
 	t += 3*(VGA_WIDTH*y+x);
@@ -143,31 +142,27 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 
 static void vga_put_pixel_32(int x, int y, vga_color color)
 {
-	static uint32_t colors[16] = { // colors work
-		0xff000000,
-		0xff0000aa,
-		0xff00aa00,
-		0xff00aaaa,
-		0xffaa0000,
-		0xffaa00aa,
-		0xffaa5500,
-		0xffaaaaaa,
-		0xff555555,
-		0xff5555ff,
-		0xff55ff55,
-		0xff55ffff,
-		0xffff5555,
-		0xffff55ff,
-		0xffffff55,
-		0xffffffff};
+	static uint32_t colors[16] = { // qemu does 0xAARRGGBB
+		0x000000,
+		0x800000,
+		0x008000,
+		0x808000,
+		0x000080,
+		0x800080,
+		0x008080,
+		0xC0C0C0,
+		0xff0000,
+		0x00ff00,
+		0xffff00,
+		0x0000ff,
+		0xff00ff,
+		0xff00ff,
+		0x00ffff,
+		0xffffff};
 	uint64_t t = (uint64_t)vga_buffer+4*VGA_WIDTH*y+4*x;
 	volatile uint32_t* s = t;
 	*s = colors[color];
 }
-
-/**
- * @brief      Clears everything in VGA buffer.
- */
 
 void vga_fill(vga_color color)
 {
