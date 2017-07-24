@@ -125,7 +125,6 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 		0x800080,
 		0x008080,
 		0xC0C0C0,
-
 		0x808080,
 		0xff0000,
 		0x00ff00,
@@ -142,7 +141,7 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 
 static void vga_put_pixel_32(int x, int y, vga_color color)
 {
-	static uint32_t colors[16] = { // qemu does 0xAARRGGBB
+	static uint32_t colors[16] = { // colors work
 		0x000000,
 		0x800000,
 		0x008000,
@@ -151,11 +150,11 @@ static void vga_put_pixel_32(int x, int y, vga_color color)
 		0x800080,
 		0x008080,
 		0xC0C0C0,
+		0x808080,
 		0xff0000,
 		0x00ff00,
 		0xffff00,
 		0x0000ff,
-		0xff00ff,
 		0xff00ff,
 		0x00ffff,
 		0xffffff};

@@ -4,7 +4,7 @@
 #include <kernel/debug.h>
 #include <kernel/apic.h>
 #include <kernel/term.h>
-
+#include <kernel/printf.h>
 extern void irq0();
 extern void irq1();
 extern void irq2();
@@ -118,7 +118,9 @@ void irq_install_handler(int irq, void (*handler)(struct regs*))
 
 void irq_handler(struct regs *r)
 {
-	//printf("irq %d", r->int_no);
+	printf("%d", r->int_no);
+	// if(r->int_no != 34)
+	// 	printf("irq %d\n", r->int_no);
 	void (*handler)(struct regs*);
 	//term_printk("%d ", r->int_no);
 	if (r->int_no >= INTS_MAX_IRQ)

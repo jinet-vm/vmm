@@ -125,7 +125,7 @@ void kernel_start()
 		ioapic_set_gate(i,34,0,0,0,0,0,0); // just to be on a safe side
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
-	//ints_sti(); //- something wrong with eoi
+	ints_sti(); //- something wrong with eoi
 	//for(;;);
 	//for(;;)
 	//pit_init();
@@ -140,7 +140,7 @@ void kernel_start()
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
-	mprint("VIRT INIT");
-	virt_init();
+	//mprint("VIRT INIT");
+	//virt_init();
 	for(;;);
 }
