@@ -26,16 +26,6 @@
 
 #define title_lines 6
 
-char* title[title_lines] = 
-{
-	"                         \xDC\xDC\xDC\xDC\xDC \xDC    \xDC   \xDC\xDB\xDB\xDB\xDC     \xDC\xDC\xDC\xDC\xDF v0.0.1 (WIP)\n",
-	"                       \xDC\xDF  \xDB   \xDB\xDB     \xDB  \xDB\xDF   \xDF \xDF\xDF\xDF \xDB    \n",
-	"                           \xDB   \xDB\xDB \xDB\xDB   \xDB \xDB\xDB\xDC\xDC       \xDB    \n",
-	"                        \xDC \xDB    \xDE\xDB \xDB \xDB  \xDB \xDB\xDC   \xDC\xDF   \xDB     \n",
-	"                         \xDF      \xDE \xDB  \xDB \xDB \xDF\xDB\xDB\xDB\xDF    \xDF      \n",
-	"                                  \xDB   \xDB\xDB\n\n"
-};
-
 extern ints_sti(void);
 
 void putc(void* none, char c)
@@ -122,7 +112,7 @@ void kernel_start()
 	// initGDTR();
 	pit_init();
 	for(uint8_t i = 0; i<=23; i++)
-		ioapic_set_gate(i,34,0,0,0,0,0,0); // just to be on a safe side
+		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
 	ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
 	ints_sti(); //- something wrong with eoi
