@@ -3,7 +3,9 @@
 #include <kernel/tty.h>
 #include <kernel/io.h>
 #include <kernel/irq.h>
-#include <kernel/printf.h>
+#include <kernel/module.h>
+
+MODULE("KB");
 
 unsigned char kbdus[128] =
 {
@@ -141,6 +143,15 @@ void keyboard_handler(struct regs *r)
 		if(('a' <= inp && inp <= 'z') ||
 			('0' <= inp && inp <= '9') ||
 			inp == '\n' || inp == ' ')
-			term_putc(inp+(flags & (1 << shift) ? 'A'-'a' : 0));
+			mprint("%c", inp+(flags & (1 << shift) ? 'A'-'a' : 0));
 	}
+}
+
+void serial_handler(struct regs *r)
+{
+	asm("xchg %bx, %bx");
+	const char shift = 0;
+	static char flags = 0;
+	unsigned char scancode = inb(0x3f8);
+	mprint("s %c", scancode);
 }

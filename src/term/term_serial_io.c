@@ -6,7 +6,7 @@
 int term_serial_io_init(struct term_dev* t)
 {
 	unsigned short PORT = t->addr;
-	outb(PORT + 1, 0x00);
+	outb(PORT + 1, 0x01);
 	outb(PORT + 3, 0x80);
 	outb(PORT + 0, 0x03);
 	outb(PORT + 1, 0x00);

@@ -22,6 +22,7 @@
 #include <kernel/font.h>
 #include <kernel/term.h>
 #include <kernel/module.h>
+#include <kernel/pci.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -113,9 +114,10 @@ void kernel_start()
 	pit_init();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
-	ints_sti(); //- something wrong with eoi
+	irq_install_handler(4, serial_handler);
+	//ints_sti(); //- something wrong with eoi
 	//for(;;);
 	//for(;;)
 	//pit_init();
@@ -130,6 +132,7 @@ void kernel_start()
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
+	pci_probe();
 	//mprint("VIRT INIT");
 	//virt_init();
 	for(;;);
