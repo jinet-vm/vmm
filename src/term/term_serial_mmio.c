@@ -34,7 +34,7 @@ static void serial_out(uint64_t off, uint8_t val)
 
 int term_serial_mmio_init(struct term_dev* t)
 {
-	PORT = t->addr;
+	//PORT = t->addr;
 	serial_out(LCR_OFF, 0); // DLAB = 0
 	serial_out(IER_OFF, 0); // disable interrupts
 	serial_out(LCR_OFF, 1 << LCR_DLAB_BIT); // DLAB = 1

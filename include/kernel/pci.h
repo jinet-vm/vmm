@@ -3,22 +3,28 @@
 
 #include <stdint.h>
 
-struct pci_device
-{
-	uint16_t bus;
-	uint16_t dev;
-	uint16_t fnc;
-};
+// PCI dev: an actual thing stuck in a PC's PCI slot
+// PCI device: a mysterious device that might correspond to its physical realization - the PCI DEV
+// PCI dev is defined by PCI_DEVN. PCI_DEVN (for us) is basically a uint16_t (it's almost like CONFIG_ADDRESS value) :
+// [31-24: reserved][23-16: bus number][15-11: device number][10-8 function][7-0: reserved]
+
+// todo: make it better with bit fields
+// everything is better with bit fields
+#define pci_devn uint32_t
+#define PCI_DEVN(bus, dev, fnc) ((pci_devn)(((fnc & 0x7) << 8) | ((dev & 0x1f) << 11) | ((bus & 0xff) << 16)))
+#define PCI_DEVN_BUS(devn) ((pci_devn)((devn >> 16) & 0xff))
+#define PCI_DEVN_DEV(devn) ((pci_devn)((devn >> 11) & 0x1f))
+#define PCI_DEVN_FNC(devn) ((pci_devn)((devn >> 8) & 0x7))
 
 void pci_probe(void);
 
-uint16_t pci_get_vendor(struct pci_device dev);
-uint16_t pci_get_device(struct pci_device dev);
-uint16_t pci_get_class(struct pci_device dev);
-uint16_t pci_get_subclass(struct pci_device dev);
+uint16_t pci_get_vendor(pci_devn dev);
+uint16_t pci_get_device(pci_devn dev);
+uint16_t pci_get_class(pci_devn dev);
+uint16_t pci_get_subclass(pci_devn dev);
 
-uint16_t pci_get_command(struct pci_device dev);
-void pci_set_command(struct pci_device dev, uint16_t value);
+uint16_t pci_get_command(pci_devn dev);
+void pci_set_command(pci_devn dev, uint16_t value);
 
 // PCI COMMAND register options
 #define PCI_CMD_IO 0
