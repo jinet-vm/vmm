@@ -8,78 +8,103 @@
 
 MODULE("PCI");
 
-uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset)
+static struct pci_device devs[32];
+static int devs_i = 0;
+
+static void pci_add_device(struct pci_device d)
 {
-	uint32_t lbus  = (uint32_t)bus;
-	uint32_t lslot = (uint32_t)slot;
-	uint32_t lfunc = (uint32_t)func;
-	uint32_t tmp = 0;
- 
-	uint32_t address = 0x80000000;
+	devs[devs_i++] = d;
+}
+
+static uint16_t pci_read_word(struct pci_device dev, uint16_t offset)
+{
+	uint64_t lbus = (uint64_t)dev.bus;
+	uint64_t ldev = (uint64_t)dev.dev;
+	uint64_t lfnc = (uint64_t)dev.fnc;
+	uint16_t tmp = 0;
+	uint64_t address = 0x80000000;
 	address |= offset & 0xfc;
-	address |= lfunc << 8;
-	address |= lslot << 11;
+	address |= lfnc << 8;
+	address |= ldev << 11;
 	address |= lbus << 16;
- 
- 	outl(CONFIG_ADDRESS, address);
-	tmp = inl(CONFIG_DATA);
+	outl (CONFIG_ADDRESS, address);
+	tmp = (uint16_t)((inl(CONFIG_DATA) >> ((offset & 2) * 8)) & 0xffff);
 	return tmp;
 }
 
-uint8_t pci_read_byte(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset)
+static void pci_write_word(struct pci_device dev, uint16_t offset, uint16_t value)
 {
-	uint32_t dw = pci_read_dword(bus, slot, func, offset & 0xfc);
-	return dw >> (offset & 3);
-}
-
-uint16_t pci_read_word(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset)
-{
-	// it's inefficient but it's decent
-	uint8_t high, low;
-	low = pci_read_dword(bus, slot, func, offset + 1);
-	high = pci_read_dword(bus, slot, func, offset + 1);
-	return low & (high << 8);
-}
-
-uint16_t getVendorID(uint16_t bus, uint16_t device, uint16_t function)
-{
-        uint32_t r0 = pci_read_word(bus,device,function,0);
-        return r0;
-}
-
-uint16_t getDeviceID(uint16_t bus, uint16_t device, uint16_t function)
-{
-        uint32_t r0 = pci_read_word(bus,device,function,2);
-        return r0;
-}
-
-uint16_t getClassId(uint16_t bus, uint16_t device, uint16_t function)
-{
-        uint32_t r0 = pci_read_word(bus,device,function,0xA);
-        return (r0 & ~0x00FF) >> 8;
-}
-
-uint16_t getSubClassId(uint16_t bus, uint16_t device, uint16_t function)
-{
-        uint32_t r0 = pci_read_word(bus,device,function,0xA);
-        return (r0 & ~0xFF00);
+	uint64_t lbus = (uint64_t)dev.bus;
+	uint64_t ldev = (uint64_t)dev.dev;
+	uint64_t lfnc = (uint64_t)dev.fnc;
+	uint64_t address = 0x80000000;
+	uint32_t tmp = 0;
+	address |= offset & 0xfc;
+	address |= lfnc << 8;
+	address |= ldev << 11;
+	address |= lbus << 16;
+	outl(CONFIG_ADDRESS, address);
+	tmp = inl(CONFIG_DATA);
+	tmp &= ~(0xffff << ((offset & 2) * 8));
+	tmp |= value << ((offset & 2) * 8);
+	outl(CONFIG_DATA, tmp);
+	return (tmp);
 }
 
 
-// todo
-void pci_probe()
+uint16_t pci_get_vendor(struct pci_device dev)
+{
+	uint16_t r0 = pci_read_word(dev, 0);
+	return r0;
+}
+
+uint16_t pci_get_device(struct pci_device dev)
+{
+	uint16_t r0 = pci_read_word(dev, 2);
+	return r0;
+}
+
+uint16_t pci_get_class(struct pci_device dev)
+{
+	uint16_t r0 = pci_read_word(dev, 0xA);
+	return (r0 & 0xFF00) >> 8;
+}
+
+uint16_t pci_get_subclass(struct pci_device dev)
+{
+	uint16_t r0 = pci_read_word(dev, 0xA);
+	return (r0 & 0x00FF);
+}
+
+uint32_t pci_get_command(struct pci_device dev)
+{
+	uint16_t r0 = pci_read_word(dev, 0x4);
+	return r0;
+}
+
+void pci_set_command(struct pci_device dev, uint16_t value)
+{
+	pci_write_word(dev, 0x4, value);
+	return r0;
+}
+
+void pci_probe(void)
 {
 	for(uint32_t bus = 0; bus < 256; bus++)
-    {
-        for(uint32_t slot = 0; slot < 32; slot++)
-        {
-            for(uint32_t function = 0; function < 8; function++)
-            {
-                    uint16_t vendor = getVendorID(bus, slot, function);
-                    if(vendor == 0xffff) continue;
-                    //uint16_t device = getDeviceID(bus, slot, function);
-                    mprint("%x:%x.%x = %x", bus, slot, function, vendor);
-            }
-        }
-    }
+		for(uint32_t dev = 0; dev < 32; dev++)
+			for(uint32_t fnc = 0; fnc < 8; fnc++)
+			{
+				struct pci_device d = {.bus = bus, .dev =  dev, .fnc = fnc};
+				uint16_t vendor = pci_get_vendor(d);
+				if(vendor == 0xffff) continue;
+			}
+}
+
+void pci_list()
+{
+	for(int i = 0; i<devs_i; i++)
+	{
+		pci_device d = devs[i];
+		mprint("%x:%x.%x", d.bus, d.dev, d.fnc);
+	}
 }
