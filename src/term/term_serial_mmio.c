@@ -1,8 +1,12 @@
 // an interface to serial mmio
 
 #include <kernel/term.h>
+#include <kernel/module.h>
 #include <kernel/io.h>
+#include <kernel/pci.h>
 #include <stdint.h>
+
+MODULE("TERM_MMIO");
 
 // todo: make ioremap-like thing
 
@@ -18,15 +22,13 @@
 #define LSR_OFF 0x14
 #define MSR_OFF 0x18
 
-static uint64_t PORT;
-
-static uint8_t serial_in(uint64_t off)
+static uint8_t serial_in(uint64_t PORT, uint64_t off)
 {
 	uint8_t *r = PORT+off;
 	return *r;
 }
 
-static void serial_out(uint64_t off, uint8_t val)
+static void serial_out(uint64_t PORT, uint64_t off, uint8_t val)
 {
 	uint64_t *r = PORT+off;
 	*r = val;
@@ -34,27 +36,38 @@ static void serial_out(uint64_t off, uint8_t val)
 
 int term_serial_mmio_init(struct term_dev* t)
 {
-	//PORT = t->addr;
-	serial_out(LCR_OFF, 0); // DLAB = 0
-	serial_out(IER_OFF, 0); // disable interrupts
-	serial_out(LCR_OFF, 1 << LCR_DLAB_BIT); // DLAB = 1
-	serial_out(DLL_OFF, 1);
-	serial_out(DLH_OFF, 0);
-	serial_out(LCR_OFF, 0x03);
-	serial_out(FCR_OFF, 0xC7);
-	serial_out(MCR_OFF, 0x0B);
+	pci_devn d = pci_find_device((struct pci_device_id){.vendor = 0x8086, 0xA166});
+	if(d == (pci_devn)(~0))
+	{
+		mprint("PCI device not found");
+		return -1;
+	}
+	pci_set_command(d, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
+	t->addr = pci_get_bar0(d) & (~0xF);
+	mprint("MMIO addr: %8x", t->addr);
+	mprint("PCI command: %4x", pci_get_command(d));
+	uint64_t PORT = t->addr;
+	serial_out(PORT, LCR_OFF, 0); // DLAB = 0
+	serial_out(PORT, IER_OFF, 0); // disable interrupts
+	serial_out(PORT, LCR_OFF, 1 << LCR_DLAB_BIT); // DLAB = 1
+	serial_out(PORT, DLL_OFF, 1);
+	serial_out(PORT, DLH_OFF, 0);
+	serial_out(PORT, LCR_OFF, 0x03);
+	serial_out(PORT, FCR_OFF, 0xC7);
+	serial_out(PORT, MCR_OFF, 0x0B);
 	return 0;
 }
 
-static int is_transmit_empty(void)
+static int is_transmit_empty(uint64_t PORT)
 {
-	return serial_in(LSR_OFF) & 0x20;
+	return serial_in(PORT, LSR_OFF) & 0x20;
 }
 
 int term_serial_mmio_putc(struct term_dev* t, char c)
 {
-	while (is_transmit_empty() == 0);
-	serial_out(THR_OFF, c);
+	uint64_t PORT = t->addr;
+	while (is_transmit_empty(PORT) == 0);
+	serial_out(PORT, THR_OFF, c);
 	if(c == '\n')
 		term_serial_mmio_putc(t, '\r');
 	return 0;

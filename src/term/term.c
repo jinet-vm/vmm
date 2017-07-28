@@ -17,6 +17,7 @@ int term_init()
 int term_add(struct term_dev t)
 {
 	int r = t.init(&t);
+	mprint("addr: 0x%08x",t.addr);
 	if(!r) // all good
 		terms[termsI++] = t;
 	#ifdef TERM_ADD_RES_PRINT
@@ -45,7 +46,6 @@ void term_print(char *s)
 
 void term_putc(void* s, char c)
 {
-
 	for(unsigned char ti = 0; ti < termsI; ti++)
 		terms[ti].putc(&terms[ti], c);
 }

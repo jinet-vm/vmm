@@ -56,7 +56,7 @@ struct term_dev dell_serial =
 {
 	.name = "E5470_SERIAL",
 	.type = TERM_SERIAL_MMIO,
-	.addr = 0xef253000,
+	.addr = 0,
 	.init = term_serial_mmio_init,
 	.putc = term_serial_mmio_putc
 };
@@ -68,8 +68,9 @@ void kernel_start()
 	// VGA
 	term_init();
 	term_add(com_port);
-	//term_add(dell_serial);
 	term_add(vga);
+	pci_probe();
+	term_add(dell_serial);
 	// for(int i = 0; i<8; i++)
 	// 	printf("Hello \e[4%d;3%d;1mWorld\e[0m! \n", i, i);
 	// for(;;);
@@ -132,7 +133,7 @@ void kernel_start()
 	//asm("int $20");
 	//for(;;);
 	asm("xchg %bx, %bx");
-	pci_probe();
+	//pci_probe();
 	//mprint("VIRT INIT");
 	//virt_init();
 	for(;;);

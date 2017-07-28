@@ -22,9 +22,18 @@ uint16_t pci_get_vendor(pci_devn dev);
 uint16_t pci_get_device(pci_devn dev);
 uint16_t pci_get_class(pci_devn dev);
 uint16_t pci_get_subclass(pci_devn dev);
-
+uint32_t pci_get_bar0(pci_devn dev);
 uint16_t pci_get_command(pci_devn dev);
 void pci_set_command(pci_devn dev, uint16_t value);
+
+
+struct pci_device_id
+{
+	uint32_t vendor;
+	uint32_t device;
+};
+
+pci_devn pci_find_device(struct pci_device_id d);
 
 // PCI COMMAND register options
 #define PCI_CMD_IO 0

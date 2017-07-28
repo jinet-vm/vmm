@@ -12,7 +12,7 @@
 #define TERM_SERIAL_MMIO 3
 
 // print term_add result
-//#define TERM_ADD_RES_PRINT
+#define TERM_ADD_RES_PRINT
 
 // todo: magic numbers?
 // todo: make vga/vesa separate
