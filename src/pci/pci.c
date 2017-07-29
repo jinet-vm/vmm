@@ -114,7 +114,7 @@ void pci_list()
 	for(int i = 0; i<devs_i; i++)
 	{
 		pci_devn d = devns[i];
-		mprint("%x:%x.%x => vendor %4xh, device %4xh", PCI_DEVN_BUS(d), PCI_DEVN_DEV(d), PCI_DEVN_FNC(d), pci_get_vendor(d), pci_get_device(d));
+		mprint("%02x:%02x.%x => vendor %4xh, device %4xh", PCI_DEVN_BUS(d), PCI_DEVN_DEV(d), PCI_DEVN_FNC(d), pci_get_vendor(d), pci_get_device(d));
 	}
 }
 

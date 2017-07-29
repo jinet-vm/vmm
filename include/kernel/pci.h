@@ -39,5 +39,6 @@ pci_devn pci_find_device(struct pci_device_id d);
 #define PCI_CMD_IO 0
 #define PCI_CMD_MM 1
 #define PCI_CMD_BUS_M 2
+#define PCI_CMD_MWIE 4
 
 #endif
