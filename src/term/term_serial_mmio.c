@@ -21,6 +21,7 @@ MODULE("TERM_MMIO");
 #define MCR_OFF 0x10
 #define LSR_OFF 0x14
 #define MSR_OFF 0x18
+#define SRR_OFF 0x88
 
 static uint8_t serial_in(uint64_t PORT, uint64_t off)
 {
@@ -46,15 +47,20 @@ int term_serial_mmio_init(struct term_dev* t)
 	t->addr = pci_get_bar0(d) & (~0xF);
 	mprint("MMIO addr: %8x", t->addr);
 	mprint("PCI command: %4x", pci_get_command(d));
-	uint64_t PORT = 0xef253000;
-	serial_out(0xef253000, LCR_OFF, 0); // DLAB = 0
-	serial_out(0xef253000, IER_OFF, 0); // disable interrupts
-	serial_out(0xef253000, LCR_OFF, 1 << LCR_DLAB_BIT); // DLAB = 1
-	serial_out(0xef253000, DLL_OFF, 1);
-	serial_out(0xef253000, DLH_OFF, 0);
-	serial_out(0xef253000, LCR_OFF, 0x03);
-	serial_out(0xef253000, FCR_OFF, 0xC7);
-	serial_out(0xef253000, MCR_OFF, 0x0B);
+	uint64_t PORT = 0xef253000; // todo: pci!
+	serial_out(PORT, SRR_OFF, 1); // resetting UART-controller to be on the safe side
+	serial_out(PORT, SRR_OFF, 0);
+	serial_out(PORT, LCR_OFF, 0); // DLAB = 0
+	serial_out(PORT, IER_OFF, 5); // disable interrupts
+	serial_out(PORT, LCR_OFF, 1 << LCR_DLAB_BIT); // DLAB = 1
+	serial_out(PORT, DLL_OFF, 1);
+	serial_out(PORT, DLH_OFF, 0);
+	serial_out(PORT, LCR_OFF, 0x13);
+	serial_out(PORT, FCR_OFF, 0xC1);
+	serial_out(PORT, MCR_OFF, 0x0B);
+	serial_out(PORT, 0x8C, 0x01); // todo: muh ~r~o~a~d~s~ defines!
+	serial_out(PORT, 0x98, 0x01);
+	serial_out(PORT, 0x9C, 0x02);
 	return 0;
 }
 
