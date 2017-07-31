@@ -1,6 +1,7 @@
 #include <kernel/pci.h>
 #include <kernel/io.h>
 #include <kernel/module.h>
+#include <kernel/printf.h>
 #include <stdint.h>
 
 #define CONFIG_ADDRESS 0xCF8
@@ -89,6 +90,12 @@ uint16_t pci_get_command(pci_devn dev)
 	return r0;
 }
 
+uint16_t pci_get_status(pci_devn dev)
+{
+	uint16_t r0 = pci_read_word(dev, 0x6);
+	return r0;
+}
+
 void pci_set_command(pci_devn dev, uint16_t value)
 {
 	pci_write_word(dev, 0x4, value);
@@ -125,6 +132,31 @@ pci_devn pci_find_device(struct pci_device_id d)
 		pci_devn D = devns[i];
 		if(pci_get_vendor(D) == d.vendor && pci_get_device(D) == d.device)
 			return D;
+		//pci_dump(D);
 	}
 	return (pci_devn)(~0);
+}
+
+void pci_set_cache_line_size(pci_devn dev, uint8_t value)
+{
+	uint16_t r0 = pci_read_word(dev, 0x0C);
+	r0 &= 0xff00;
+	r0 |= value;
+	pci_write_word(dev,0x0C,r0);
+}
+
+void pci_dump(pci_devn d)
+{
+	mprint("pci device dump:");
+	for(int i = 0; i < 4; i++)
+	{
+		printf("%02x: ", i*0x10);
+		for(int j = 0; j<8; j++)
+		{
+			uint16_t t = pci_read_word(d,0x10*i+2*j);
+			printf("%02x ", t & 0xff);
+			printf("%02x ", (t >> 8) & 0xff);
+		}
+		printf("\n");
+	}
 }

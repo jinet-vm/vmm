@@ -42,10 +42,13 @@ int term_serial_mmio_init(struct term_dev* t)
 		mprint("PCI device not found");
 		return -1;
 	}
-	pci_set_command(d, (1 << PCI_CMD_MM));
+	pci_set_command(d, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
+	pci_set_cache_line_size(d, 0x10);
+	pci_dump(d);
 	t->addr = pci_get_bar0(d) & (~0xF);
 	mprint("MMIO addr: %8x", t->addr);
 	mprint("PCI command: %4x", pci_get_command(d));
+	mprint("PCI status: %4x", pci_get_status (d));
 	uint64_t PORT = 0xef253000;
 	serial_out(0xef253000, LCR_OFF, 0); // DLAB = 0
 	serial_out(0xef253000, IER_OFF, 0); // disable interrupts

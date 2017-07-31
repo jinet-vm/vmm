@@ -23,9 +23,12 @@ uint16_t pci_get_device(pci_devn dev);
 uint16_t pci_get_class(pci_devn dev);
 uint16_t pci_get_subclass(pci_devn dev);
 uint32_t pci_get_bar0(pci_devn dev);
+uint16_t pci_get_status(pci_devn dev);
 uint16_t pci_get_command(pci_devn dev);
 void pci_set_command(pci_devn dev, uint16_t value);
+void pci_set_cache_line_size(pci_devn dev, uint8_t value);
 
+void pci_dump(pci_devn d);
 
 struct pci_device_id
 {
