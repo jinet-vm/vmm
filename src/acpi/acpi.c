@@ -29,58 +29,77 @@ struct rsdt
 	uint32_t sdt_p[];
 } __attribute__ ((packed));
 
-static struct rsdp_2_0* RSDP;
+static struct rsdp_2_0* RSDP = 0;
 static struct rsdt* RSDT = 0;
 
-struct sdt_header* find_sdt(char* sig) // living in RSDT 32-bit world. THIS SUCKS!
+static int acpi_detect_rsdt();
+static void acpi_sdts_probes();
+
+struct acpi_driver
 {
-	int ent = (RSDT->h.length-sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]); // TODO: XSDT!
-	int* sig1 = sig; // 4-byte char; REMIND YOU OF ANYBODY?
-	for(int i = 0; i<ent; i++)
-	{
-		struct sdt_header* sh = RSDT->sdt_p[i];
-		int* sig2 = sh;
-		if(*sig1 == *sig2) // found!
-			return RSDT->sdt_p[i];
-	}
+	char* sig;
+	int (*probe)(void* table);
+};
+
+static char probed = 0; // make it sane
+
+static struct acpi_driver ads[32];
+int ads_i = 0;
+
+int acpi_add_driver(char* sig, int (*probe)(void* table))
+{
+	if(probed)
+		mprint("Driver addition should be done before the probe");
+	ads[ads_i++] = (struct acpi_driver){.sig = sig, .probe = probe};
 	return 0;
 }
 
-void print_sdts() // living in RSDT 32-bit world. THIS SUCKS!
+int acpi_probe()
 {
-	uint32_t ent = ((RSDT->h.length)-(uint32_t)sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]); // TODO: XSDT!
-	mprint("%x",RSDT);
-	mprint("%d",ent);
+	if(acpi_detect_rsdt()) return -1;
+	acpi_sdts_probes();
+}
+
+static void acpi_sdts_probes()
+{
+	uint32_t ent = ((RSDT->h.length)-(uint32_t)sizeof(RSDT->h))/sizeof(RSDT->sdt_p[0]);
 	for(int i = 0; i<ent; i++)
 	{
 		struct sdt_header* sh = RSDT->sdt_p[i];
 		mprint("Found %c%c%c%c", sh->sig[0], sh->sig[1], sh->sig[2], sh->sig[3]);
+		for(int j = 0; j<ads_i; j++)
+			if(	ads->sig[0] == sh->sig[0] &&
+				ads->sig[1] == sh->sig[1] &&
+				ads->sig[2] == sh->sig[2] &&
+				ads->sig[3] == sh->sig[3]) // found!
+					ads->probe(sh);
 	}
+	probed = 1;
 	return 0;
 }
 
-int detect_rsdt()
+static int acpi_detect_rsdt()
 {
 	if(RSDT != 0)
 		return 0;
-	const char rsdp_sig[8] = "RSD PTR ";
-	uint16_t* ebdaba_point = EBDA_P_OFF; // EBDA base address
-	uint32_t ebda_point = (int)(*ebdaba_point) << 4;
-	mprint("EBDA: 0x%x", ebda_point);
-	char* i;
-	for(i = ebda_point; i < 0x100000; i++)
+	uint32_t ebda_point = (int)(*(uint16_t *)(EBDA_P_OFF)) << 4;
+	mprint("EBDA found at 0x%x", ebda_point);
+	uint64_t* _sig;
+	for(_sig = ebda_point & (uint64_t)(~0xF); _sig < 0x100000; _sig += 2)
+		if(*_sig == 0x2052545020445352) // "RSD PTR "
+		{
+			RSDP = _sig;
+			break;
+		}
+
+	if(RSDP == 0)
 	{
-		//mprint("add = %x", *i);
-		int j;
-		for(j = 0; j<8; j++)
-			if(*(i+j) != rsdp_sig[j])
-				break;
-		if(j != 8) continue;
-		break;
+		mprint("error: RSDT pointer not found!");
+		return -1;
 	}
-	RSDP = i;
-	mprint("RSDT: 0x%x", RSDP->fp.rsdt_off);
+
 	RSDT = RSDP->fp.rsdt_off;
+	mprint("RSDT found at 0x%x", RSDP->fp.rsdt_off);
 	mprint("ACPI rev: %d",RSDP->fp.rev);
 	mprint("OEM: \"%6s\"",RSDP->fp.oem);
 	return 0;

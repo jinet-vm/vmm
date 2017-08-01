@@ -5,6 +5,8 @@
 
 // http://www.acpi.info/DOWNLOADS/ACPI_5_Errata A.pdf - 5.2.12.2 and upper
 
+// todo: MADT probe function!
+
 MODULE("ACPIMADT");
 
 #define TYPE_LAPIC 0
@@ -41,13 +43,10 @@ struct ioapic
 
 static struct madt* MADT;
 
-uint32_t detect_madt()
+int madt_probe(void* tbl)
 {
-	if(MADT != 0)
-		return;
-	detect_rsdt();
-	MADT = find_sdt("APIC");
-	return MADT;
+	MADT = tbl;
+	madt_topology_detect();
 }
 
 uint32_t madt_lapic_base()
@@ -62,9 +61,8 @@ uint32_t madt_ioapic_base()
 	return IOAPIC_ADDR;
 }
 
-void detect_cpu_topology()
+void madt_topology_detect()
 {
-	detect_madt();
 	mprint("MADT sig: %.4s; len: %d bytes", MADT->h.sig, MADT->h.length);
 	uint32_t madt_beg = MADT;
 	uint32_t madt_end = madt_beg+MADT->h.length;
@@ -79,18 +77,24 @@ void detect_cpu_topology()
 		{
 			case TYPE_LAPIC:
 				cl = p;
-				mprint("LAPIC detected; APIC ID: %xh", cl->apic_id);
+				#ifdef MADT_OUTPUT
+					mprint("LAPIC detected; APIC ID: %xh", cl->apic_id);
+				#endif
 			break;
 			
 			case TYPE_IOAPIC:
 				ioa = p;
+				#ifdef MADT_OUTPUT
 				mprint("IOAPIC detected; IOAPIC ID: 0x%xoffset: 0x%x", ioa->ioapic_id, ioa->ioapic_off);
+				#endif
 				IOAPIC_ADDR = ioa->ioapic_off;
 			break;
 
 			default:
 				ioa = p;
-				mprint("Unknown entry; type: %d, length: %d bytes", ioa->type, ioa->length);
+				#ifdef MADT_OUTPUT
+					mprint("Unknown entry; type: %d, length: %d bytes", ioa->type, ioa->length);
+				#endif
 			break;
 		}
 		ioa = p; // a hacker solution

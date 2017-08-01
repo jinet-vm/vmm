@@ -71,6 +71,8 @@ void kernel_start()
 	term_add(vga);
 	pci_probe();
 	term_add(dell_serial);
+	acpi_add_driver("APIC", madt_probe);
+	acpi_probe();
 	// for(int i = 0; i<8; i++)
 	// 	printf("Hello \e[4%d;3%d;1mWorld\e[0m! \n", i, i);
 	// for(;;);
@@ -99,9 +101,9 @@ void kernel_start()
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT
-	detect_rsdt();
-	print_sdts();
-	uint32_t madtb = detect_madt();
+	//detect_rsdt();
+	//print_sdts();
+	//uint32_t madtb = detect_madt();
 	lapic_setup(); // TODO: apic 32bit bochs error
 	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	// mprint("MADT & LAPIC initialized.\n");

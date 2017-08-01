@@ -3,8 +3,10 @@
 
 #include <stdint.h>
 
-uint32_t detect_madt();
-void detect_cpu_topology();
+#define MADT_OUTPUT	
+
+int madt_probe(void* tbl);
+void madt_topology_detect();
 uint32_t madt_lapic_base();
 
 #endif

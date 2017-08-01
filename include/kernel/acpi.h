@@ -1,7 +1,8 @@
 #ifndef ACPI_H
 #define ACPI_H
-
 #include <stdint.h>
+
+#define ACPI_CHECK_SUM
 
 struct sdt_header
 {
@@ -16,8 +17,9 @@ struct sdt_header
 	uint32_t creator_rev;
 } __attribute__((packed));
 
-int detect_rsdt();
-void print_sdts();
-struct sdt_header* find_sdt(char* sig);
+//int acpi_detect_rsdt();
+int acpi_probe();
+int acpi_add_driver();
+//struct sdt_header* acpi_find_sdt(char* sig);
 
 #endif
