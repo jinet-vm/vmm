@@ -55,8 +55,8 @@ int term_serial_mmio_init(struct term_dev* t)
 	serial_out(PORT, 0x10, 0x1); // defines!
 	serial_out(PORT, 0x4, 0x5);
 	serial_out(PORT, 0xc, 0x93);
-	serial_out(PORT, 0x0, 0x1);
-	serial_out(PORT, 0x4, 0x0);
+	serial_out(PORT, 0x0, 0x80);
+	serial_out(PORT, 0x4, 0x4);
 	serial_out(PORT, 0xc, 0x13);
 	serial_out(PORT, 0x8, 0x1); // resets XMIT and RCVR...
 	serial_out(PORT, 0x8, 0x87);
