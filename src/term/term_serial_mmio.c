@@ -44,6 +44,7 @@ int term_serial_mmio_init(struct term_dev* t)
 		return -1;
 	}
 	pci_set_command(d, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
+	pci_write_word(d,0x84,(pci_read_word(d,0x84) & ~3));
 	pci_set_cache_line_size(d, 0x10);
 	pci_dump(d);
 	t->addr = pci_get_bar0(d) & (~0xF);

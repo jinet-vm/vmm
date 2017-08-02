@@ -7,7 +7,7 @@
 
 // todo: MADT probe function!
 
-MODULE("ACPIMADT");
+MODULE("ACPI_MADT");
 
 #define TYPE_LAPIC 0
 #define TYPE_IOAPIC 1
@@ -85,7 +85,7 @@ void madt_topology_detect()
 			case TYPE_IOAPIC:
 				ioa = p;
 				#ifdef MADT_OUTPUT
-				mprint("IOAPIC detected; IOAPIC ID: 0x%xoffset: 0x%x", ioa->ioapic_id, ioa->ioapic_off);
+				mprint("IOAPIC detected; IOAPIC ID: 0x%x, offset: 0x%x", ioa->ioapic_id, ioa->ioapic_off);
 				#endif
 				IOAPIC_ADDR = ioa->ioapic_off;
 			break;
