@@ -1,3 +1,5 @@
+// both convPCI and universal PCI procedures
+
 #include <kernel/pci.h>
 #include <kernel/io.h>
 #include <kernel/module.h>
@@ -9,16 +11,21 @@
 
 MODULE("PCI");
 
+uint16_t (*pci_read_word)(pci_devn dev, uint16_t offset);
+void (*pci_write_word)(pci_devn dev, uint16_t offset, uint16_t value);
+void (*pci_probe)();
+
 static pci_devn devns[32];
 static int devs_i = 0;
 
-static void pci_add_devn(pci_devn d)
+void pci_add_devn(pci_devn d)
 {
 	devns[devs_i++] = d;
 }
 
-static uint16_t pci_read_word(pci_devn dev, uint16_t offset)
+static uint16_t cpci_read_word(pci_devn dev, uint16_t offset)
 {
+	if(offset > 64) return 0;
 	uint64_t lbus = (uint64_t)PCI_DEVN_BUS(dev);
 	uint64_t ldev = (uint64_t)PCI_DEVN_DEV(dev);
 	uint64_t lfnc = (uint64_t)PCI_DEVN_FNC(dev);
@@ -33,8 +40,9 @@ static uint16_t pci_read_word(pci_devn dev, uint16_t offset)
 	return tmp;
 }
 
-static void pci_write_word(pci_devn dev, uint16_t offset, uint16_t value)
+static void cpci_write_word(pci_devn dev, uint16_t offset, uint16_t value)
 {
+	if(offset > 64) return;
 	uint64_t lbus = (uint64_t)PCI_DEVN_BUS(dev);
 	uint64_t ldev = (uint64_t)PCI_DEVN_DEV(dev);
 	uint64_t lfnc = (uint64_t)PCI_DEVN_FNC(dev);
@@ -52,6 +60,14 @@ static void pci_write_word(pci_devn dev, uint16_t offset, uint16_t value)
 	return (tmp);
 }
 
+static void cpci_probe(void);
+
+void cpci_init()
+{
+	pci_read_word = cpci_read_word;
+	pci_write_word = cpci_write_word;
+	pci_probe = cpci_probe;
+}
 
 uint16_t pci_get_vendor(pci_devn dev)
 {
@@ -101,8 +117,9 @@ void pci_set_command(pci_devn dev, uint16_t value)
 	pci_write_word(dev, 0x4, value);
 }
 
-void pci_probe(void)
+static void cpci_probe(void)
 {
+	pci_devns_clean();
 	for(uint32_t bus = 0; bus < 256; bus++)
 		for(uint32_t dev = 0; dev < 32; dev++)
 			for(uint32_t fnc = 0; fnc < 8; fnc++)
@@ -113,7 +130,12 @@ void pci_probe(void)
 				pci_add_devn(d);
 			}
 	pci_list();
-	mprint("PCI initialized");
+	mprint("conventional PCI initialized");
+}
+
+void pci_devns_clean()
+{
+	devs_i = 0;
 }
 
 void pci_list()
@@ -148,7 +170,7 @@ void pci_set_cache_line_size(pci_devn dev, uint8_t value)
 void pci_dump(pci_devn d)
 {
 	mprint("pci device dump:");
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 0x10; i++)
 	{
 		printf("%02x: ", i*0x10);
 		for(int j = 0; j<8; j++)

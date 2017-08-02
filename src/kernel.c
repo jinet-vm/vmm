@@ -23,6 +23,7 @@
 #include <kernel/term.h>
 #include <kernel/module.h>
 #include <kernel/pci.h>
+#include <kernel/mcfg.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -61,7 +62,9 @@ struct term_dev dell_serial =
 	.putc = term_serial_mmio_putc
 };
 
-MODULE("MAIN");
+MODULE("KERNEL");
+
+// todo: MAKE MAKEFILES GREAT AGAIN
 
 void kernel_start()
 {
@@ -69,17 +72,17 @@ void kernel_start()
 	term_init();
 	term_add(com_port);
 	term_add(vga);
-	pci_probe();
-	term_add(dell_serial);
 	acpi_add_driver("APIC", madt_probe);
+	cpci_init();
+	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_probe();
-	// for(int i = 0; i<8; i++)
-	// 	printf("Hello \e[4%d;3%d;1mWorld\e[0m! \n", i, i);
-	// for(;;);
-	//for(int i = 0; i<1000; i++)
-	// 	mprint("%d",i);
-	// for(;;);
-	// IDT
+	pcie_init();
+	pci_probe();
+	//for(;;);
+	uint64_t num = mcfg_seg_group_count();
+	if(num != MCFG_INVALID)
+		mprint("mcfg number: %x", num);
+	term_add(dell_serial);
 	initGDTR();
 	gdt_set_code(1);
 	gdt_set_data(2);

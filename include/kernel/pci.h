@@ -6,17 +6,26 @@
 // PCI dev: an actual thing stuck in a PC's PCI slot
 // PCI device: a mysterious device that might correspond to its physical realization - the PCI DEV
 // PCI dev is defined by PCI_DEVN. PCI_DEVN (for us) is basically a uint16_t (it's almost like CONFIG_ADDRESS value) :
-// [31-24: reserved][23-16: bus number][15-11: device number][10-8 function][7-0: reserved]
+// [31-24: segment group][23-16: bus number][15-11: device number][10-8 function][7-0: reserved]
 
 // todo: make it better with bit fields
 // everything is better with bit fields
 #define pci_devn uint32_t
+#define PCI_SDEVN(sgp, bus, dev, fnc) ((pci_devn)(((fnc & 0x7) << 8) | ((dev & 0x1f) << 11) | ((bus & 0xff) << 16) | ((sgp & 0xff) << 24)))
 #define PCI_DEVN(bus, dev, fnc) ((pci_devn)(((fnc & 0x7) << 8) | ((dev & 0x1f) << 11) | ((bus & 0xff) << 16)))
 #define PCI_DEVN_BUS(devn) ((pci_devn)((devn >> 16) & 0xff))
 #define PCI_DEVN_DEV(devn) ((pci_devn)((devn >> 11) & 0x1f))
 #define PCI_DEVN_FNC(devn) ((pci_devn)((devn >> 8) & 0x7))
+#define PCI_DEVN_SGP(devn) ((pci_devn)((devn >> 24) & 0xff))
 
-void pci_probe(void);
+
+
+extern uint16_t (*pci_read_word)(pci_devn dev, uint16_t offset);
+extern void (*pci_write_word)(pci_devn dev, uint16_t offset, uint16_t value);
+extern void (*pci_probe)();
+
+void pci_add_devn(pci_devn d);
+void pci_devns_clean();
 
 uint16_t pci_get_vendor(pci_devn dev);
 uint16_t pci_get_device(pci_devn dev);

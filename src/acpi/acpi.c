@@ -58,6 +58,7 @@ int acpi_probe()
 {
 	if(acpi_detect_rsdt()) return -1;
 	acpi_sdts_probes();
+	return 0;
 }
 
 static void acpi_sdts_probes()
@@ -68,11 +69,11 @@ static void acpi_sdts_probes()
 		struct sdt_header* sh = RSDT->sdt_p[i];
 		mprint("Found %c%c%c%c", sh->sig[0], sh->sig[1], sh->sig[2], sh->sig[3]);
 		for(int j = 0; j<ads_i; j++)
-			if(	ads->sig[0] == sh->sig[0] &&
-				ads->sig[1] == sh->sig[1] &&
-				ads->sig[2] == sh->sig[2] &&
-				ads->sig[3] == sh->sig[3]) // found!
-					ads->probe(sh);
+			if(	ads[j].sig[0] == sh->sig[0] &&
+				ads[j].sig[1] == sh->sig[1] &&
+				ads[j].sig[2] == sh->sig[2] &&
+				ads[j].sig[3] == sh->sig[3]) // found!
+					ads[j].probe(sh);
 	}
 	probed = 1;
 	return 0;
