@@ -37,6 +37,11 @@ static void serial_out(uint64_t PORT, uint64_t off, uint8_t val)
 
 int term_serial_mmio_init(struct term_dev* t)
 {
+	// bridge first
+	pci_devn b = PCI_SDEVN(0,0,0,0);
+	pci_set_command(b, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
+	pci_dump(b);
+	// power??
 	pci_devn d = pci_find_device((struct pci_device_id){.vendor = 0x8086, 0xA166});
 	if(d == (pci_devn)(~0))
 	{
