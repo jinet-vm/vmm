@@ -3,7 +3,7 @@
  * Low-level memory functions.
  */
 
-#include <kernel/memory.h>
+#include <jinet/memory.h>
 
 /**
  * @brief      Sets memory.

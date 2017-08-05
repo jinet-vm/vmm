@@ -1,7 +1,6 @@
 format ELF
 
 include 'inc/macro.inc'
-;include 'inc/procedures.inc'
 
 ; >>>> 16bit code
 
@@ -180,13 +179,11 @@ use32 ; 32 bit PM
 public entry_pm
 
 extrn kernel_start
-; include 'consts.ld'
 
 ; PAGING_PHYS_ADDR:
 ; <PDPT>
 
 align   10h         ;код должен выравниваться по границе 16 байт
-; include 'inc/procedures.inc'
 
 extrn LongMode
 

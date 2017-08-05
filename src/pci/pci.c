@@ -1,9 +1,9 @@
 // both convPCI and universal PCI procedures
 
-#include <kernel/pci.h>
-#include <kernel/io.h>
-#include <kernel/module.h>
-#include <kernel/printf.h>
+#include <jinet/pci.h>
+#include <jinet/io.h>
+#include <jinet/module.h>
+#include <jinet/printf.h>
 #include <stdint.h>
 
 #define CONFIG_ADDRESS 0xCF8

@@ -1,5 +1,5 @@
-#include <kernel/ioapic.h>
-#include <kernel/madt.h>
+#include <jinet/ioapic.h>
+#include <jinet/madt.h>
 
 #define REG_S 0x8
 

@@ -1,4 +1,4 @@
-#include <kernel/regs.h>
+#include <jinet/regs.h>
 
 uint64_t cr0_get()
 {

@@ -1,9 +1,9 @@
 // MCFG and enhanced PCI
 
-#include <kernel/mcfg.h>
-#include <kernel/acpi.h>
-#include <kernel/pci.h>
-#include <kernel/module.h>
+#include <jinet/mcfg.h>
+#include <jinet/acpi.h>
+#include <jinet/pci.h>
+#include <jinet/module.h>
 #include <stdint.h>
 
 MODULE("ACPI_PCIE");

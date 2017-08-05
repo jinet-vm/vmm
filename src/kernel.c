@@ -6,24 +6,24 @@
 #include <stdint.h>
 //#include <stdlib.h>
 #include <stddef.h>
-#include <kernel/debug.h>
-#include <kernel/ints.h>
-#include <kernel/idt.h>
-#include <kernel/printf.h>
-#include <kernel/keyboard.h>
-#include <kernel/acpi.h>
-#include <kernel/madt.h>
-#include <kernel/heap.h>
-#include <kernel/ipi.h>
-#include <kernel/consts.h>
-#include <kernel/ioapic.h>
-#include <kernel/vmx.h>
-#include <kernel/gdt.h>
-#include <kernel/font.h>
-#include <kernel/term.h>
-#include <kernel/module.h>
-#include <kernel/pci.h>
-#include <kernel/mcfg.h>
+#include <jinet/debug.h>
+#include <jinet/ints.h>
+#include <jinet/idt.h>
+#include <jinet/printf.h>
+#include <jinet/keyboard.h>
+#include <jinet/acpi.h>
+#include <jinet/madt.h>
+#include <jinet/heap.h>
+#include <jinet/ipi.h>
+#include <jinet/consts.h>
+#include <jinet/ioapic.h>
+#include <jinet/vmx.h>
+#include <jinet/gdt.h>
+#include <jinet/font.h>
+#include <jinet/term.h>
+#include <jinet/module.h>
+#include <jinet/pci.h>
+#include <jinet/mcfg.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6

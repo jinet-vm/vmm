@@ -1,4 +1,4 @@
-#include <kernel/io.h>
+#include <jinet/io.h>
 #include <stdint.h>
 
 uint8_t inb(uint32_t port) {

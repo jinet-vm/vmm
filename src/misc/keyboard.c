@@ -1,9 +1,9 @@
 // just a demo!
 
-#include <kernel/tty.h>
-#include <kernel/io.h>
-#include <kernel/irq.h>
-#include <kernel/module.h>
+#include <jinet/tty.h>
+#include <jinet/io.h>
+#include <jinet/irq.h>
+#include <jinet/module.h>
 
 MODULE("KB");
 

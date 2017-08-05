@@ -1,5 +1,5 @@
-#include <kernel/acpi.h>
-#include <kernel/module.h>
+#include <jinet/acpi.h>
+#include <jinet/module.h>
 #include <stdint.h>
 
 #define EBDA_P_OFF 0x40E

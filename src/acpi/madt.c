@@ -1,6 +1,6 @@
-#include <kernel/madt.h>
-#include <kernel/acpi.h>
-#include <kernel/module.h>
+#include <jinet/madt.h>
+#include <jinet/acpi.h>
+#include <jinet/module.h>
 #include <stdint.h>
 
 // http://www.acpi.info/DOWNLOADS/ACPI_5_Errata A.pdf - 5.2.12.2 and upper

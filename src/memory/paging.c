@@ -3,12 +3,12 @@
  * @brief Paging handler.
  */
 
-#include <kernel/paging.h>
-#include <kernel/stack.h>
+#include <jinet/paging.h>
+#include <jinet/stack.h>
 #include <stddef.h>
-#include <kernel/vga.h>
-#include <kernel/memory.h>
-#include <kernel/consts.h>
+#include <jinet/vga.h>
+#include <jinet/memory.h>
+#include <jinet/consts.h>
 
 /**
  * @brief      Enables the paging.

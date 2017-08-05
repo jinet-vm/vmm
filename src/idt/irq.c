@@ -1,10 +1,10 @@
-#include <kernel/io.h>
-#include <kernel/ints.h>
+#include <jinet/io.h>
+#include <jinet/ints.h>
 #include <stdint.h>
-#include <kernel/debug.h>
-#include <kernel/apic.h>
-#include <kernel/term.h>
-#include <kernel/printf.h>
+#include <jinet/debug.h>
+#include <jinet/apic.h>
+#include <jinet/term.h>
+#include <jinet/printf.h>
 extern void irq0();
 extern void irq1();
 extern void irq2();

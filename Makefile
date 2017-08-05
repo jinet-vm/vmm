@@ -6,7 +6,7 @@ CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmode
 KERNEL_START = 0x0
 AS=fasm
 
-consts_h := include/kernel/consts.h
+consts_h := include/jinet/consts.h
 consts_ld := consts.ld
 consts_inc := inc/consts.inc
 
@@ -55,7 +55,7 @@ obj/sys_enter.o: src/usermode/sys_enter.asm
 obj/main.o: src/kernel.c obj/vga.o obj/tty.o obj/ints.o obj/idt.o obj/keyboard.o obj/acpi.o obj/madt.o obj/apic.o obj/heap.o obj/printf.o obj/ipi.o obj/ioapic.o obj/pit.o obj/vmx_init.o obj/vmx_enable.o obj/msr.o obj/gdt.o obj/term.o obj/term_vga.o obj/term_serial_io.o obj/module.o obj/term_serial_mmio.o obj/pci.o obj/mcfg.o
 	$(CC) $(CFLAGS) -c src/kernel.c -o obj/main.o -g
 
-obj/memory.o: src/memory/memory.c include/kernel/memory.h
+obj/memory.o: src/memory/memory.c include/jinet/memory.h
 	$(CC) $(CFLAGS) -c src/memory/memory.c -o obj/memory.o
 
 obj/memtab.o: src/memory/memtab.c obj/memory.o obj/tss.o obj/gdt.o
@@ -77,7 +77,7 @@ obj/gdt.o: src/memory/gdt.c
 	$(CC) $(CFLAGS) -c src/memory/gdt.c -o obj/gdt.o
 
 obj/tss.o: obj/desc.o
-	$(CC) $(CFLAGS) -c src/usermode_kernel/tss.c -o obj/tss.o
+	$(CC) $(CFLAGS) -c src/usermode_jinet/tss.c -o obj/tss.o
 
 obj/paging.o: src/memory/paging.c
 	$(CC) $(CFLAGS) -c src/memory/paging.c -o obj/paging.o

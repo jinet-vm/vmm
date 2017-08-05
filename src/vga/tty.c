@@ -25,12 +25,12 @@ Once bottom boundary of the owindow hits the buffer's bottom we do:
 // todo: rename this file
 // todo: make ansi escape sequences great again
 
-#include <kernel/tty.h>
-#include <kernel/vga.h>
-#include <kernel/memory.h>
-#include <kernel/module.h>
+#include <jinet/tty.h>
+#include <jinet/vga.h>
+#include <jinet/memory.h>
+#include <jinet/module.h>
 
-MODULE("TTYVGA");
+MODULE("VBE_TERM_EMU");
 
 static size_t tty_x, tty_y;
 static vga_color tty_bg, tty_fg;
@@ -87,7 +87,6 @@ static void tty_half_mix()
 
 void tty_putc(uint8_t a)
 {
-    static int fuck = 0;
 	if(a == '\n') {tty_y++, tty_x = 0; }
 	if(tty_x > TTY_WIDTH - 1) tty_x = 0, tty_y++;
 	if(a != '\n')

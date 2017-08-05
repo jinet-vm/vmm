@@ -1,5 +1,5 @@
-#include <kernel/module.h>
-#include <kernel/term.h>
+#include <jinet/module.h>
+#include <jinet/term.h>
 #include <stdarg.h>
 
 void _mprint(char* m, char* fmt, ...)

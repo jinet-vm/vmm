@@ -1,9 +1,9 @@
 // an interface to serial mmio
 
-#include <kernel/term.h>
-#include <kernel/module.h>
-#include <kernel/io.h>
-#include <kernel/pci.h>
+#include <jinet/term.h>
+#include <jinet/module.h>
+#include <jinet/io.h>
+#include <jinet/pci.h>
 #include <stdint.h>
 
 MODULE("TERM_MMIO");

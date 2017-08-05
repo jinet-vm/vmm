@@ -3,11 +3,11 @@
  * @brief Interface on top of GDT and TSS.
  */
 
-#include <kernel/memtab.h>
-#include <kernel/memory.h>
-#include <kernel/gdt.h>
-#include <kernel/tss.h>
-#include <kernel/debug.h>
+#include <jinet/memtab.h>
+#include <jinet/memory.h>
+#include <jinet/gdt.h>
+#include <jinet/tss.h>
+#include <jinet/debug.h>
 
 /**
  * @brief      Handles memory setup - GDT and TSS.

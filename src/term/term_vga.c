@@ -1,8 +1,8 @@
 // an interface to vga functions
 
-#include <kernel/term.h>
-//#include <kernel/module.h>
-#include <kernel/printf.h>
+#include <jinet/term.h>
+//#include <jinet/module.h>
+#include <jinet/printf.h>
 //MODULE("TERM_VGA");
 
 #define ANSI_ARG_MAX 10

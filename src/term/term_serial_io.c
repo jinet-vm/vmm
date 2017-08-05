@@ -1,7 +1,7 @@
 // an interface to serial io
 
-#include <kernel/term.h>
-#include <kernel/io.h>
+#include <jinet/term.h>
+#include <jinet/io.h>
 
 int term_serial_io_init(struct term_dev* t)
 {

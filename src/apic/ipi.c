@@ -1,6 +1,6 @@
-#include <kernel/ipi.h>
-#include <kernel/apic.h>
-#include <kernel/debug.h>
+#include <jinet/ipi.h>
+#include <jinet/apic.h>
+#include <jinet/debug.h>
 
 #define ICR_LOW 0x30
 #define ICR_HIGH 0x31

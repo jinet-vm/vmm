@@ -1,12 +1,12 @@
-#include <kernel/vmx.h>
-#include <kernel/msr.h>
-#include <kernel/tty.h>
-#include <kernel/debug.h>
-#include <kernel/regs.h>
-#include <kernel/gdt.h>
-#include <kernel/idt.h>
-#include <kernel/memory.h>
-#include <kernel/module.h>
+#include <jinet/vmx.h>
+#include <jinet/msr.h>
+#include <jinet/tty.h>
+#include <jinet/debug.h>
+#include <jinet/regs.h>
+#include <jinet/gdt.h>
+#include <jinet/idt.h>
+#include <jinet/memory.h>
+#include <jinet/module.h>
 // TODO: stop being stupid
 #define VMCS_L 0xffff800000010000
 #define VMCS_P 0x410000

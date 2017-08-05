@@ -1,7 +1,7 @@
-#include <kernel/isr.h>
-#include <kernel/ints.h>
-#include <kernel/tty.h>
-#include <kernel/module.h>
+#include <jinet/isr.h>
+#include <jinet/ints.h>
+#include <jinet/tty.h>
+#include <jinet/module.h>
 #include <stdint.h>
 
 MODULE("IDT");

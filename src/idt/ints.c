@@ -1,6 +1,6 @@
-#include <kernel/irq.h>
-#include <kernel/isr.h>
-#include <kernel/idt.h>
+#include <jinet/irq.h>
+#include <jinet/isr.h>
+#include <jinet/idt.h>
 
 void ints_install()
 {

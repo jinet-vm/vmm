@@ -1,7 +1,7 @@
-#include <kernel/idt.h>
-#include <kernel/memory.h>
-#include <kernel/printf.h>
-#include <kernel/debug.h>
+#include <jinet/idt.h>
+#include <jinet/memory.h>
+#include <jinet/printf.h>
+#include <jinet/debug.h>
 
 int delimit;
 volatile static struct idt_entry IDT[IDT_ENTRIES];

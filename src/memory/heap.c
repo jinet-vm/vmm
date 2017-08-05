@@ -1,7 +1,7 @@
-#include <kernel/heap.h>
+#include <jinet/heap.h>
 #include <stdint.h>
-#include <kernel/consts.h>
-#include <kernel/printf.h>
+#include <jinet/consts.h>
+#include <jinet/printf.h>
 
 static void* heap; // stores heap pointer
 static void* p; // stores pointer to the initial place of search for free blocks

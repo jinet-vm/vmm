@@ -1,6 +1,6 @@
-#include <kernel/apic.h>
-#include <kernel/madt.h>
-#include <kernel/irq.h>
+#include <jinet/apic.h>
+#include <jinet/madt.h>
+#include <jinet/irq.h>
 #include <stdint.h>
 
 // living in a magical world

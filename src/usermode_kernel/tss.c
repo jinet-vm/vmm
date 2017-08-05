@@ -1,9 +1,9 @@
-#include <kernel/tss.h>
-#include <kernel/gdt.h>
+#include <jinet/tss.h>
+#include <jinet/gdt.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <kernel/debug.h>
-#include <kernel/memory.h>
+#include <jinet/debug.h>
+#include <jinet/memory.h>
 
 #define MAIN_TSS 0
 #define SS0 0x10

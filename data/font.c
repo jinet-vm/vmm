@@ -1,4 +1,4 @@
-#include <kernel/font.h>
+#include <jinet/font.h>
 
 const volatile unsigned char the_font[FONTDATAMAX] = {
 

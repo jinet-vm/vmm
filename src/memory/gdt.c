@@ -3,11 +3,11 @@
  * @brief Handles operations with GDT.
  */
 
-#include <kernel/gdt.h>
-#include <kernel/consts.h>
-#include <kernel/debug.h>
+#include <jinet/gdt.h>
+#include <jinet/consts.h>
+#include <jinet/debug.h>
 #include <stdint.h>
-#include <kernel/printf.h>
+#include <jinet/printf.h>
 
 static uint64_t gdt[GDT_SEGS];
 static struct GDTP gdtp;

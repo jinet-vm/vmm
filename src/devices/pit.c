@@ -1,8 +1,8 @@
-#include <kernel/pit.h>
-#include <kernel/io.h>
-#include <kernel/irq.h>
-#include <kernel/ioapic.h>
-#include <kernel/printf.h>
+#include <jinet/pit.h>
+#include <jinet/io.h>
+#include <jinet/irq.h>
+#include <jinet/ioapic.h>
+#include <jinet/printf.h>
 
 // hear me ROAR: http://forum.osdev.org/viewtopic.php?f=1&t=31329
 

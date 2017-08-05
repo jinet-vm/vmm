@@ -1,4 +1,4 @@
-#include <kernel/msr.h>
+#include <jinet/msr.h>
 
 uint64_t msr_get(uint32_t msr)
 {

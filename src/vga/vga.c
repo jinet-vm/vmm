@@ -2,11 +2,11 @@
  * @file vga.c
  * @brief Interface to VGA text mode.
  */
-#include <kernel/vga.h>
-#include <kernel/io.h>
-#include <kernel/memory.h>
-#include <kernel/font.h>
-#include <kernel/printf.h>
+#include <jinet/vga.h>
+#include <jinet/io.h>
+#include <jinet/memory.h>
+#include <jinet/font.h>
+#include <jinet/printf.h>
 volatile uint16_t* vga_buffer;
 static int vga_pitch;
 static int vga_bpp;

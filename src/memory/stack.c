@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <kernel/stack.h>
+#include <jinet/stack.h>
 
 #define STACK_MAX_SIZE 20
 

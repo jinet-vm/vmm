@@ -1,6 +1,6 @@
-#include <kernel/term.h>
-#include <kernel/printf.h>
-#include <kernel/module.h>
+#include <jinet/term.h>
+#include <jinet/printf.h>
+#include <jinet/module.h>
 #include <stdarg.h>
 
 static struct term_dev terms[MAXTERMS];
