@@ -1,10 +1,11 @@
 # TODO
-- [ ] makefiles! make it recursive way
+- [x] makefiles! make it recursive way (solved with `find`)
+- [ ] grub! booting the multiboot way
 - [ ] proper configuration system with wistles and bells
-	+ [ ] #define DO_IT options
+	+ [ ] #define DO_IT options (no value?)
 	+ [ ] ncurses gui (*optional*)
 - [ ] memory management (we still need it)
-	+ [ ] memory map (E820h)
+	+ [ ] memory map (E820h? nah, grub)
 	+ [ ] physical memory management
 	+ [ ] virtual memory management
 	+ [ ] heap (need a proper algorithm, huh?)
