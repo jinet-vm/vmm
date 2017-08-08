@@ -1,3 +1,9 @@
+# The whole project is seperated in two subprojects: bootloader and the main binary
+# No need to say, at some point our own custom bootloader will be replaced with grub/abstraction layer/efi
+# I am not quite a fan of reinventing the bicycle
+# Also I am looking forward to moving from flat binary storage to some reasonable partioning (i wanna GPT with legacy boot)
+# still 
+
 .PHONY: all prepare clean kernel bootloader configure
 
 SHELL=bash
