@@ -35,6 +35,10 @@ void putc(void* none, char c)
 	tty_putc(c);
 }
 
+void kernel_start();
+
+long long unsigned addr __attribute__((section(".boot"))) = kernel_start;
+
 struct term_dev vga =
 {
 	.name = "VBE_TERM",
