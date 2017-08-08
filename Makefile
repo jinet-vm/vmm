@@ -4,7 +4,7 @@
 # Also I am looking forward to moving from flat binary storage to some reasonable partioning (i wanna GPT with legacy boot)
 # to comment out some source file use '.' (like kernel.c vs .kernel.c)
 
-.PHONY: all prepare clean kernel bootloader configure
+.PHONY: all clean
 
 SHELL=bash
 CC=gcc
