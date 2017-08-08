@@ -16,7 +16,7 @@ extern void setTR(uint16_t segment);
 void setup_tss(uint32_t num, uint16_t ss0, uint32_t esp0)
 {
 	// GDT setup
-	gdt_set_gate(num,&TSS[num],sizeof(tss_entry), 0xE9, 0x40);
+	//gdt_set_gate(num,&TSS[num],sizeof(tss_entry), 0xE9, 0x40);
 	mbp;
 	// Managing TSS
 	memset(&TSS[num],0,sizeof(tss_entry));

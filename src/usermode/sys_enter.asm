@@ -1,26 +1,26 @@
-format ELF
+format elf64
 
 section '.text' executable
-use32
+use64
 
 public sys_enter
 sys_enter:
-	pushad
-	mov ecx, esp
-	mov edx, .back
-	sysenter
-	.back:
-	popad
+	; pushad
+	; mov ecx, esp
+	; mov edx, .back
+	; sysenter
+	; .back:
+	; popad
 	ret
 
 public sys_write
 sys_write: ; (char * buf) // null-terminated
-	push ebp
-	mov ebp, esp
-	push esi
-	mov esi, [ebp+8]
-	mov eax, 1
-	call sys_enter
-	pop esi
-	pop ebp
+	; push ebp
+	; mov ebp, esp
+	; push esi
+	; mov esi, [ebp+8]
+	; mov eax, 1
+	; call sys_enter
+	; pop esi
+	; pop ebp
 	ret

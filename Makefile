@@ -13,7 +13,7 @@ AS=fasm
 
 SRC_DIR ?= ./src
 OBJ_DIR ?= ./obj
-SRCS := $(shell find -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
+SRCS := $(shell find * -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
 OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
 
 consts_h := include/jinet/consts.h
@@ -21,7 +21,7 @@ consts_ld := consts.ld
 consts_inc := inc/consts.inc
 
 all: $(OBJS)
-	echo "yay"
+	ld -T $(consts_ld) -T kernel.ld $(OBJS) -M -melf_x86_64 > kernel.map
 
 $(OBJ_DIR)/%.asm.o: %.asm
 	mkdir -p $(dir $@)
