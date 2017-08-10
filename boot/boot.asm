@@ -1,34 +1,52 @@
 format elf
+use32
+extrn enterlm
 
 section '.multiboot' align 8
 
-; 0	u32	magic	required 
-; 4	u32	flags	required 
-; 8	u32	checksum	required 
-; 12	u32	header_addr	if flags[16] is set 
-; 16	u32	load_addr	if flags[16] is set 
-; 20	u32	load_end_addr	if flags[16] is set 
-; 24	u32	bss_end_addr	if flags[16] is set 
-; 28	u32	entry_addr	if flags[16] is set 
-; 32	u32	mode_type	if flags[2] is set 
-; 36	u32	width	if flags[2] is set 
-; 40	u32	height	if flags[2] is set 
-; 44	u32	depth	if flags[2] is set 
-
 magic = 0x1BADB002
-flags = 0
+flags = 0x10000
 chksm = -(magic+flags)
 
+_start: ; something has gone wrong...
+	xor eax, eax
+	xor ebx, ebx
+	jmp trump
+align 4
+
 multiboot2_header:
-	.magic:			dd magic			; required
-	.flags:			dd flags			; required
-	.checksum:		dd chksm			; required
-	.header_addr:	dd 0				; if flags[16] is set
-	.load_addr:		dd 0				; if flags[16] is set
-	.load_end_addr:	dd 0				; if flags[16] is set
-	.bss_end_addr:	dd 0				; if flags[16] is set
-	.entry_addr:	dd 0				; if flags[16] is set
-	.mode_type:		dd 0				; if flags[2] is set
-	.width:			dd 0				; if flags[2] is set
-	.height:		dd 0				; if flags[2] is set
-	.depth:			dd 0				; if flags[2] is set
+	.magic:			dd magic				; required
+	.flags:			dd flags				; required
+	.checksum:		dd chksm				; required
+	.header_addr:	dd multiboot2_header	; if flags[16] is set
+	.load_addr:		dd _start				; if flags[16] is set
+	.load_end_addr:	dd 0					; if flags[16] is set
+	.bss_end_addr:	dd 0					; if flags[16] is set
+	.entry_addr:	dd trump					; if flags[16] is set
+	.mode_type:		dd 0					; if flags[2] is set
+	.width:			dd 0					; if flags[2] is set
+	.height:		dd 0					; if flags[2] is set
+	.depth:			dd 0					; if flags[2] is set
+
+section '.data' align 8
+
+align 4
+db 0,0
+GDT:
+d_zero:		db  0,0,0,0,0,0,0,0
+d_code32:	db  0ffh,0ffh,0,0,0,10011010b,11001111b,0
+d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
+GDTSize     =   $-GDTTable
+times 5 db 0,0,0,0,0,0,0,0
+
+GDTR:
+g_size:     dw  GDTSize-1
+g_base:     dd  GDT
+
+section '.text' align 8
+
+trump: ; 'cause trAmpoline
+	cli
+	mov esp, 0x200000
+	lgdt [gdtr]
+	call enterlm
