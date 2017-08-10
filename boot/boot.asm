@@ -5,7 +5,7 @@ extrn enterlm
 section '.multiboot' align 8
 
 magic = 0x1BADB002
-flags = 0x10000
+flags = 0x10200
 chksm = -(magic+flags)
 
 _start: ; something has gone wrong...
@@ -36,7 +36,7 @@ GDT:
 d_zero:		db  0,0,0,0,0,0,0,0
 d_code32:	db  0ffh,0ffh,0,0,0,10011010b,11001111b,0
 d_data:		db	0ffh, 0ffh, 0x00, 0, 0, 10010010b, 11001111b, 0x00
-GDTSize     =   $-GDTTable
+GDTSize     =   $-GDT
 times 5 db 0,0,0,0,0,0,0,0
 
 GDTR:
@@ -47,6 +47,9 @@ section '.text' align 8
 
 trump: ; 'cause trAmpoline
 	cli
+	cmp eax, 0x2BADB002
+	jne $
 	mov esp, 0x200000
-	lgdt [gdtr]
-	call enterlm
+	push ebx
+	lgdt [GDTR]
+	call enterlm ; enterlm(void* multiboot_table)

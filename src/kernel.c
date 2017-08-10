@@ -24,6 +24,7 @@
 #include <jinet/module.h>
 #include <jinet/pci.h>
 #include <jinet/mcfg.h>
+#include <jinet/bootstruct.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -37,7 +38,15 @@ void putc(void* none, char c)
 
 void kernel_start();
 
-long long unsigned addr __attribute__((section(".boot"))) = kernel_start;
+static uint64_t mmap[1000];
+
+struct bootstruct __attribute__((section(".boot"))) =
+{
+	.lm_magic = BTSTR_LM_MAGIC,
+	.lm_load_addr = KERNEL_VMA_ADDR,
+	.lm_entry_addr = kernel_start,
+	.lm_mmap = &mmap
+};
 
 struct term_dev vga =
 {

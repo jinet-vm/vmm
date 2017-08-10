@@ -1,7 +1,7 @@
 .PHONY: all
 
 clean:
-	rm *.o
+	rm -f *.o
 
 all: boot.o enterlm.o
 	ld -Tboot.ld boot.o enterlm.o -melf_i386

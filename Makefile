@@ -13,7 +13,7 @@ AS=fasm
 
 SRC_DIR ?= ./src
 OBJ_DIR ?= ./obj
-SRCS := $(shell find * -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
+SRCS := $(shell find $(SRC_DIR) -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
 OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
 
 consts_h := include/jinet/consts.h
