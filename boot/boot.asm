@@ -5,7 +5,7 @@ extrn enterlm
 section '.multiboot' align 8
 
 magic = 0x1BADB002
-flags = 0x10200
+flags = 0x10006
 chksm = -(magic+flags)
 
 _start: ; something has gone wrong...
@@ -26,7 +26,7 @@ multiboot2_header:
 	.mode_type:		dd 0					; if flags[2] is set
 	.width:			dd 0					; if flags[2] is set
 	.height:		dd 0					; if flags[2] is set
-	.depth:			dd 0					; if flags[2] is set
+	.depth:			dd 32					; if flags[2] is set
 
 section '.data' align 8
 
@@ -49,7 +49,12 @@ trump: ; 'cause trAmpoline
 	cli
 	cmp eax, 0x2BADB002
 	jne $
-	mov esp, 0x200000
+	mov esp, theSTACK
 	push ebx
 	lgdt [GDTR]
 	call enterlm ; enterlm(void* multiboot_table)
+
+section '.bss' align 8
+
+theSTACK: times 0x20000 db 0
+actualesp:

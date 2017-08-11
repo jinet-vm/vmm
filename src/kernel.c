@@ -40,12 +40,12 @@ void kernel_start();
 
 static uint64_t mmap[1000];
 
-struct bootstruct __attribute__((section(".boot"))) =
+struct bootstruct  __attribute__((section(".boot"))) b =
 {
 	.lm_magic = BTSTR_LM_MAGIC,
 	.lm_load_addr = KERNEL_VMA_ADDR,
 	.lm_entry_addr = kernel_start,
-	.lm_mmap = &mmap
+	.lm_mmap_addr = &mmap
 };
 
 struct term_dev vga =
