@@ -2,6 +2,8 @@ format elf
 use32
 extrn enterlm
 
+; todo: multiboot 2
+
 section '.multiboot' align 8
 
 magic = 0x1BADB002
@@ -14,18 +16,18 @@ _start: ; something has gone wrong...
 	jmp trump
 align 4
 
-multiboot2_header:
+multiboot_header:
 	.magic:			dd magic				; required
 	.flags:			dd flags				; required
 	.checksum:		dd chksm				; required
-	.header_addr:	dd multiboot2_header	; if flags[16] is set
+	.header_addr:	dd multiboot_header	; if flags[16] is set
 	.load_addr:		dd _start				; if flags[16] is set
 	.load_end_addr:	dd 0					; if flags[16] is set
 	.bss_end_addr:	dd 0					; if flags[16] is set
-	.entry_addr:	dd trump					; if flags[16] is set
+	.entry_addr:	dd trump				; if flags[16] is set
 	.mode_type:		dd 0					; if flags[2] is set
-	.width:			dd 0					; if flags[2] is set
-	.height:		dd 0					; if flags[2] is set
+	.width:			dd 1024					; if flags[2] is set
+	.height:		dd 768				; if flags[2] is set
 	.depth:			dd 32					; if flags[2] is set
 
 section '.data' align 8
