@@ -6,6 +6,8 @@ extrn enterlm
 
 section '.multiboot' align 8
 
+public multiboot2_header
+
 align 8
 multiboot2_header:
 	.magic: dd 0xe85250d6
@@ -32,17 +34,17 @@ multiboot2_header:
 	align 8
 	mbh_fb:
 		.type: dw 5
-		.flags: dw 1
+		.flags: dw 0
 		.size: dd 20
 		.width: dd 0
 		.height: dd 0
-		.depth: dd 32 
+		.depth: dd 0 
 	mbh_fb_end:
 
 	align 8
 	mbh_modalign:
 		.type: dw 6
-		.flags: dw 1
+		.flags: dw 0
 		.size: dw 8
 	mbh_modalign_end:
 
@@ -83,5 +85,5 @@ trump: ; 'cause trAmpoline
 
 section '.bss' align 8
 
-theSTACK: times 0x20000 db 0
+theSTACK: times 0x4000 db 0
 actualesp:
