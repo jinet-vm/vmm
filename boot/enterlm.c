@@ -1,21 +1,37 @@
-#include <jinet/multiboot.h>
+#include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
-#include <jinet/vga.h>
 
-void enterlm(struct multiboot_info* mt)
+void enterlm(void* mb2_info_tags)
 {
-	if(!(mt->flags & MULTIBOOT_INFO_MODS))
-	if(!(mt->flags & MULTIBOOT_INFO_VIDEO_INFO))
-	if(!(mt->flags & MULTIBOOT_INFO_MEM_MAP)) // there's a lot of stuff we need
+	// mb2_info_tags: uint32_t total_size, reserved; tags!
+	uint32_t frst = mb2_info_tags;
+	uint32_t size = *(uint32_t*)mb2_info_tags;
+	mb2_info_tags += 8;
+	while(mb2_info_tags < frst+size)
 	{
-		int *i = 1/0; // OH NO
-		*i = 0;	// OH NO
-		// causing reboot
-		for(;;); // just to be DEAD sure
+		struct multiboot_tag* tag = mb2_info_tags;
+		switch(tag->type)
+		{
+			case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
+			{
+				struct multiboot_tag_framebuffer_common* fb = tag;
+				uint64_t* addr = &(fb->framebuffer_addr);
+				uint32_t* a = (uint32_t*)addr;
+				*a++;
+				uint32_t _a = a;
+				uint32_t *x = _a;
+				for(int i = 0; i<10000000; i++)
+				{
+					*x++ = 0xffffffff;
+				}
+				int* r = 1/0;
+				*r = 1/0;
+				break;
+			}
+			default :
+				break;
+		}
+		mb2_info_tags += (tag->size + 7) & ~7;
 	}
-	struct vbe_info* vbei = mt->framebuffer_addr;
-	uint32_t* p = (uint32_t)vbei->framebuffer;
-	for(int i = 0; i<vbei->width*vbei->height; i++)
-		*p++ = 0xffffffff;
 	for(;;);
 }

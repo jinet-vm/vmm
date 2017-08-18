@@ -2,6 +2,8 @@
 
 clean:
 	rm -f *.o
+	rm -f boot.elf
+	rm -f boot.img
 
 all: boot.o enterlm.o
 	ld -Tboot.ld boot.o enterlm.o -melf_i386

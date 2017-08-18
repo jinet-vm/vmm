@@ -6,30 +6,53 @@ extrn enterlm
 
 section '.multiboot' align 8
 
-magic = 0x1BADB002
-flags = 0x10006
-chksm = -(magic+flags)
+align 8
+multiboot2_header:
+	.magic: dd 0xe85250d6
+	.arch: dd 0
+	.length: dd multiboot2_header_end - multiboot2_header
+	.checksum: dd -(0xe85250d6 + 0 + (multiboot2_header_end - multiboot2_header))
 
-_start: ; something has gone wrong...
-	xor eax, eax
-	xor ebx, ebx
-	jmp trump
-align 4
+	; align 8
+	; mbh_entry:
+	; 	.type: dw 3
+	; 	.flags: dw 0
+	; 	.size: dw 12
+	; 	.entry_addr: dq trump
+	; mbh_entry_end:
 
-multiboot_header:
-	.magic:			dd magic				; required
-	.flags:			dd flags				; required
-	.checksum:		dd chksm				; required
-	.header_addr:	dd multiboot_header	; if flags[16] is set
-	.load_addr:		dd _start				; if flags[16] is set
-	.load_end_addr:	dd 0					; if flags[16] is set
-	.bss_end_addr:	dd 0					; if flags[16] is set
-	.entry_addr:	dd trump				; if flags[16] is set
-	.mode_type:		dd 0					; if flags[2] is set
-	.width:			dd 1024					; if flags[2] is set
-	.height:		dd 768				; if flags[2] is set
-	.depth:			dd 32					; if flags[2] is set
+	align 8
+	mbh_info_request:
+		.type: dw 1
+		.flags: dw 0
+		.size: dd mbh_info_request_end - mbh_info_request
+		.tags: dd 4, 6, 8
+	mbh_info_request_end:
 
+	align 8
+	mbh_fb:
+		.type: dw 5
+		.flags: dw 1
+		.size: dd 20
+		.width: dd 0
+		.height: dd 0
+		.depth: dd 32 
+	mbh_fb_end:
+
+	align 8
+	mbh_modalign:
+		.type: dw 6
+		.flags: dw 1
+		.size: dw 8
+	mbh_modalign_end:
+
+	align 8
+	mbh_end:
+		.type: dw 0
+		.flags: dw 0
+		.size: dd 8
+
+multiboot2_header_end:
 section '.data' align 8
 
 align 4
@@ -47,9 +70,11 @@ g_base:     dd  GDT
 
 section '.text' align 8
 
+public trump
+
 trump: ; 'cause trAmpoline
 	cli
-	cmp eax, 0x2BADB002
+	cmp eax, 0x36d76289
 	jne $
 	mov esp, theSTACK
 	push ebx

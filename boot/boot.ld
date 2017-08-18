@@ -1,5 +1,6 @@
-OUTPUT_FORMAT("binary")
-OUTPUT("boot.img")
+OUTPUT_FORMAT("elf32-i386")
+OUTPUT("boot.elf")
+ENTRY("trump");
 
 SECTIONS
 {
