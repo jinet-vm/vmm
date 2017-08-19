@@ -1,10 +1,12 @@
 #include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
 
-void set_pml4e(void *entry, uint64_t addr);
-void set_pdpte(void* entry, uint64_t addr, int ps);
-void set_pde(void* entry, uint64_t addr, int ps);
-void set_pte(void* entry, uint64_t addr);
+void set_pdpt(void *entry, uint64_t addr, int ps);
+void set_pd(void* entry, uint64_t addr, int ps);
+void set_pt(void* entry, uint64_t addr, int ps);
+void set_pf(void* entry, uint64_t addr, int ps);
+
+void* add_table();
 
 uint32_t mem_addr = 0;
 void* future_cr3;
@@ -124,8 +126,7 @@ void enterlm(void* mb2_info_tags)
 	// now mem_addr:	+0000h: PML4 table
 	// 					+1000h: PDP table
 	// 					+2000h and on: PD and page tables
-	future_cr3 = mem_addr;
-	mem_addr += 0x1000; // first for PML4
+	future_cr3 = add_table(); // first for PML4
 	set_page_entry(mem_addr, mem_addr+0x1000, 0); // kernel PML4
 	set_page_entry(mem_addr + 0x1000, mem_addr+0x1000, 0); // kernel PML4
 	for(;;);
@@ -138,44 +139,80 @@ uint64_t map_page_dir(uint64_t vma, uint64_t paddr);
 uint64_t map_page_tbl(uint64_t vma, uint64_t paddr);
 uint64_t map_page_frm(uint64_t vma, uint64_t paddr);
 
-uint64_t map_page_pdpt(uint64_t vma, uint64_t dir_paddr)
+void set_page_entry(void* entry, uint64_t paddr, int ps, int n);
+
+void* add_table()
 {
+	void* out = mem_addr;
+	mem_addr += 0x1000;
+	return out;
+}
+
+
+uint64_t map_page_entry(uint64_t vma, uint64_t paddr, int n)
+{
+	const void* (*sets[4])(void*, uint64_t, int) = {set_pdpt, set_pd, set_pt, set_pf};
 	uint64_t* tbl = future_cr3;
-	tbl += ((vma >> 39llu) & 0x1ffllu) << 3;
-	if(!(*tbl & 1)) // found!
+	int final = (n > 3 ? 3 : n);
+	for(int i = 0; i<=final; i++)
 	{
-		set_pdpt(tbl, mem_addr);
-		mem_addr += 0x1000;
-		table_count++;
+		tbl += ((vma >> (39llu - 9llu*n)) & 0x1ffllu) << 3;
+		if(!(*tbl & 1)) // not found!
+		{
+			if(i == final)
+				sets[i](*tbl, paddr, 1);
+			else
+				sets[i](*tbl, add_table(), 0);
+			mem_addr += 0x1000;
+			table_count++;
+		}
+		tbl = *tbl & ~(0xfffllu);
 	}
-	return *tbl & ~(0xfffllu); // todo: beware the XD bit
+
+	return tbl;
+
+	if(0 <= n)
+	{
+		tbl += ((vma >> 39llu) & 0x1ffllu) << 3;
+		if(!(*tbl & 1)) // found!
+		{
+			set_pdpt(tbl, mem_addr);
+			mem_addr += 0x1000;
+			table_count++;
+		}
+		tbl = *tbl & ~(0xfffllu); // todo: beware the XD bit
+	}
+	if(1 <= n)
+	{
+
+	}
 }
 
 void set_page_entry(void* entry, uint64_t addr, int ps)
 {
 	uint64_t res = 1; // present flag
-	res |= addr & (~0x1fffllu);
+	res |= addr & (~0xfffllu);
 	res |= (ps != 0) << 7;
 	uint64_t* out = entry;
 	*out = res;
 }
 
-void set_pdpt(void *entry, uint64_t addr)
+void set_pdpt(void *entry, uint64_t addr, int ps)
 {
-	set_page_entry(entry, addr & ~0x1fff, 0);
+	set_page_entry(entry, addr & ~0xfffllu, 0);
 }
 
-void set_pdpte(void* entry, uint64_t addr, int ps)
+void set_pd(void* entry, uint64_t addr, int ps)
 {
 	set_page_entry(entry, addr & ~(ps ? 0xffffllu : 0x3fffffffllu), ps);
 }
 
-void set_pde(void* entry, uint64_t addr, int ps)
+void set_pt(void* entry, uint64_t addr, int ps)
 {
 	set_page_entry(entry, addr & ~(ps ? 0xffffllu : 0x1fffffllu), ps);
 }
 
-void set_pte(void* entry, uint64_t addr)
+void set_pf(void* entry, uint64_t addr, int ps)
 {
-	set_page_entry(entry, addr & ~0xffffllu, 0);
+	set_page_entry(entry, addr & ~0xfffllu, 0);
 }
