@@ -1,33 +1,33 @@
 #include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
 
-void set_pdpt(void *entry, uint64_t addr, int ps);
-void set_pd(void* entry, uint64_t addr, int ps);
-void set_pt(void* entry, uint64_t addr, int ps);
-void set_pf(void* entry, uint64_t addr, int ps);
+void set_pdpt(void *entry, uint32_t addr_low, uint32_t addr_high, int ps);
+void set_pd(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
+void set_pt(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
+void set_pf(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
 
-void* add_table();
+uint32_t add_table();
+void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n);
 
 uint32_t mem_addr = 0;
-void* future_cr3;
+uint32_t future_cr3;
 
 void enterlm(void* mb2_info_tags)
 {
 	// mb2_info_tags: uint32_t total_size, reserved; tags!
 	uint32_t frst; frst = mb2_info_tags;
-	uint32_t size; size =*(uint32_t*)mb2_info_tags;
+	uint32_t size; size = *(uint32_t*)mb2_info_tags;
 	mb2_info_tags += 8;
 	uint16_t *t; t = 0xb8000;
-	*t++ = 0x4040;
-	*t++ = 0x4041;
-	*t++ = 0x4042;
-	*t++ = 0x4043;
-	uint64_t kernel_start = 0, kernel_end = 0;
+	*t++ = 0xc040;
+	*t++ = 0xd041;
+	*t++ = 0xe042;
+	*t++ = 0xf043;
+	uint32_t kernel_start = 0, kernel_end = 0;
+	uint64_t vma_kernel_start;
 	uint32_t vd_fb, vd_wd, vd_ht, vd_bpp, vd_type; 
 	struct multiboot_mmap_entry* mmap;
 	int mmap_num = 0;
-
-	asm("xchg %bx, %bx");
 
 	while(mb2_info_tags < frst+size)
 	{
@@ -51,6 +51,7 @@ void enterlm(void* mb2_info_tags)
 				struct bootstruct* bs; bs = mod->mod_start;
 				if(bs->lm_magic != BTSTR_LM_MAGIC) break;
 				// we found it!
+				vma_kernel_start = bs->lm_load_addr;
 				kernel_start = mod->mod_start;
 				kernel_end = mod->mod_end;
 				break;
@@ -69,8 +70,6 @@ void enterlm(void* mb2_info_tags)
 		}
 		mb2_info_tags += (tag->size + 7) & ~7;
 	}
-	
-	asm("xchg %bx, %bx");
 
 	if(kernel_start == kernel_end || mmap_num == 0)
 	{
@@ -82,137 +81,155 @@ void enterlm(void* mb2_info_tags)
 
 	int i, j; // it's all 'cause it works
 
+	mem_addr = 0;
 	for(i = 0; i<mmap_num; i++)
 	{
-		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE && mmap[i].len > 0x100000llu) // just in case I need 1024 tables
+		// assuming module is in 32 bit address space
+		uint64_t len = (mmap[i].len_high*1llu) << 32llu | mmap[i].len_low;
+		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE && len > 0x102000llu) // just in case I need 1024 tables
 		{
-			if(mmap[i].addr <= kernel_start && kernel_start - mmap[i].addr < mmap[i].len)
+			if(mmap[i].addr_low <= kernel_start && kernel_start - mmap[i].addr_low < len)
 			{
-				if(kernel_end + 0x100000llu - mmap[i].addr < mmap[i].len) // kernel placed inside that map entry, let's just place memory map & page tables after it
-					mem_addr = kernel_end;
+				if(((kernel_end + 0xfff) & ~0xffff) + 0x100000llu - mmap[i].addr_low < len) // kernel placed inside that map entry, let's just place memory map & page tables after it
+					mem_addr = ((kernel_end + 0xfff) & ~0xfff);
 			}
-			else mem_addr = mmap[i].addr;
+			else mem_addr = (mmap[i].addr_low + 0xfff) & ~0xfff;
 		}
-	}
+	}	
 
 	if(!mem_addr) { *(uint32_t*)(1/0) = (uint32_t)1/0;}
 	uint64_t mem_addr_orig;
 	mem_addr_orig = mem_addr;
-	mem_addr = (mem_addr+0x999) & ~0x1000; // page aligned
+	mem_addr = (mem_addr+0xfff) & ~0xfff; // page aligned
 	struct multiboot_mmap_entry* copy;
 	struct multiboot_mmap_entry* copied;
 	copy = mem_addr; copied = &mmap[0];
 	for(i = 0; i<mmap_num; i++)
 	{
-		copy->addr = copied->addr;
-		copy->len = copied->len;
+		copy->addr_low = copied->addr_low;
+		copy->len_low = copied->len_low;
+		copy->addr_high = copied->addr_high;
+		copy->len_high = copied->len_high;
 		copy->type = copied->type;
 		copy->zero = 0;
 		*copy++; *copied++;
 	}
-	mem_addr += (mmap_num*sizeof(struct multiboot_mmap_entry)+0x999) & ~0x1000;
 
-	uint64_t kernel_start_pdpt, kernel_start_pd, kernel_start_pt, kernel_start_pf;
-	uint64_t kernel_end_pdpt, kernel_end_pd, kernel_end_pt, kernel_end_pf;
-	kernel_start_pdpt = (kernel_start >> 39llu) & 0x1ffllu;
-	kernel_start_pd = (kernel_start >> 30llu) & 0x1ffllu;
-	kernel_start_pt = (kernel_start >> 21llu) & 0x1ffllu;
-	kernel_start_pf = (kernel_start >> 12llu) & 0x1ffllu;
-	kernel_end_pdpt = (kernel_end >> 39llu) & 0x1ffllu;
-	kernel_end_pd = (kernel_end >> 30llu) & 0x1ffllu;
-	kernel_end_pt = (kernel_end >> 21llu) & 0x1ffllu;
-	kernel_end_pf = (kernel_end >> 12llu) & 0x1ffllu;
-
+	//asm("xchg %bx, %bx");
+	mem_addr += mmap_num*sizeof(struct multiboot_mmap_entry)+0xfff;
+	mem_addr &= ~0xfff;
 	// now mem_addr:	+0000h: PML4 table
 	// 					+1000h: PDP table
 	// 					+2000h and on: PD and page tables
-	future_cr3 = add_table(); // first for PML4
-	set_page_entry(mem_addr, mem_addr+0x1000, 0); // kernel PML4
-	set_page_entry(mem_addr + 0x1000, mem_addr+0x1000, 0); // kernel PML4
+	future_cr3 = add_table();
+	//asm("xchg %bx, %bx");
+	for(uint32_t lowk = 0; lowk < kernel_end - kernel_start; lowk+=0x1000)
+	{
+		uint32_t vma_low, vma_high;
+		vma_low = vma_kernel_start & 0xffffffff + lowk;
+		uint64_t _tmp = (vma_kernel_start >> 32llu);
+		vma_high = _tmp;
+		vma_high &= ~0xffff0000;
+		if(vma_kernel_start & 0xffffffff > 0xfffffff - lowk) // oh no, overflow -- just to be sure
+			vma_high++;
+		asm("xchg %bx, %bx");
+		vma_low = vma_low;
+		asm("xchg %bx, %bx");
+		map_page_entry(vma_low, vma_high, kernel_start + lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
+	}
+
+	// bootstruct
+
+	struct bootstruct* bs = kernel_start;
+	bs->tr_magic = BTSTR_TR_MAGIC;
+	bs->tr_phys_addr = kernel_start;
+	bs->tr_video_type = vd_type;
+	bs->tr_vd_framebuffer = vd_fb;
+	bs->tr_vd_width = vd_wd;
+	bs->tr_vd_height = vd_ht;
+	bs->tr_vd_depth = vd_bpp;
+	bs->tr_mmap_len = 0;
 	for(;;);
 }
 
 int table_count = 0;
 
-uint64_t map_page_pdpt(uint64_t vma, uint64_t dir_paddr);
-uint64_t map_page_dir(uint64_t vma, uint64_t paddr);
-uint64_t map_page_tbl(uint64_t vma, uint64_t paddr);
-uint64_t map_page_frm(uint64_t vma, uint64_t paddr);
+// uint64_t map_page_pdpt(uint64_t vma, uint64_t dir_paddr);
+// uint64_t map_page_dir(uint64_t vma, uint64_t paddr);
+// uint64_t map_page_tbl(uint64_t vma, uint64_t paddr);
+// uint64_t map_page_frm(uint64_t vma, uint64_t paddr);
 
-void set_page_entry(void* entry, uint64_t paddr, int ps, int n);
-
-void* add_table()
+uint32_t add_table()
 {
-	void* out = mem_addr;
+	uint32_t out = mem_addr;
+	uint32_t *r = mem_addr;
+	for(int i = 0; i<1024; i++)
+	{
+		*r = 0x0;
+		*r++;
+	}
 	mem_addr += 0x1000;
+	//asm("xchg %bx, %bx");
 	return out;
 }
 
 
-uint64_t map_page_entry(uint64_t vma, uint64_t paddr, int n)
+void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n)
 {
 	const void* (*sets[4])(void*, uint64_t, int) = {set_pdpt, set_pd, set_pt, set_pf};
-	uint64_t* tbl = future_cr3;
+	void* tbl = future_cr3;
 	int final = (n > 3 ? 3 : n);
+	int nums[4] = {(vma_high >> 7) & 0x1ff, ((vma_high & 0x3f) << 2) | (vma_low & (3 << 30)), (vma_low >> 21) & 0x1ff, (vma_low >> 12) & 0x1ff};
 	for(int i = 0; i<=final; i++)
 	{
-		tbl += ((vma >> (39llu - 9llu*n)) & 0x1ffllu) << 3;
-		if(!(*tbl & 1)) // not found!
+		// tbl += ((vma >> (39llu - 9llu*i)) & 0x1ffllu);
+		// vma_high = vma >> 32;
+		// vma_low = vma & 0xffffffff
+		// vma >> 39 & 0x1ff = vma_high >> 7 & 0x1ff
+		// vma >> 30 & 0x1ff = ((vma_high & 0x3f) << 2) | (vma_low & (3 << 30))
+		// vma >> 21 & 0x1ff = vma_low >> 21 & 0x1ff
+		tbl += nums[i]*8;
+		if(!(*(int *)tbl & 1)) // not found!
 		{
 			if(i == final)
-				sets[i](*tbl, paddr, 1);
+				set_page_entry(tbl, paddr_low, paddr_high, 1);
 			else
-				sets[i](*tbl, add_table(), 0);
-			mem_addr += 0x1000;
+				set_page_entry(tbl, add_table(), 0, 0);
 			table_count++;
 		}
-		tbl = *tbl & ~(0xfffllu);
-	}
-
-	return tbl;
-
-	if(0 <= n)
-	{
-		tbl += ((vma >> 39llu) & 0x1ffllu) << 3;
-		if(!(*tbl & 1)) // found!
-		{
-			set_pdpt(tbl, mem_addr);
-			mem_addr += 0x1000;
-			table_count++;
-		}
-		tbl = *tbl & ~(0xfffllu); // todo: beware the XD bit
-	}
-	if(1 <= n)
-	{
-
+		tbl = *(unsigned int *)tbl & ~(0xfffllu); // 32 bit space
 	}
 }
 
-void set_page_entry(void* entry, uint64_t addr, int ps)
+void set_page_entry(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	uint64_t res = 1; // present flag
-	res |= addr & (~0xfffllu);
-	res |= (ps != 0) << 7;
-	uint64_t* out = entry;
-	*out = res;
+	// //asm("xchg %bx, %bx");
+	// //asm("xchg %bx, %bx");
+	uint32_t* low = entry, *high = entry + 4;
+	*low = 1;
+	*low |= (!ps) << 7;
+	*low |= addr_low & (~0xfff);
+	*high |= addr_high;
 }
 
-void set_pdpt(void *entry, uint64_t addr, int ps)
+
+void set_pdpt(void *entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	set_page_entry(entry, addr & ~0xfffllu, 0);
+	//return;
+	set_page_entry(entry, addr_low & ~0xfff, addr_high, 0);
 }
 
-void set_pd(void* entry, uint64_t addr, int ps)
+void set_pd(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	set_page_entry(entry, addr & ~(ps ? 0xffffllu : 0x3fffffffllu), ps);
+	set_page_entry(entry, addr_low & ~(ps ? 0xfff : 0x3fffffff), addr_high, ps);
 }
 
-void set_pt(void* entry, uint64_t addr, int ps)
+void set_pt(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	set_page_entry(entry, addr & ~(ps ? 0xffffllu : 0x1fffffllu), ps);
+	set_page_entry(entry, addr_low & ~(ps ? 0xffff : 0x1fffff), addr_high, ps);
 }
 
-void set_pf(void* entry, uint64_t addr, int ps)
+void set_pf(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	set_page_entry(entry, addr & ~0xfffllu, 0);
+	set_page_entry(entry, addr_low & ~0xfff, addr_high, 0);
 }

@@ -82,7 +82,7 @@ trump: ; 'cause trAmpoline
 	push ebx
 	lgdt [GDTR]
 	call enterlm ; enterlm(void* multiboot_table)
-
+	jmp $
 section '.bss' align 8
 
 theSTACK: times 0x4000 db 0
