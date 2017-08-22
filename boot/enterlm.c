@@ -10,7 +10,10 @@ uint32_t add_table();
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n);
 
 uint32_t mem_addr = 0;
-uint32_t future_cr3;
+uint64_t future_cr3;
+uint64_t ent;
+
+extern void trump();
 
 void enterlm(void* mb2_info_tags)
 {
@@ -123,20 +126,23 @@ void enterlm(void* mb2_info_tags)
 	// 					+2000h and on: PD and page tables
 	future_cr3 = add_table();
 	//asm("xchg %bx, %bx");
-	for(uint32_t lowk = 0; lowk < kernel_end - kernel_start; lowk+=0x1000)
+	uint32_t vma_low, vma_high;
+	uint32_t* r = &vma_kernel_start;
+	*r++;
+	vma_low = vma_kernel_start & 0xffffffff;
+	vma_high = *r;
+	for(uint32_t lowk = kernel_start; lowk < kernel_end; lowk+=0x1000)
 	{
-		uint32_t vma_low, vma_high;
-		vma_low = vma_kernel_start & 0xffffffff + lowk;
-		uint64_t _tmp = (vma_kernel_start >> 32llu);
-		vma_high = _tmp;
-		vma_high &= ~0xffff0000;
-		if(vma_kernel_start & 0xffffffff > 0xfffffff - lowk) // oh no, overflow -- just to be sure
-			vma_high++;
-		asm("xchg %bx, %bx");
-		vma_low = vma_low;
-		asm("xchg %bx, %bx");
-		map_page_entry(vma_low, vma_high, kernel_start + lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
+		vma_low += 0x1000;
+		map_page_entry(vma_low, vma_high, lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
 	}
+
+	//map_page_entry(0x00000000, 0x1000, 0, 0, 3);
+
+	uint32_t DJT = &trump;
+	map_page_entry((DJT & ~0xfff)+0x0000, 0, (DJT & ~0xfff)+0x0000, 0, 3);
+	map_page_entry((DJT & ~0xfff)+0x1000, 0, (DJT & ~0xfff)+0x1000, 0, 3);
+	map_page_entry((DJT & ~0xfff)+0x2000, 0, (DJT & ~0xfff)+0x2000, 0, 3);
 
 	// bootstruct
 
@@ -149,7 +155,7 @@ void enterlm(void* mb2_info_tags)
 	bs->tr_vd_height = vd_ht;
 	bs->tr_vd_depth = vd_bpp;
 	bs->tr_mmap_len = 0;
-	for(;;);
+	ent = bs->lm_entry_addr;
 }
 
 int table_count = 0;
@@ -176,7 +182,7 @@ uint32_t add_table()
 
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n)
 {
-	const void* (*sets[4])(void*, uint64_t, int) = {set_pdpt, set_pd, set_pt, set_pf};
+	const void* (*sets[4])(void*, uint64_t, uint64_t, int) = {set_pdpt, set_pd, set_pt, set_pf};
 	void* tbl = future_cr3;
 	int final = (n > 3 ? 3 : n);
 	int nums[4] = {(vma_high >> 7) & 0x1ff, ((vma_high & 0x3f) << 2) | (vma_low & (3 << 30)), (vma_low >> 21) & 0x1ff, (vma_low >> 12) & 0x1ff};
@@ -192,7 +198,7 @@ void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uin
 		if(!(*(int *)tbl & 1)) // not found!
 		{
 			if(i == final)
-				set_page_entry(tbl, paddr_low, paddr_high, 1);
+				set_page_entry(tbl, paddr_low, paddr_high, i != 3);
 			else
 				set_page_entry(tbl, add_table(), 0, 0);
 			table_count++;
@@ -207,7 +213,7 @@ void set_page_entry(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 	// //asm("xchg %bx, %bx");
 	uint32_t* low = entry, *high = entry + 4;
 	*low = 1;
-	*low |= (!ps) << 7;
+	*low |= (ps != 0) << 7;
 	*low |= addr_low & (~0xfff);
 	*high |= addr_high;
 }
@@ -226,7 +232,7 @@ void set_pd(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 
 void set_pt(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 {
-	set_page_entry(entry, addr_low & ~(ps ? 0xffff : 0x1fffff), addr_high, ps);
+	set_page_entry(entry, addr_low & ~(ps ? 0xfff : 0x1fffff), addr_high, ps);
 }
 
 void set_pf(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)

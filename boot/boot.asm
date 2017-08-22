@@ -74,6 +74,22 @@ section '.text' align 8
 
 public trump
 
+align 8
+GDTlm:
+	dq 0x0000000000000000             ; Null Descriptor - should be present.
+	dq 0x00209A0000000000             ; 64-bit code descriptor (exec/read).
+	dq 0x0020920000000000             ; 64-bit data descriptor (read/write).
+ 
+align 4
+	dw 0                              ; Padding to make the "address of the GDT" field aligned on a 4-byte boundary
+ 
+.Pointer:
+	dw $ - GDTlm - 1                    ; 16-bit Size (Limit) of GDT.
+	dd GDTlm                            ; 32-bit Base Address of GDT. (CPU will zero extend to 64-bit)
+
+extrn future_cr3
+extrn ent
+
 trump: ; 'cause trAmpoline
 	cli
 	cmp eax, 0x36d76289
@@ -82,7 +98,51 @@ trump: ; 'cause trAmpoline
 	push ebx
 	lgdt [GDTR]
 	call enterlm ; enterlm(void* multiboot_table)
-	jmp $
+
+cr4_pae_bit = 00100000b
+lm_msr = 0xC0000080
+efer_lme = 0x00000100
+cr0_bit = 0x80000000
+
+	mov eax, [ent]
+	mov [rent], eax
+	mov eax, [ent+4]
+	mov [rent+4], eax
+
+	mov eax, cr4_pae_bit ; PAE 
+	mov cr4, eax
+
+	xchg bx, bx
+	mov edx, [future_cr3]
+	mov cr3, edx
+
+	mov ecx, lm_msr
+	rdmsr
+	or eax, efer_lme
+	wrmsr
+
+	mov ebx, cr0
+	or ebx, cr0_bit
+	mov cr0, ebx
+
+	lgdt [GDTlm.Pointer]
+	mov eax, rent
+	jmp 8:lm
+
+align 8
+dd 0
+lm:
+
+use64
+	; xchg bx, bx
+	; mov rax, [rax]
+	; jmp rax
+
+	; rsi - rent
+
+	file 'lm.bin' ; it's PICy
+
+rent: dq ent ; offset
 section '.bss' align 8
 
 theSTACK: times 0x4000 db 0
