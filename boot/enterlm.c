@@ -1,11 +1,6 @@
 #include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
 
-void set_pdpt(void *entry, uint32_t addr_low, uint32_t addr_high, int ps);
-void set_pd(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
-void set_pt(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
-void set_pf(void* entry, uint32_t addr_low, uint32_t addr_high, int ps);
-
 uint32_t add_table();
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n);
 
@@ -126,16 +121,13 @@ void enterlm(void* mb2_info_tags)
 	// 					+2000h and on: PD and page tables
 	future_cr3 = add_table();
 	//asm("xchg %bx, %bx");
-	uint32_t vma_low, vma_high;
-	uint32_t* r = &vma_kernel_start;
+	unsigned int vma_low, vma_high;
+	unsigned int* r = &vma_kernel_start;
 	*r++;
 	vma_low = vma_kernel_start & 0xffffffff;
 	vma_high = *r;
-	for(uint32_t lowk = kernel_start; lowk < kernel_end; lowk+=0x1000)
-	{
-		vma_low += 0x1000;
-		map_page_entry(vma_low, vma_high, lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
-	}
+	for(unsigned int lowk = kernel_start; lowk < kernel_end; lowk+=0x1000, vma_low += 0x1000)
+		map_page_entry(vma_low, 0xffff8000, lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
 
 	//map_page_entry(0x00000000, 0x1000, 0, 0, 3);
 
@@ -182,7 +174,6 @@ uint32_t add_table()
 
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n)
 {
-	const void* (*sets[4])(void*, uint64_t, uint64_t, int) = {set_pdpt, set_pd, set_pt, set_pf};
 	void* tbl = future_cr3;
 	int final = (n > 3 ? 3 : n);
 	int nums[4] = {(vma_high >> 7) & 0x1ff, ((vma_high & 0x3f) << 2) | (vma_low & (3 << 30)), (vma_low >> 21) & 0x1ff, (vma_low >> 12) & 0x1ff};
@@ -216,26 +207,4 @@ void set_page_entry(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
 	*low |= (ps != 0) << 7;
 	*low |= addr_low & (~0xfff);
 	*high |= addr_high;
-}
-
-
-void set_pdpt(void *entry, uint32_t addr_low, uint32_t addr_high, int ps)
-{
-	//return;
-	set_page_entry(entry, addr_low & ~0xfff, addr_high, 0);
-}
-
-void set_pd(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
-{
-	set_page_entry(entry, addr_low & ~(ps ? 0xfff : 0x3fffffff), addr_high, ps);
-}
-
-void set_pt(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
-{
-	set_page_entry(entry, addr_low & ~(ps ? 0xfff : 0x1fffff), addr_high, ps);
-}
-
-void set_pf(void* entry, uint32_t addr_low, uint32_t addr_high, int ps)
-{
-	set_page_entry(entry, addr_low & ~0xfff, addr_high, 0);
 }

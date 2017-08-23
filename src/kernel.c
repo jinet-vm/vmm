@@ -38,14 +38,14 @@ void putc(void* none, char c)
 
 void kernel_start();
 
-static uint64_t mmap[1000];
+extern void rt0();
 
 struct bootstruct  __attribute__((section(".boot"))) b =
 {
 	.lm_magic = BTSTR_LM_MAGIC,
 	.lm_load_addr = KERNEL_VMA_ADDR,
-	.lm_entry_addr = kernel_start,
-	.lm_mmap_addr = &mmap
+	.lm_entry_addr = &rt0,
+	.lm_mmap_addr = 0
 };
 
 struct term_dev vga =
@@ -77,14 +77,12 @@ struct term_dev dell_serial =
 
 MODULE("KERNEL");
 
-// todo: MAKE MAKEFILES GREAT AGAIN
-
 void kernel_start()
 {
 	// VGA
 	term_init();
 	term_add(com_port);
-	term_add(vga);
+	//term_add(vga);
 	acpi_add_driver("APIC", madt_probe);
 	cpci_init();
 	acpi_add_driver("MCFG", mcfg_probe);

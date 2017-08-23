@@ -140,7 +140,8 @@ use64
 
 	; rsi - rent
 
-	file 'lm.bin' ; it's PICy
+	file 'lm.bin'
+	; it's PICy
 
 rent: dq ent ; offset
 section '.bss' align 8

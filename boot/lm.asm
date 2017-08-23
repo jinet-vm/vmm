@@ -1,6 +1,6 @@
 format binary
 use64
 
-xchg bx, bx
+;xchg bx, bx
 mov rax, [rax]
 jmp rax

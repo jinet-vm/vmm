@@ -12,28 +12,31 @@ SECTIONS
 {
 	. = KERNEL_VMA_ADDR;
 
-	.boot :
+	.boot ALIGN(0x1000) :
 	{
 		*(.boot);
 	}
 
-	.text :
+	.text ALIGN(0x1000) :
 	{
 		:*(.text)
 	}
 
-	.data :
+	.data ALIGN(0x1000) :
 	{
 		:*(.data);
 	}
 
-	.bss :
+	.bss ALIGN(0x1000) :
 	{
 		:*(.bss);
 	}
 
-	.rodata :
+	.rodata ALIGN(0x1000) :
 	{
 		:*(.rodata);
 	}
+
+	mmap_bootstruct = ALIGN(0x1000);
+	pgst_bootstruct = . + 0x2000;
 }
