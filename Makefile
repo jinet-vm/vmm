@@ -37,3 +37,19 @@ clean:
 	rm -f *.map
 	rm -f *.sym
 	rm -f kernel_start
+
+configure: config.json
+	# consts.h generation
+	touch $(consts_h)
+	cat /dev/null > $(consts_h)
+	printf "#ifndef CONSTS_H\n#define CONSTS_H\n\n" >> $(consts_h)
+	./configure.py --lang c >> $(consts_h)
+	printf "\n#endif" >> $(consts_h)
+	# consts.ld generation
+	touch $(consts_ld)
+	cat /dev/null > $(consts_ld)
+	./configure.py --lang ld >> $(consts_ld)
+	# consts.inc generation
+	touch $(consts_inc)
+	cat /dev/null > $(consts_inc)
+	./configure.py --lang fasm >> $(consts_inc)

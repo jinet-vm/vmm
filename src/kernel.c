@@ -1,10 +1,4 @@
-/**
- * @file kernel.c
- * @brief Main kernel file.
- */
-
 #include <stdint.h>
-//#include <stdlib.h>
 #include <stddef.h>
 #include <jinet/debug.h>
 #include <jinet/ints.h>
@@ -25,6 +19,7 @@
 #include <jinet/pci.h>
 #include <jinet/mcfg.h>
 #include <jinet/bootstruct.h>
+#include <jinet/multiboot2.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -40,12 +35,12 @@ void kernel_start();
 
 extern void rt0();
 
-struct bootstruct  __attribute__((section(".boot"))) b =
+struct bootstruct  __attribute__((section(".boot"))) bs =
 {
 	.lm_magic = BTSTR_LM_MAGIC,
 	.lm_load_addr = KERNEL_VMA_ADDR,
 	.lm_entry_addr = &rt0,
-	.lm_mmap_addr = 0
+	.lm_mmap_addr = 0x100000000
 };
 
 struct term_dev vga =
@@ -82,6 +77,24 @@ void kernel_start()
 	// VGA
 	term_init();
 	term_add(com_port);
+
+	idt_init();
+	isr_install();
+	irq_install();
+	idt_flush();
+	mprint("IDT flushed");
+
+	struct multiboot_mmap_entry* mmap = bs.lm_mmap_addr;
+	for(int i = 0; i < bs.tr_mmap_len; i++)
+	{
+		uint64_t start = mmap[i].addr;
+		uint64_t end = mmap[i].addr + mmap[i].len;
+		mprint("mmap 0x%x%x - 0x%x%x", start >> 32, start, end >> 32, end);
+	}
+
+	for(;;);
+
+
 	//term_add(vga);
 	acpi_add_driver("APIC", madt_probe);
 	cpci_init();
@@ -89,7 +102,6 @@ void kernel_start()
 	acpi_probe();
 	pcie_init();
 	pci_probe();
-	//for(;;);
 	uint64_t num = mcfg_seg_group_count();
 	if(num != MCFG_INVALID)
 		mprint("mcfg number: %x", num);
@@ -104,11 +116,6 @@ void kernel_start()
 	mprint("GDT flushed");
 	tr_set(SEG(3));
 	mprint("TSS set");
-	idt_init();
-	isr_install();
-	irq_install();
-	idt_flush();
-	mprint("IDT flushed");
 	//volatile int s = 1/0;
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
 	mprint("IDT initialized.");
@@ -119,35 +126,14 @@ void kernel_start()
 	//print_sdts();
 	//uint32_t madtb = detect_madt();
 	lapic_setup(); // TODO: apic 32bit bochs error
-	// tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	// mprint("MADT & LAPIC initialized.\n");
-	// tty_setcolor(VC_DEFAULT);
-	// asm("xchg %bx, %bx");
-	//mprint("MADT & LAPIC initialized.\n");
 	pic_enable();
 	pic_disable();
 	ioapic_setup();
-	// initGDTR();
 	pit_init();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
 	irq_install_handler(1, keyboard_handler);
 	irq_install_handler(4, serial_handler);
-	//ints_sti(); //- something wrong with eoi
-	//for(;;);
-	//for(;;)
-	//pit_init();
-	//asm("xchg %bx, %bx");
-	//ints_sti();
-	//for(;;);
-	//pit_init();
-	// todo: crazy stuff here!
-	// VMX
-	//mprint("hey!\n");
-	//volatile int a = 1/0;
-	//asm("int $20");
-	//for(;;);
 	asm("xchg %bx, %bx");
 	//pci_probe();
 	//mprint("VIRT INIT");

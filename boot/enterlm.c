@@ -84,7 +84,7 @@ void enterlm(void* mb2_info_tags)
 	{
 		// assuming module is in 32 bit address space
 		uint64_t len = (mmap[i].len_high*1llu) << 32llu | mmap[i].len_low;
-		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE && len > 0x102000llu) // just in case I need 1024 tables
+		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE && len > 0x112000llu) // just in case I need 1024 tables + 64kb stack
 		{
 			if(mmap[i].addr_low <= kernel_start && kernel_start - mmap[i].addr_low < len)
 			{
@@ -102,6 +102,7 @@ void enterlm(void* mb2_info_tags)
 	struct multiboot_mmap_entry* copy;
 	struct multiboot_mmap_entry* copied;
 	copy = mem_addr; copied = &mmap[0];
+	mmap = mem_addr;
 	for(i = 0; i<mmap_num; i++)
 	{
 		copy->addr_low = copied->addr_low;
@@ -113,14 +114,13 @@ void enterlm(void* mb2_info_tags)
 		*copy++; *copied++;
 	}
 
-	//asm("xchg %bx, %bx");
+
 	mem_addr += mmap_num*sizeof(struct multiboot_mmap_entry)+0xfff;
 	mem_addr &= ~0xfff;
 	// now mem_addr:	+0000h: PML4 table
 	// 					+1000h: PDP table
 	// 					+2000h and on: PD and page tables
 	future_cr3 = add_table();
-	//asm("xchg %bx, %bx");
 	unsigned int vma_low, vma_high;
 	unsigned int* r = &vma_kernel_start;
 	*r++;
@@ -130,15 +130,29 @@ void enterlm(void* mb2_info_tags)
 		map_page_entry(vma_low, 0xffff8000, lowk, 0, 3); // page-style paging - maybe it's inefficient, but who cares?
 
 	//map_page_entry(0x00000000, 0x1000, 0, 0, 3);
-
 	uint32_t DJT = &trump;
 	map_page_entry((DJT & ~0xfff)+0x0000, 0, (DJT & ~0xfff)+0x0000, 0, 3);
 	map_page_entry((DJT & ~0xfff)+0x1000, 0, (DJT & ~0xfff)+0x1000, 0, 3);
 	map_page_entry((DJT & ~0xfff)+0x2000, 0, (DJT & ~0xfff)+0x2000, 0, 3);
 
-	// bootstruct
+	// recursive mapping
+	void* _t = future_cr3+0xff8;
+	set_page_entry(_t, future_cr3, 0, 0);
+
+	// stack -- todo: it's hardcoded - baaad
+	mem_addr_orig += 0x112000llu;
+	for(unsigned int i = 0; i<0x10000; i+=0x1000)
+		map_page_entry(0x0000f000-i, 0xffff8000, mem_addr_orig+0x111000-i, 0, 3);
 
 	struct bootstruct* bs = kernel_start;
+
+	// mmap
+	uint64_t vmmap = bs->lm_mmap_addr;
+	uint32_t vmmap_low = vmmap;
+	uint32_t vmmap_high = vmmap >> 32llu;
+	map_page_entry(vmmap_low, vmmap_high, mmap, 0, 3);
+
+	// bootstruct
 	bs->tr_magic = BTSTR_TR_MAGIC;
 	bs->tr_phys_addr = kernel_start;
 	bs->tr_video_type = vd_type;
@@ -146,16 +160,11 @@ void enterlm(void* mb2_info_tags)
 	bs->tr_vd_width = vd_wd;
 	bs->tr_vd_height = vd_ht;
 	bs->tr_vd_depth = vd_bpp;
-	bs->tr_mmap_len = 0;
+	bs->tr_mmap_len = mmap_num;
 	ent = bs->lm_entry_addr;
 }
 
 int table_count = 0;
-
-// uint64_t map_page_pdpt(uint64_t vma, uint64_t dir_paddr);
-// uint64_t map_page_dir(uint64_t vma, uint64_t paddr);
-// uint64_t map_page_tbl(uint64_t vma, uint64_t paddr);
-// uint64_t map_page_frm(uint64_t vma, uint64_t paddr);
 
 uint32_t add_table()
 {
@@ -167,7 +176,6 @@ uint32_t add_table()
 		*r++;
 	}
 	mem_addr += 0x1000;
-	//asm("xchg %bx, %bx");
 	return out;
 }
 
@@ -179,7 +187,6 @@ void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uin
 	int nums[4] = {(vma_high >> 7) & 0x1ff, ((vma_high & 0x3f) << 2) | (vma_low & (3 << 30)), (vma_low >> 21) & 0x1ff, (vma_low >> 12) & 0x1ff};
 	for(int i = 0; i<=final; i++)
 	{
-		// tbl += ((vma >> (39llu - 9llu*i)) & 0x1ffllu);
 		// vma_high = vma >> 32;
 		// vma_low = vma & 0xffffffff
 		// vma >> 39 & 0x1ff = vma_high >> 7 & 0x1ff
