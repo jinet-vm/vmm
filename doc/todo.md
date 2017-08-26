@@ -1,9 +1,6 @@
 # TODO
 - [x] makefiles! make it recursive way (solved with `find`)
-- [ ] grub! booting the multiboot way
-- [ ] proper configuration system with wistles and bells
-	+ [ ] #define DO_IT options (no value?)
-	+ [ ] ncurses gui (*optional*)
+- [x] grub! booting the multiboot way
 - [ ] memory management (we still need it)
 	+ [ ] memory map (E820h? nah, grub)
 	+ [ ] physical memory management
@@ -13,7 +10,6 @@
 - [ ] ATA PIO
 - [ ] FAT32 (should I use someone's realization?)
 - [ ] GPT
-- [ ] heap
 - [ ] ioremap-style MMIO interactions
 - [ ] USB
 	+ [ ] xHCI (?)
