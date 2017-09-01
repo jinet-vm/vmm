@@ -2,10 +2,10 @@
 - [x] makefiles! make it recursive way (solved with `find`)
 - [x] grub! booting the multiboot way
 - [ ] memory management (we still need it)
-	+ [ ] memory map (E820h? nah, grub)
-	+ [ ] physical memory management
+	+ [x] memory map (E820h? nah, grub) 
+	+ [ ] physical memory management (binary buddy on ~steroids~ bitmaps) [*WIP*]
 	+ [ ] virtual memory management
-	+ [ ] heap (need a proper algorithm, huh?)
+	+ [x] heap ~(need a proper algorithm, huh?)~ (let's say it's already done, huh?)
 - [ ] Intel-lpss UART support (PCI: vendor 8086h, device a166h)
 - [ ] ATA PIO
 - [ ] FAT32 (should I use someone's realization?)
