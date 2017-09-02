@@ -11,6 +11,7 @@ OUTPUT("kernel.img")
 SECTIONS
 {
 	. = KERNEL_VMA_ADDR;
+	KERNEL_START = .;
 
 	.boot ALIGN(0x1000) :
 	{
@@ -39,4 +40,5 @@ SECTIONS
 
 	mmap_bootstruct = ALIGN(0x1000);
 	pgst_bootstruct = . + 0x2000;
+	KERNEL_END = .;
 }

@@ -20,6 +20,7 @@
 #include <jinet/mcfg.h>
 #include <jinet/bootstruct.h>
 #include <jinet/multiboot2.h>
+#include <jinet/paging.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -84,8 +85,7 @@ void kernel_start()
 	idt_flush();
 	mprint("IDT flushed");
 
-	
-	
+	mprint("%llx", pg_get_paddr(kernel_start));
 
 	for(;;);
 
