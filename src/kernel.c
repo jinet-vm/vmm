@@ -84,8 +84,7 @@ void kernel_start()
 	irq_install();
 	idt_flush();
 	mprint("IDT flushed");
-
-	mprint("%llx", pg_get_paddr(kernel_start));
+	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
 
 	for(;;);
 

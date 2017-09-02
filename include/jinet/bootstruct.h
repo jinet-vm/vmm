@@ -32,7 +32,7 @@ struct bootstruct
 	uint64_t	tr_vd_height;
 	uint64_t	tr_vd_depth; // 0 if text-mode
 	uint64_t	lm_mmap_addr; // it must be copied there by tr_kernel
-	uint64_t	tr_mmap_len;
+	uint64_t	tr_mmap_len; // number of mmap entries
 } __attribute__((packed));
 
 #endif

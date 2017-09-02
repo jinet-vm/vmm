@@ -2,10 +2,15 @@
 #include <jinet/module.h>
 // hey, guys, it's all recursive mapped somewhere
 
+#define PGDEBUG
+
 MODULE("PAGING");
 
 uint64_t pg_get_paddr(uint64_t vma)
-{
+{;
+	#ifdef PGDEBUG
+		mprint("%llx", vma);
+	#endif
 	uint64_t p[5] = 
 	{	vma & 0xfff,
 		(vma >> 12) & 0x1ff,
@@ -19,7 +24,7 @@ uint64_t pg_get_paddr(uint64_t vma)
 
 	for(int i = 2; i >= 1; i--)
 	{
-		for(int j = 0; j < 5; j++) // forming a new recursive mapping request
+		for(int j = 0; j < 5; j++) // making a new recursive mapping 
 			if(i+j >= 5)
 				np[j] = 0xfff;
 			else
@@ -44,6 +49,10 @@ uint64_t pg_get_paddr(uint64_t vma)
 				faddr |= (p[j] & 0x1ffllu) << (12+9*(j-1));
 			break;
 		}
+		#ifdef PGDEBUG
+			mprint("%llx: %x %x %x %x %x", a, np[4], np[3], np[2], np[1], np[0]);
+			mprint("%d => 0x%016llx", i, *p);
+		#endif
 	}
 	return faddr;
 }
