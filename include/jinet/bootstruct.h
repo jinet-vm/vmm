@@ -24,8 +24,8 @@ struct bootstruct
 	uint32_t	tr_magic;
 	uint64_t	lm_load_addr; // vma
 	uint64_t	lm_entry_addr; // vma
-	uint64_t	lm_pgtb_addr; // vma, MUST be mapped by boot.elf
-	uint64_t	tr_phys_addr; // of kernel loaded
+	uint64_t	tr_pgtb_start; // paddr, a 1MB region -- we'll use it until buddy allocator is actually working
+	uint64_t	tr_pgtb_cur; // paddr, current value
 	uint64_t 	tr_video_type; // BTSTR_VDTP_*
 	uint64_t	tr_vd_framebuffer;
 	uint64_t	tr_vd_width;

@@ -56,3 +56,10 @@ uint64_t pg_get_paddr(uint64_t vma)
 	}
 	return faddr;
 }
+
+void pg_invtbl()
+{
+	asm("mov %%cr3, %%rax\n"
+		"mov %%rax, %%cr3"
+		: : : "%rax");
+}

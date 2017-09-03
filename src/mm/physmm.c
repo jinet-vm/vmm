@@ -1,6 +1,7 @@
 #include <jinet/physmm.h>
 #include <jinet/module.h>
 #include <jinet/paging.h>
+#include <jinet/bootstruct.h>
 
 MODULE("PHYSMM");
 
@@ -25,6 +26,7 @@ static int bbd_init(uint64_t total_size, void* (*basic_alloc)(uint64_t))
 	}
 
 	bitmap[0] = (uint8_t*) basic_alloc(compmal);
+	return 0;
 	if(!bitmap[0]) return 0;
 	for(int i = 1; i < 10; i++)
 		bitmap[i] = bitmap[0] + boffs[i];
@@ -148,6 +150,9 @@ static int _num;
 
 static void* basic_alloc(uint64_t size);
 
+extern void *KERNEL_START, *KERNEL_END;
+extern struct bootstruct bs;
+
 void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 {
 	_mmap = mmap;
@@ -169,7 +174,7 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 // this thing does a lot of things (_mmap and _num required; called only once)
 // 1. find physical memory (_size_)
 // 2. map it somewhere, initialize it (?) and return
-extern void *KERNEL_START, *KERNEL_END;
+
 static void *basic_alloc(uint64_t size)
 {
 	uint64_t pks = pg_get_paddr(&KERNEL_START), pke = pg_get_paddr(&KERNEL_END);
@@ -189,7 +194,7 @@ static void *basic_alloc(uint64_t size)
 		}
 		else
 		{
-			if(len >= size ... ) // todo right from here
+			if(len >= size + 0x1000) // todo right from here
 				paddr = (adr + 0xfff) & ~0xfff;
 		}
 	}
@@ -198,6 +203,11 @@ static void *basic_alloc(uint64_t size)
 
 	// 2. virtual memory
 	// let's just map this to zero - it's a goddamn bitmap for memory management - a reasonable thing to hard map somewhere
-
-
+	// also we'll unmap 0x100000-ish trampoline routines
+	// a) unmapping
+	uint64_t *r = 0xffffff8000000000;
+	for(int i = 0; i<512; i++) // enough only for 32 gib
+		*r++ = (paddr | 1llu) + i * 0x1000llu;
+	pg_invtbl();
+	return 0;
 }

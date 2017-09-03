@@ -154,13 +154,14 @@ void enterlm(void* mb2_info_tags)
 
 	// bootstruct
 	bs->tr_magic = BTSTR_TR_MAGIC;
-	bs->tr_phys_addr = kernel_start;
 	bs->tr_video_type = vd_type;
 	bs->tr_vd_framebuffer = vd_fb;
 	bs->tr_vd_width = vd_wd;
 	bs->tr_vd_height = vd_ht;
 	bs->tr_vd_depth = vd_bpp;
 	bs->tr_mmap_len = mmap_num;
+	bs->tr_pgtb_start = mem_addr_orig;
+	bs->tr_pgtb_cur = mem_addr;
 	ent = bs->lm_entry_addr;
 }
 

@@ -29,5 +29,6 @@ size_t map_available_memory(); // returns available memory
 void map_page(uint32_t src, uint32_t dst, uint8_t flags);
 void init_paging();
 uint64_t pg_get_paddr(uint64_t vma);
+void pg_invtbl();
 
 #endif
