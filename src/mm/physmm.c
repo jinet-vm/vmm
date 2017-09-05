@@ -30,6 +30,8 @@ static int bbd_init(uint64_t total_size, void* (*basic_alloc)(uint64_t))
 	if(!bitmap[0]) return 0;
 	for(int i = 1; i < 10; i++)
 		bitmap[i] = bitmap[0] + boffs[i];
+	for(uint8_t* t = bitmap[0]; t < bitmap[0]+compmal; t++)
+		*t = 0;
 	return 0;
 }
 
@@ -166,9 +168,9 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 			mprint("%016llx : %llx", mmap[i].addr, mmap[i].len);
 	}
 	bbd_init(ts, &basic_alloc);
-	for(int i = 0; i<num; i++)
-		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE)
-			bbd_add_region(mmap[i].addr, mmap[i].len);
+	// for(int i = 0; i<num; i++)
+	// 	if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE)
+	// 		bbd_add_region(mmap[i].addr, mmap[i].len);
 }
 
 // this thing does a lot of things (_mmap and _num required; called only once)
