@@ -12,6 +12,7 @@ static uint64_t _ts;
 // basic_alloc is used only ONCE
 static int bbd_init(uint64_t total_size, void* (*basic_alloc)(uint64_t))
 {
+	mprint("bbd_init");
 	_ts = total_size;
 	uint64_t compmal = 0;
 	boffs[0] = 0;
@@ -25,11 +26,19 @@ static int bbd_init(uint64_t total_size, void* (*basic_alloc)(uint64_t))
 		page *= 2;
 	}
 
+	mprint("size: %llx", compmal);
 	bitmap[0] = (uint8_t*) basic_alloc(compmal);
-	return 0;
-	if(!bitmap[0]) return 0;
+	for(uint8_t* i = 0; i < compmal; *i++)
+	{
+		mprint("%llx", i);
+		*i = 0;
+	}
+	mprint("a 0");
 	for(int i = 1; i < 10; i++)
+	{
 		bitmap[i] = bitmap[0] + boffs[i];
+		mprint("a %llx", bitmap[i]);
+	}
 	return 0;
 }
 
@@ -178,6 +187,7 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 static void *basic_alloc(uint64_t size)
 {
 	uint64_t pks = pg_get_paddr(&KERNEL_START), pke = pg_get_paddr(&KERNEL_END);
+	pke = 0x200000;
 	mprint("%llx %llx", pks, pke);
 
 	// 1. physical memory
@@ -209,5 +219,6 @@ static void *basic_alloc(uint64_t size)
 	for(int i = 0; i<512; i++) // enough only for 32 gib
 		*r++ = (paddr | 1llu) + i * 0x1000llu;
 	pg_invtbl();
+	for(;;);
 	return 0;
 }
