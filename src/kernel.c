@@ -79,6 +79,14 @@ void kernel_start()
 	term_init();
 	term_add(com_port);
 
+	initGDTR();
+	gdt_set_code(1);
+	gdt_set_data(2);
+	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
+	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
+	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
+	gdt_flush();
+
 	idt_init();
 	isr_install();
 	irq_install();
@@ -100,13 +108,6 @@ void kernel_start()
 	if(num != MCFG_INVALID)
 		mprint("mcfg number: %x", num);
 	term_add(dell_serial);
-	initGDTR();
-	gdt_set_code(1);
-	gdt_set_data(2);
-	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
-	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
-	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
-	gdt_flush();
 	mprint("GDT flushed");
 	tr_set(SEG(3));
 	mprint("TSS set");
