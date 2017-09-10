@@ -1,7 +1,5 @@
-/**
- * @file vga.c
- * @brief Interface to VGA text mode.
- */
+// VESA video modes interface
+
 #include <jinet/vga.h>
 #include <jinet/io.h>
 #include <jinet/memory.h>
@@ -13,35 +11,23 @@ static int vga_bpp;
 
 int VGA_WIDTH, VGA_HEIGHT;
 
-/**
- * @brief      Initialize VGA.
- */
+static void vbe_put_pixel_8(int x, int y, vga_color color);
+static void vbe_put_pixel_24(int x, int y, vga_color color);
+static void vbe_put_pixel_32(int x, int y, vga_color color);
 
-//static void vga_put_pixel_4(int x, int y, vga_color color);
-static void vga_put_pixel_8(int x, int y, vga_color color);
-static void vga_put_pixel_24(int x, int y, vga_color color);
-static void vga_put_pixel_32(int x, int y, vga_color color);
-
-void vga_init()
+void vga_init(void* fb, int pitch, int width, int height, int bpp)
 {
-	struct vbe_info* vbm = 0x6F00;
-	vga_buffer = vbm->framebuffer;
-	vga_pitch = vbm->pitch;
-	VGA_WIDTH = vbm->width;
-	VGA_HEIGHT = vbm->height;
-	//VGA_HEIGHT -= VGA_HEIGHT % 16;
-	vga_bpp = vbm->bpp;
-	unsigned volatile int *s = (uint64_t)vga_buffer;
-	//vga_clear();
-	//vga_set_cursor(0,0);
+	vga_buffer = fb;
+	vga_pitch = pitch;
+	VGA_WIDTH = width;
+	VGA_HEIGHT = height;
+	vga_bpp = bpp;
 	if(vga_bpp == 8)
 		vga_put_pixel = vga_put_pixel_8;
 	else if(vga_bpp == 24)
 		vga_put_pixel = vga_put_pixel_24;
-	else // if(vga_bpp == 32)
+	else
 		vga_put_pixel = vga_put_pixel_32;
-	//vga_put_pixel = vga_put_pixel_8;
-	//vga_put_pixel = vga_put_pixel_32;
 }
 
 void vga_scroll_row(int shift)

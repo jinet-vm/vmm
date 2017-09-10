@@ -10,6 +10,10 @@
 // todo: it's horrible, make vga buffer great again (not the hardcoded 0x7c00)
 // todo: use term_dev properly
 
+#define VGA_PADDR_PHYS_BUFFER 0xb8000
+
+// allocates phys buffer for vga_init
+
 int term_vga_init(struct term_dev* t)
 {
 	vga_init();
@@ -24,9 +28,6 @@ static char ansi_args_i;
 
 static void ansi_eval()
 {
-	// printf("%c ... %c\n", ansi_mode_a, ansi_mode_b);
-	// for(int i = 0; i<ansi_args_i; i++)
-	// 	printf("ansi arg #%d = %d\n", i, ansi_args[i]);
 	if(ansi_mode_a == '[' && ansi_mode_b == 'm')
 	{
 		for(int i = 0; i<ansi_args_i; i++)

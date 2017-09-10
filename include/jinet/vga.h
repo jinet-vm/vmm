@@ -41,23 +41,8 @@ struct vbe_info {
    uint8_t reserved1[206];
 } __attribute__ ((packed));
 
+// ANSI vt100 colors
 #define vga_color uint8_t
-// #define VC_BLACK 0 - old vga
-// #define VC_BLUE 1
-// #define VC_GREEN 2
-// #define VC_CYAN 3
-// #define VC_RED 4
-// #define VC_MAGENTA 5
-// #define VC_BROWN 6
-// #define VC_LIGHT_GREY 7
-// #define VC_DARK_GREY 8
-// #define VC_LIGHT_BLUE 9
-// #define VC_LIGHT_GREEN 10
-// #define VC_LIGHT_CYAN 11
-// #define VC_LIGHT_RED 12
-// #define VC_LIGHT_MAGENTA 13
-// #define VC_LIGHT_YELLOW 14
-// #define VC_WHITE 15
 #define VC_BLACK 0
 #define VC_RED 1
 #define VC_GREEN 2
@@ -74,7 +59,7 @@ struct vbe_info {
 #define VC_BRIGHT_MAGENTA 13
 #define VC_BRIGHT_CYAN 14
 #define VC_BRIGHT_WHITE 15
-// } vga_color; // todo: bg/fg colors (two nibbles)
+ // todo: bg/fg colors (two nibbles)
 
 int VGA_WIDTH, VGA_HEIGHT; // vga_init
 

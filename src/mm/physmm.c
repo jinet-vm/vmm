@@ -182,6 +182,16 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 	mprint("%llx", bbd_alloc(2));
 }
 
+uint64_t physmm_alloc(int order)
+{
+	return bbd_alloc(order);
+}
+
+void physmm_free(uint64_t paddr, int order)
+{
+	bbd_free(paddr, order);
+}
+
 // this thing does a lot of things (_mmap and _num required; called only once)
 // 1. find physical memory (_size_)
 // 2. map it somewhere, initialize it (?) and return
