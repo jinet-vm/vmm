@@ -5,36 +5,36 @@
 #include <jinet/memory.h>
 #include <jinet/font.h>
 #include <jinet/printf.h>
-volatile uint16_t* vga_buffer;
-static int vga_pitch;
-static int vga_bpp;
+volatile uint16_t* vbe_buffer;
+static int vbe_pitch;
+static int vbe_bpp;
 
 int VGA_WIDTH, VGA_HEIGHT;
 
-static void vbe_put_pixel_8(int x, int y, vga_color color);
-static void vbe_put_pixel_24(int x, int y, vga_color color);
-static void vbe_put_pixel_32(int x, int y, vga_color color);
+static void vga_put_pixel_8(int x, int y, vga_color color);
+static void vga_put_pixel_24(int x, int y, vga_color color);
+static void vga_put_pixel_32(int x, int y, vga_color color);
 
-void vga_init(void* fb, int pitch, int width, int height, int bpp)
+void vbe_init(void* fb, int pitch, int width, int height, int bpp)
 {
-	vga_buffer = fb;
-	vga_pitch = pitch;
+	vbe_buffer = fb;
+	vbe_pitch = pitch;
 	VGA_WIDTH = width;
 	VGA_HEIGHT = height;
-	vga_bpp = bpp;
-	if(vga_bpp == 8)
+	vbe_bpp = bpp;
+	if(vbe_bpp == 8)
 		vga_put_pixel = vga_put_pixel_8;
-	else if(vga_bpp == 24)
+	else if(vbe_bpp == 24)
 		vga_put_pixel = vga_put_pixel_24;
 	else
 		vga_put_pixel = vga_put_pixel_32;
 }
 
-void vga_scroll_row(int shift)
+void vbe_scroll_row(int shift)
 {
-	uint8_t* vb = vga_buffer;
+	uint8_t* vb = vbe_buffer;
 	uint16_t gone = VGA_HEIGHT % 16 + shift*16;
-	char k = vga_bpp/8;
+	char k = vbe_bpp/8;
 	for(int x = 0; x<VGA_WIDTH; x++)
 		for(int y = 16*shift-16; y < VGA_HEIGHT - gone; y++)
 			for(int b = 0; b < k; b++)
@@ -42,10 +42,10 @@ void vga_scroll_row(int shift)
 	// for(int x = 0; x < VGA_WIDTH; x++)
 	// {
 	// 	for(int y = 1; y < VGA_HEIGHT; y++)
-	// 		vga_buffer[(y-1)*VGA_WIDTH+x]=vga_buffer[y*VGA_WIDTH+x];
+	// 		vbe_buffer[(y-1)*VGA_WIDTH+x]=vbe_buffer[y*VGA_WIDTH+x];
 	// }
 	//memset(vb+k*(VGA_HEIGHT-gone)*VGA_WIDTH,0,k*gone*VGA_WIDTH);
-	//vga_set_cursor(0,VGA_HEIGHT-2);
+	//vbe_set_cursor(0,VGA_HEIGHT-2);
 }
 
 
@@ -55,7 +55,7 @@ void vga_scroll_row(int shift)
  * @param[in]  row   The row of the cursor
  * @param[in]  col   The column of the cursor
  */
-void vga_set_cursor(int row, int col)
+void vbe_set_cursor(int row, int col)
 {
     unsigned short position = (row * VGA_WIDTH) + col;
 
@@ -74,9 +74,9 @@ void vga_set_cursor(int row, int col)
  * @param[in]  x      The row of the cursor
  * @param[in]  y      The column of the cursor
  */
-void vga_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
+void vbe_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
 {
-	//vga_buffer[y*VGA_WIDTH+x] = vga_entry(c,color);
+	//vbe_buffer[y*VGA_WIDTH+x] = vbe_entry(c,color);
 	for(int j = 0; j<16; j++)
 	{
 		uint8_t line = *(the_font+(c<<4)+j);
@@ -90,13 +90,13 @@ void vga_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
 
 static void vga_put_pixel_4(int x, int y, vga_color color)
 {
-	uint64_t t = vga_buffer+(VGA_WIDTH*y+x)/2;
+	uint64_t t = vbe_buffer+(VGA_WIDTH*y+x)/2;
 	volatile unsigned char* s = t;
 	*s = 0xff;
 }
 static void vga_put_pixel_8(int x, int y, vga_color color)
 {
-	uint64_t t = (uint64_t)vga_buffer+x+VGA_WIDTH*y;
+	uint64_t t = (uint64_t)vbe_buffer+x+VGA_WIDTH*y;
 	volatile uint8_t* s = t;
 	*s = 0xff;
 }
@@ -119,7 +119,7 @@ static void vga_put_pixel_24(int x, int y, vga_color color)
 		0xff00ff,
 		0x00ffff,
 		0xffffff};
-	uint64_t t = (uint64_t)vga_buffer;
+	uint64_t t = (uint64_t)vbe_buffer;
 	t += 3*(VGA_WIDTH*y+x);
 	volatile uint32_t* s = t;
 	*s = colors[color];
@@ -144,19 +144,19 @@ static void vga_put_pixel_32(int x, int y, vga_color color)
 		0xff00ff,
 		0x00ffff,
 		0xffffff};
-	uint64_t t = (uint64_t)vga_buffer+4*VGA_WIDTH*y+4*x;
+	uint64_t t = (uint64_t)vbe_buffer+4*VGA_WIDTH*y+4*x;
 	volatile uint32_t* s = t;
 	*s = colors[color];
 }
 
-void vga_fill(vga_color color)
+void vbe_fill(vga_color color)
 {
 	for(int x = 0; x < VGA_WIDTH; x++)
 		for(int y = 0; y<VGA_HEIGHT; y++)
 			vga_put_pixel(x,y,color);
 }
-void vga_clear()
+void vbe_clear()
 {
-	vga_fill(VC_BLUE);
-	//memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*vga_bpp);
+	vbe_fill(VC_BLUE);
+	//memset(vbe_buffer,0,VGA_WIDTH*VGA_HEIGHT*vbe_bpp);
 }

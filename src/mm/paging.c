@@ -6,11 +6,11 @@
 
 MODULE("PAGING");
 
+#define PS_BIT (1 << 7)
+
 uint64_t pg_get_paddr(uint64_t vma)
-{;
-	#ifdef PGDEBUG
-		mprint("%llx", vma);
-	#endif
+{
+	uint64_t* s = 0xfffffffffffff000;
 	uint64_t p[5] = 
 	{	vma & 0xfff,
 		(vma >> 12) & 0x1ff,
@@ -19,42 +19,19 @@ uint64_t pg_get_paddr(uint64_t vma)
 		(vma >> 39) & 0x1ff
 	};
 
-	uint64_t np[5] = {0,0,0,0,0};
-	int i; uint64_t faddr;
+	int i;
+	s = (uint64_t)s | (p[4] << 3); // first index
+	for(i = 3; (i > 0) && (*s & 1) && !(*s & PS_BIT); i--)
+		s = ((uint64_t)s << 9) | (p[i] << 3);
+	if(!(*s & 1)) // not found
+		return 0xffffffffffffffff;
 
-	for(int i = 2; i >= 1; i--)
-	{
-		for(int j = 0; j < 5; j++) // making a new recursive mapping 
-			if(i+j >= 5)
-				np[j] = 0xfff;
-			else
-				np[j] = p[i+j];
-		uint64_t a = 0;
-		np[0] <<= 3;
-		a |= np[0] & 0xfff;
-		for(int j = 1; j<5; j++)
-			a |= (np[j] & 0x1ffllu) << (12+9*(j-1));
-		if(a & (1llu << 47)) // sign bit
-			a |= 0xffff000000000000llu;
-		uint64_t *page = a;
-		if(!(*page & 1)) // page not present
-			return 0;
-		if(i == 1 || (*page & (1llu << 7))) // not a table - either page table entry or page bit set
-		{
-			faddr = *page;
-			faddr &= ~0xfffllu;
-			faddr &= ~(1llu << 63); // XD bit
-			faddr |= p[0];
-			for(int j = 1; j < i; j++)
-				faddr |= (p[j] & 0x1ffllu) << (12+9*(j-1));
-			break;
-		}
-		#ifdef PGDEBUG
-			mprint("%llx: %x %x %x %x %x", a, np[4], np[3], np[2], np[1], np[0]);
-			mprint("%d => 0x%016llx", i, *p);
-		#endif
-	}
-	return faddr;
+	uint64_t r = *s, mask;
+	mask = 1llu << (12+9*i); mask--;
+	r &= ~mask;
+	r |= vma & mask;
+
+	return r;
 }
 
 void pg_invtlb()
@@ -64,11 +41,10 @@ void pg_invtlb()
 		: : : "%rax");
 }
 
-void pg_map(uint64_t vma, uint64_t paddr, int order)
+
+uint64_t pg_map(uint64_t vma, uint64_t paddr, int order)
 {
-	#ifdef PGDEBUG
-		mprint("%llx", vma);
-	#endif
+	uint64_t* s = 0xfffffffffffff000;
 	uint64_t p[5] = 
 	{	vma & 0xfff,
 		(vma >> 12) & 0x1ff,
@@ -77,42 +53,17 @@ void pg_map(uint64_t vma, uint64_t paddr, int order)
 		(vma >> 39) & 0x1ff
 	};
 
-	uint64_t np[5] = {0,0,0,0,0};
-	int i; uint64_t faddr;
+	int i;
+	s = (uint64_t)s | (p[4] << 3); // first index
+	for(i = 3; (i > 0) && (*s & 1) && !(*s & PS_BIT); i--)
+		s = ((uint64_t)s << 9) | (p[i] << 3);
+	if(!(*s & 1)) // not found
+		return 0xffffffffffffffff;
 
-	for(int i = 4; i >= order+1; i--)
-	{
-		for(int j = 0; j < 5; j++) // making a new recursive mapping 
-			if(i+j >= 5)
-				np[j] = 0xfff;
-			else
-				np[j] = p[i+j];
-		uint64_t a = 
-		np[0] <<= 3;
-		a |= np[0] & 0xfff;
-		for(int j = 1; j<5; j++)
-			a |= (np[j] & 0x1ffllu) << (12+9*(j-1));
-		if(a & (1llu << 47)) // sign bit
-			a |= 0xffff000000000000llu;
-		uint64_t *page = a;
-		if(!(*page & 1)) // page not present
-		{
-			if()
-		}
-		if(i == 1 || (*page & (1llu << 7))) // not a table - either page table entry or page bit set
-		{
-			faddr = *page;
-			faddr &= ~0xfffllu;
-			faddr &= ~(1llu << 63); // XD bit
-			faddr |= p[0];
-			for(int j = 1; j < i; j++)
-				faddr |= (p[j] & 0x1ffllu) << (12+9*(j-1));
-			break;
-		}
-		#ifdef PGDEBUG
-			mprint("%llx: %x %x %x %x %x", a, np[4], np[3], np[2], np[1], np[0]);
-			mprint("%d => 0x%016llx", i, *p);
-		#endif
-	}
-	return faddr;
+	uint64_t r = *s, mask;
+	mask = 1llu << (12+9*i); mask--;
+	r &= ~mask;
+	r |= vma & mask;
+
+	return r;
 }

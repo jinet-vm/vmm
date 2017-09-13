@@ -61,6 +61,6 @@ void vga_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
 
 void vga_clear()
 {
-	vga_fill(VC_BLUE);
+	//vga_fill(VC_BLUE);
 	//memset(vga_buffer,0,VGA_WIDTH*VGA_HEIGHT*vga_bpp);
 }

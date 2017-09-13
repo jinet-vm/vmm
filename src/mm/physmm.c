@@ -229,6 +229,6 @@ static void *basic_alloc(uint64_t size)
 	uint64_t *r = 0xffffff8000000000;
 	for(int i = 0; i<512; i++) // enough only for 32 gib
 		*r++ = (paddr | 1llu) + i * 0x1000llu;
-	pg_invtbl();
+	pg_invtlb();
 	return 0;
 }
