@@ -42,7 +42,7 @@ void pg_invtlb()
 }
 
 
-uint64_t pg_map(uint64_t vma, uint64_t paddr, int order)
+void pg_map(uint64_t vma, uint64_t paddr, int order)
 {
 	uint64_t* s = 0xfffffffffffff000;
 	uint64_t p[5] = 
@@ -55,15 +55,14 @@ uint64_t pg_map(uint64_t vma, uint64_t paddr, int order)
 
 	int i;
 	s = (uint64_t)s | (p[4] << 3); // first index
-	for(i = 3; (i > 0) && (*s & 1) && !(*s & PS_BIT); i--)
+	for(i = 3; (i > 0) && (*s & 1); i--)
 		s = ((uint64_t)s << 9) | (p[i] << 3);
-	if(!(*s & 1)) // not found
-		return 0xffffffffffffffff;
-
+	for(; i > order; i--)
+		*s = 1 | physmm_alloc(0);
 	uint64_t r = *s, mask;
 	mask = 1llu << (12+9*i); mask--;
 	r &= ~mask;
 	r |= vma & mask;
 
-	return r;
+	//return r;
 }
