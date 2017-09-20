@@ -93,7 +93,12 @@ void kernel_start()
 	idt_flush();
 	mprint("IDT flushed");
 	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
-	mprint("zerovma: %llx", pg_get_paddr(0x10));
+	mprint("free");
+	physmm_use(0, 0x1000);
+	physmm_use(0x100000, 0x500000);
+	mprint("mapping");
+	pg_map(0x200000000, 0, 1);
+	//pg_map(0x00000, 0, 0);
 
 	for(;;);
 

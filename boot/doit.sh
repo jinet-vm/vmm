@@ -1,5 +1,6 @@
 #!/bin/bash
 # do mount.sh twice before (so buggy!)
+(cd ..; make clean all)
 make clean all
 sudo mount /dev/mapper/loop* /mnt
 sudo cp boot.elf /mnt/

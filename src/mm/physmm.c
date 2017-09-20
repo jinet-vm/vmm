@@ -119,16 +119,18 @@ static uint64_t bbd_alloc(int order)
 	// TODO: use a better tree-based approach for EVERY bitmap (like sqrt-decomposition?)
 	// simply using binary might turn this from linear to log complexity
 	// which is kinda awesome but doubles memory use (see 1+1/2+...1/2^n = 2)
+	//mprint("bbd alloc");
 	int o = order;
 	uint64_t block = 0;
 	while(o < 10)
 	{
+
 		uint64_t page = 0x1000 << o;
-		uint64_t size = (_ts + page - 1) / page;
 		uint64_t i;
 		for(i = 0; i < _ts; i+=page)
 			if(bbd_get_page(i, o))
 				break;
+		//mprint("%llx, %i", i, o);
 		if(i != _ts) // found!
 		{
 			block = i;
@@ -178,8 +180,6 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 	for(int i = 0; i<num; i++)
 		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE)
 			bbd_add_region(mmap[i].addr, mmap[i].len);
-
-	mprint("%llx", bbd_alloc(2));
 }
 
 uint64_t physmm_alloc(int order)
@@ -190,6 +190,16 @@ uint64_t physmm_alloc(int order)
 void physmm_free(uint64_t paddr, int order)
 {
 	bbd_free(paddr, order);
+}
+
+void physmm_use(uint64_t addr, uint64_t size)
+{
+	bbd_use_region(addr, size);
+}
+
+void physmm_add_region(uint64_t addr, uint64_t size)
+{
+	bbd_add_region(addr, size);
 }
 
 // this thing does a lot of things (_mmap and _num required; called only once)
