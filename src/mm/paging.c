@@ -87,4 +87,26 @@ void pg_map(uint64_t vma, uint64_t paddr, int order)
 	//return r;
 	pg_invtlb();
 }
+
+int pg_map_reg(uint64_t vma, uint64_t paddr, uint64_t size) // all MUST be 4k*c
+{
+	if((vma & 0xfff) || (paddr & 0xfff) || (size & 0xfff)) return -1;
+	uint64_t v = vma, p = paddr;
+	while(v < vma+size)
+	{
+		if(!(v & 0x1fffffllu) && !(p & 0x1fffffllu) & (vma+size-v >= 0x200000)) // can suit 2mib page
+		{
+			pg_map(v, p, 1);
+			p += 0x200000llu;
+			v += 0x200000llu;
+		}
+		else
+		{
+			pg_map(v, p, 0);
+			p += 0x1000llu;
+			v += 0x1000llu;
+		}
+	}
+	return 0;
+}
 //000fff8000001800

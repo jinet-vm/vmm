@@ -46,11 +46,20 @@ struct bootstruct  __attribute__((section(".boot"))) bs =
 
 struct term_dev vga =
 {
-	.name = "VBE_TERM",
+	.name = "VGA_TERM",
 	.type = TERM_VGA,
-	.addr = 0x7c00,
+	.addr = 0xb8000,
 	.init = term_vga_init,
 	.putc = term_vga_putc
+};
+
+struct term_dev vbe =
+{
+	.name = "VBE_TERM",
+	.type = TERM_VBE,
+	.addr = 0,
+	.init = term_vbe_init,
+	.putc = term_vbe_putc
 };
 
 struct term_dev com_port =
@@ -79,6 +88,22 @@ void kernel_start()
 	term_init();
 	term_add(com_port);
 
+	idt_init();
+	isr_install();
+	irq_install();
+	idt_flush();
+	mprint("IDT flushed");
+	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
+
+	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
+		term_add(vga);
+	else
+	{
+		vbe.addr = bs.tr_vd_framebuffer;
+		mprint("%llx vbe", vbe.addr);
+		term_add(vbe);
+	}
+
 	initGDTR();
 	gdt_set_code(1);
 	gdt_set_data(2);
@@ -87,17 +112,8 @@ void kernel_start()
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
 
-	idt_init();
-	isr_install();
-	irq_install();
-	idt_flush();
-	mprint("IDT flushed");
-	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
-	mprint("free");
-	physmm_use(0, 0x1000);
-	physmm_use(0x100000, 0x500000);
-	mprint("mapping");
-	pg_map(0x200000000, 0, 1);
+	
+	mprint("demo");
 	//pg_map(0x00000, 0, 0);
 
 	for(;;);

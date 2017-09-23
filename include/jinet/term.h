@@ -10,6 +10,7 @@
 #define TERM_VGA 1
 #define TERM_SERIAL_IO 2
 #define TERM_SERIAL_MMIO 3
+#define TERM_VBE 4
 
 // print term_add result
 #define TERM_ADD_RES_PRINT
@@ -38,6 +39,9 @@ int term_vprintk(char *fmt, va_list va);
 
 int term_vga_init(struct term_dev* t);
 int term_vga_putc(struct term_dev* t, char c);
+
+int term_vbe_init(struct term_dev* t);
+int term_vbe_putc(struct term_dev* t, char c);
 
 int term_serial_io_init(struct term_dev* t);
 int term_serial_io_putc(struct term_dev* t, char c);

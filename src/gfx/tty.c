@@ -30,24 +30,26 @@ Once bottom boundary of the owindow hits the buffer's bottom we do:
 #include <jinet/memory.h>
 #include <jinet/module.h>
 
-MODULE("VBE_TERM_EMU");
+MODULE("VBE_TTY");
 
 static size_t tty_x, tty_y;
 static vga_color tty_bg, tty_fg;
-static const uint64_t TTY_BUFFER = 0x7c00;
+static uint64_t TTY_BUFFER = 0x7c00;
 static int TTY_OFFSET = 0;
 
 
 void tty_clear();
 static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y);
 
-void tty_init()
+int tty_init(void* tty_fb)
 {
+	TTY_BUFFER = tty_fb;
 	tty_clear();
 	tty_reset_color();
 	for(int x = 0; x<TTY_WIDTH; x++)
 		for(int y = 0; y<TTY_MAX_LINES; y++)
 			tty_putsymb(0,tty_bg, tty_fg,x,y);
+	return 0;
 }
 
 void tty_clear()
@@ -70,7 +72,7 @@ void tty_refresh_sym(int x, int y)
 {
 	volatile tty_char *s = (uint64_t)TTY_BUFFER;
 	s += TTY_WIDTH*(y+TTY_OFFSET)+x;
-	vga_putc(s->symb, s->bg, s->fg, x, y);
+	vbe_putc(s->symb, s->bg, s->fg, x, y);
 }
 
 static void tty_half_mix()

@@ -14,7 +14,7 @@ typedef struct tty_char
 
 
 
-void tty_init();
+int tty_init(void* tty_fb);
 void tty_setbg(vga_color bg); // vga colors
 void tty_setfg(vga_color fg); // vga colors
 vga_color tty_getbg();

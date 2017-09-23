@@ -65,8 +65,8 @@ int VGA_WIDTH, VGA_HEIGHT; // vga_init
 
 void vga_init();
 
-void (*vga_put_pixel)(int x, int y, vga_color color); // vga_init
-void vga_putc(unsigned char c, vga_color bg, vga_color fg, int x, int y);
-void vga_scroll_row(int shift);
+void (*vbe_put_pixel)(int x, int y, vga_color color); // vga_init
+void vbe_putc(unsigned char c, vga_color bg, vga_color fg, int x, int y);
+void vbe_scroll_row(int shift);
 
 #endif

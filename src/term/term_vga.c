@@ -10,8 +10,6 @@
 // todo: it's horrible, make vga buffer great again (not the hardcoded 0x7c00)
 // todo: use term_dev properly
 
-#define VGA_PADDR_PHYS_BUFFER 0xb8000
-
 // allocates phys buffer for vga_init
 
 int term_vga_init(struct term_dev* t)
