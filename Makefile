@@ -11,7 +11,7 @@ CC=gcc
 CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive -fno-stack-protector
 AS=fasm
 
-SRC_DIR ?= ./src
+SRC_DIR ?= ./src ./data
 OBJ_DIR ?= ./obj
 SRCS := $(shell find $(SRC_DIR) -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
 OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)

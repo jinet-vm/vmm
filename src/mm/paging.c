@@ -70,14 +70,6 @@ void pg_map(uint64_t vma, uint64_t paddr, int order)
 		uint64_t S = s;
 		*s = 1 | t;
 		s = (uint64_t)s << 9;
-		mprint("clean %llx", s);
-		memset((uint64_t)s, 0, 0x1000);
-		*s++ = 0xfffffff0;
-		*s++ = 0xfffffff0;
-		*s++ = 0xfffffff0;
-		s--;
-		s--;
-		s--;
 		s += p[i];
 	}//ffffff8001000000
 	mprint("%i %llx", i, s);
@@ -94,7 +86,7 @@ int pg_map_reg(uint64_t vma, uint64_t paddr, uint64_t size) // all MUST be 4k*c
 	uint64_t v = vma, p = paddr;
 	while(v < vma+size)
 	{
-		if(!(v & 0x1fffffllu) && !(p & 0x1fffffllu) & (vma+size-v >= 0x200000)) // can suit 2mib page
+		if(!(v & 0x1fffffllu) && !(p & 0x1fffffllu) && (vma+size-v >= 0x200000)) // can suit 2mib page
 		{
 			pg_map(v, p, 1);
 			p += 0x200000llu;

@@ -92,17 +92,6 @@ void kernel_start()
 	isr_install();
 	irq_install();
 	idt_flush();
-	mprint("IDT flushed");
-	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
-
-	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
-		term_add(vga);
-	else
-	{
-		vbe.addr = bs.tr_vd_framebuffer;
-		mprint("%llx vbe", vbe.addr);
-		term_add(vbe);
-	}
 
 	initGDTR();
 	gdt_set_code(1);
@@ -111,6 +100,30 @@ void kernel_start()
 	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
+
+	mprint("IDT flushed");
+	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
+
+	// for(int i = 0; i<1000; i++)
+	// 	pg_map(0xffff900000000000+0x1000*i, bs.tr_vd_framebuffer+0x1000*i, 0);
+	// uint32_t* s = 0xffff900000000000;
+	// for(int i = 0; ; i++)
+	// 	*s++ = i*(uint32_t)s;
+	// for(;;);
+
+	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
+		term_add(vga);
+	else
+	{
+		vbe.addr = bs.tr_vd_framebuffer;
+		mprint("%llx vbe", vbe.addr);
+		// vbe.init(&vbe);
+		// //vbe_putc('A', 6, 0, 0, 0);
+		// //vbe_put_pixel(10, 10, 3);
+		// for(int i = 0; i<100; i++)
+		// 	vbe_putc('A'+i, 0, 1, i, 0);
+		term_add(vbe);
+	}
 
 	
 	mprint("demo");

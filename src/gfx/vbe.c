@@ -26,7 +26,7 @@ int vbe_init(void* fb, int pitch, int width, int height, int bpp)
 		vbe_put_pixel = vbe_put_pixel_8;
 	else if(vbe_bpp == 24)
 		vbe_put_pixel = vbe_put_pixel_24;
-	else if(vbe_bpp)
+	else if(vbe_bpp == 32)
 		vbe_put_pixel = vbe_put_pixel_32;
 	else return 1;
 	return 0;
