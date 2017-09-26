@@ -3,6 +3,8 @@
 #include <jinet/term.h>
 //#include <jinet/module.h>
 #include <jinet/printf.h>
+#include <jinet/vmaddr.h>
+#include <jinet/vga.h>
 //MODULE("TERM_VGA");
 
 #define ANSI_ARG_MAX 10
@@ -14,8 +16,8 @@
 
 int term_vga_init(struct term_dev* t)
 {
-	vga_init();
-	tty_init();
+	pg_map(VMA_TERM_FB, t->addr, 0);
+	vga_init(VMA_TERM_FB);
 	return 0;
 }
 
@@ -23,6 +25,8 @@ static char ansi_stage = 0;
 static char ansi_mode_a, ansi_mode_b;
 static int ansi_args[ANSI_ARG_MAX];
 static char ansi_args_i;
+
+static vga_color fg, bg;
 
 static void ansi_eval()
 {
@@ -32,13 +36,13 @@ static void ansi_eval()
 		{
 			int A = ansi_args[i];
 			if(30 <= A && A <= 37) // fg
-				tty_setfg(A - 30);
+				fg = A - 30;
 			else if(40 <= A && A <= 47) // fg
-				tty_setbg(A - 40);
+				bg = A - 40;
 			else if(A == 1) // bold
-				tty_setfg(tty_getfg() % 8 + 8);
+				fg = fg % 8 + 8;
 			else if(A == 0)
-				tty_reset_color();
+				fg = VC_WHITE, bg = VC_BLACK;
 		}
 	}
 }

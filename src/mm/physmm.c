@@ -2,6 +2,8 @@
 #include <jinet/module.h>
 #include <jinet/paging.h>
 #include <jinet/bootstruct.h>
+#include <jinet/vmaddr.h>
+
 
 MODULE("PHYSMM");
 
@@ -29,15 +31,15 @@ static int bbd_init(uint64_t total_size, void* (*basic_alloc)(uint64_t))
 	mprint("size: %llx", compmal);
 	bitmap[0] = (uint8_t*) basic_alloc(compmal);
 	asm("xchg %bx, %bx");
-	memset(0, 0, 0x100000);
-	mprint("a 0");
+	memset(VMA_BBD_BITMAP, 0, 0x100000);
 	for(int i = 1; i < 10; i++)
 	{
 		bitmap[i] = bitmap[0] + boffs[i];
 		mprint("a %llx", bitmap[i]);
 	}
-	for(uint8_t* t = bitmap[0]; t < bitmap[0]+compmal; t++)
-		*t = 0;
+
+	// for(uint8_t* t = bitmap[0]; t < bitmap[0]+compmal; t++)
+	// 	*t = 0;
 	return 0;
 }
 
@@ -69,13 +71,16 @@ static int bbd_add_region(uint64_t addr, uint64_t size)
 	uint64_t p = addr;
 	while(p < addr+size)
 	{
+		mprint("%llx ?", p);
 		uint64_t page = 0x1000, porder = 0;
 		for(page = 0x1000, porder = 0;
-			(p + (page << 1)) <= (addr+size) && !(p & ((page << 1) - 1));
+			porder < 9 && (p + (page << 1)) <= (addr+size) && !(p & ((page << 1) - 1));
 			page <<= 1, porder++);
+		mprint("%i %llx !", porder, p);
 		bbd_free_page(p, porder);
 		p += page;
 	}
+	return 0;
 }
 
 static int bbd_use_region(uint64_t addr, uint64_t size)
@@ -178,8 +183,12 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 	}
 	bbd_init(ts, &basic_alloc);
 	for(int i = 0; i<num; i++)
+	{
+		mprint("%llx : %llx", mmap[i].addr, mmap[i].len);
 		if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE)
 			bbd_add_region(mmap[i].addr, mmap[i].len);
+	}
+	mprint("done?");
 }
 
 uint64_t physmm_alloc(int order)
@@ -236,9 +245,43 @@ static void *basic_alloc(uint64_t size)
 	// let's just map this to zero - it's a goddamn bitmap for memory management - a reasonable thing to hard map somewhere
 	// also we'll unmap 0x100000-ish trampoline routines
 	// a) unmapping
-	uint64_t *r = 0xffffff8000000000;
-	for(int i = 0; i<512; i++) // enough only for 32 gib
-		*r++ = (paddr | 1llu) + i * 0x1000llu;
-	pg_invtlb();
-	return 0;
+
+	{
+		uint64_t vma = VMA_BBD_BITMAP;
+		uint64_t* s = 0xfffffffffffff000;
+		uint64_t p[5] = 
+		{	vma & 0xfff,
+			(vma >> 12) & 0x1ff,
+			(vma >> 21) & 0x1ff,
+			(vma >> 30) & 0x1ff,
+			(vma >> 39) & 0x1ff
+		};
+
+		int i;
+		s = (uint64_t)s | (p[4] << 3); // first index
+		for(i = 3; (i > 1) && (*s & 1); i--)
+			s = ((uint64_t)s << 9) | (p[i] << 3);
+
+		for(; i > 1; i--)
+		{
+			uint64_t t = paddr;
+			paddr += 0x1000;
+			*s = 1 | t;
+			s = (uint64_t)s << 9;
+			s += p[i];
+		}
+
+		*s = paddr | 1;
+		paddr += 0x1000;
+		s = (uint64_t)s << 9;
+		for(int i = 0; i<512; i++, *s++)
+			*s = paddr | 1 + 0x1000*i;
+		// *s = paddr | 1;
+		// *s |= (1 << 7);
+		pg_invtlb();
+	}
+
+	mprint("tada");
+
+	return VMA_BBD_BITMAP;
 }

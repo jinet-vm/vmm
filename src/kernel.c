@@ -21,6 +21,7 @@
 #include <jinet/bootstruct.h>
 #include <jinet/multiboot2.h>
 #include <jinet/paging.h>
+#include <jinet/vmaddr.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -100,9 +101,13 @@ void kernel_start()
 	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
+	tr_set(SEG(3));
+	mprint("TSS set");
 
 	mprint("IDT flushed");
 	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
+
+	mprint("phys memmng initialized");
 
 	// for(int i = 0; i<1000; i++)
 	// 	pg_map(0xffff900000000000+0x1000*i, bs.tr_vd_framebuffer+0x1000*i, 0);
@@ -112,43 +117,38 @@ void kernel_start()
 	// for(;;);
 
 	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
+	{
 		term_add(vga);
+	}
 	else
 	{
 		vbe.addr = bs.tr_vd_framebuffer;
-		mprint("%llx vbe", vbe.addr);
-		// vbe.init(&vbe);
-		// //vbe_putc('A', 6, 0, 0, 0);
-		// //vbe_put_pixel(10, 10, 3);
-		// for(int i = 0; i<100; i++)
-		// 	vbe_putc('A'+i, 0, 1, i, 0);
 		term_add(vbe);
 	}
 
+	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
 	
 	mprint("demo");
 	//pg_map(0x00000, 0, 0);
 
-	for(;;);
+	//for(;;);
 
 
 	//term_add(vga);
 	acpi_add_driver("APIC", madt_probe);
-	cpci_init();
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_probe();
-	pcie_init();
-	pci_probe();
-	uint64_t num = mcfg_seg_group_count();
-	if(num != MCFG_INVALID)
-		mprint("mcfg number: %x", num);
-	term_add(dell_serial);
-	mprint("GDT flushed");
-	tr_set(SEG(3));
-	mprint("TSS set");
+	// cpci_init();
+	// pcie_init();
+	// pci_probe();
+	// uint64_t num = mcfg_seg_group_count();
+	// if(num != MCFG_INVALID)
+	// 	mprint("mcfg number: %x", num);
+	// term_add(dell_serial);
+	//mprint("GDT flushed");
 	//volatile int s = 1/0;
 	//tty_setcolor(vga_color(VC_LIGHT_GREEN,VC_BLACK));
-	mprint("IDT initialized.");
+	//mprint("IDT initialized.");
 	//tty_setcolor(VC_DEFAULT);
 	// heap not needed yet
 	// // MADT

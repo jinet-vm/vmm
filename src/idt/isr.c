@@ -4,7 +4,7 @@
 #include <jinet/module.h>
 #include <stdint.h>
 
-MODULE("IDT");
+MODULE("INTERRUPTS");
 
 extern void isr0();
 extern void isr1();
@@ -117,10 +117,18 @@ void fault_handler(struct regs *r)
 	{
 		//tty_setcolor(vga_color(VC_RED, VC_BLACK));
 		mprint("%s Exception. System Halted!", exception_messages[r->int_no]);
-		mprint("RIP=%08x%08x", r->rip >> 32, r->rip);
-		mprint("CS=%08x%08x", r->cs >> 32, r->cs);
-		mprint("USERRSP = %08x%08x", r->userrsp >> 32, r->userrsp);
+		mprint("RIP=%016llx", r->rip);
+		mprint("CS=%016llx", r->cs);
+		mprint("USERRSP = %016llx", r->userrsp);
 		mprint("Error code: 0x%x", r-> err_code);
+		if(r->int_no == 14)
+		{
+			uint64_t cr2;
+			asm("mov %%cr2, %0"
+				: "=r"(cr2)
+				:);
+			mprint("CR2=%016llx", cr2);
+		}
 		for(;;);
 	}
 }
