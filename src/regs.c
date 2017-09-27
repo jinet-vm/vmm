@@ -67,12 +67,24 @@ uint16_t ds_get()
 	return val;
 }
 
+void ds_set(uint16_t value)
+{
+	asm("mov %%ax, %%ds"
+		: : "a"(value));
+}
+
 uint16_t fs_get()
 {
 	uint16_t val;
 	asm("mov %%fs, %0"
 		: "=r"(val));
 	return val;
+}
+
+void fs_set(uint16_t value)
+{
+	asm("mov %%ax, %%fs"
+		: : "a"(value));
 }
 
 uint16_t es_get()
@@ -83,6 +95,12 @@ uint16_t es_get()
 	return val;
 }
 
+void es_set(uint16_t value)
+{
+	asm("mov %%ax, %%es"
+		: : "a"(value));
+}
+
 uint16_t gs_get()
 {
 	uint16_t val;
@@ -91,12 +109,24 @@ uint16_t gs_get()
 	return val;
 }
 
+void gs_set(uint16_t value)
+{
+	asm("mov %%ax, %%gs"
+		: : "a"(value));
+}
+
 uint16_t ss_get()
 {
 	uint16_t val;
 	asm("mov %%ss, %0"
 		: "=r"(val));
 	return val;
+}
+
+void ss_set(uint16_t value)
+{
+	asm("mov %%ax, %%ss"
+		: : "a"(value));
 }
 
 uint16_t lar(uint16_t seg)

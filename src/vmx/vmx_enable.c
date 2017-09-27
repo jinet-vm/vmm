@@ -1,3 +1,4 @@
+
 #include <jinet/vmx.h>
 #include <jinet/msr.h>
 #include <jinet/tty.h>
@@ -7,9 +8,14 @@
 #include <jinet/idt.h>
 #include <jinet/memory.h>
 #include <jinet/module.h>
+#include <jinet/paging.h>
+#include <jinet/vmaddr.h>
 // TODO: stop being stupid
-#define VMCS_L 0xffff800000010000
-#define VMCS_P 0x410000
+// #define VMCS_L 0xffff800000010000
+// #define VMCS_P 0x410000
+
+void* VMCS_L;
+uint64_t VMCS_P;
 
 MODULE("VMX_ENABLE");
 
@@ -171,6 +177,9 @@ int virt_setup_vm();
 uint32_t vmcs_size, revision;
 int virt_init()
 {	
+	VMCS_P = physmm_alloc(4);
+	pg_map_reg(VMA_VMCS, VMCS_P, VMA_VMCS_SIZE);
+	VMCS_L = VMA_VMCS;
 	memcpy(0x7000lu, &vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 	memcpy(0x7100lu, &vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
@@ -208,10 +217,12 @@ int virt_setup_vm()
 
 	vmxon(VMCS_P, 1);
 
+
 	// vmcs: setting revision
 	rev = VMCS_L+0x1000;
 	*rev = revision;
 	// vmclear the vmcs
+	mprint("test");
 	vmclear(VMCS_P+0x1000, VMX_DEBUG);
 
 	// vmptrld: loading vmcs pointer
@@ -423,11 +434,11 @@ int virt_setup_vm()
 
 
 	asm("xchg %bx, %bx");
-	uint16_t tmp = lar(es_get());
+	//uint16_t tmp = lar(es_get());
 	//mprint("CS: %04x; es ar: %x", cs_get(), lar(es_get()));
 	//return 0;
 	mprint("");
-	asm("sti");
+	//Gasm("sti");
 	vmlaunch(1);
 }
 
@@ -458,8 +469,10 @@ int vmwrite(uint64_t vmcs_id, uint64_t value, char debug)
 
 int vmlaunch(char debug)
 {
+	mprint("1");
 	if(!debug) return vmx_vmlaunch();
 	int vmlaunch_res = vmx_vmlaunch();
+	mprint("2");
 	if(!vmlaunch_res)
 	{
 		return 0;
@@ -524,6 +537,7 @@ extern struct guest_regs gr;
 
 void virt_exit()
 {
+	mprint("ta!");
 	static const char* vmexit_reasons[] = 
 	{	"Exception or non-maskable interrupt (NMI)",
 		"External interrupt",
@@ -591,6 +605,7 @@ void virt_exit()
 	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
 	if(res == 18) // vmcall
 	{
+		mprint("ta!");
 		int ax = gr.rax & 0xffff;
 		int si = gr.rsi & 0xffff;
 		int cx = gr.rcx & 0xffff;

@@ -95,13 +95,19 @@ void kernel_start()
 	idt_flush();
 
 	initGDTR();
-	gdt_set_code(1);
-	gdt_set_data(2);
+	gdt_set_code(1); // 0x08
+	gdt_set_data(2); // 0x10
 	gdt_set_tss(3,104,0xffff800000000000); // host tss - 0x18
 	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
+	es_set(0x08);
+	ds_set(0x10);
+	fs_set(0x10);
+	gs_set(0x10);
+	ss_set(0x10);
 	tr_set(SEG(3));
+	//asm("mov $0x08, %cs");
 	mprint("TSS set");
 
 	mprint("IDT flushed");
@@ -123,7 +129,7 @@ void kernel_start()
 	else
 	{
 		vbe.addr = bs.tr_vd_framebuffer;
-		term_add(vbe);
+		//term_add(vbe);
 	}
 
 	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
@@ -138,6 +144,7 @@ void kernel_start()
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_probe();
+	mprint("acpi");
 	// cpci_init();
 	// pcie_init();
 	// pci_probe();
@@ -160,13 +167,13 @@ void kernel_start()
 	pic_disable();
 	ioapic_setup();
 	pit_init();
-	for(uint8_t i = 0; i<=23; i++)
-		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
-	irq_install_handler(1, keyboard_handler);
-	irq_install_handler(4, serial_handler);
-	asm("xchg %bx, %bx");
-	//pci_probe();
-	//mprint("VIRT INIT");
-	//virt_init();
+	// for(uint8_t i = 0; i<=23; i++)
+	// 	ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
+	// irq_install_handler(1, keyboard_handler);
+	// irq_install_handler(4, serial_handler);
+	// asm("xchg %bx, %bx");
+	// //pci_probe();
+	mprint("VIRT INIT");
+	virt_init();
 	for(;;);
 }

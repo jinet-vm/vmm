@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-typedef struct tss_entry {
+struct tss_entry_32 {
 	uint32_t	prev_tss;
 	uint32_t	esp0;
 	uint32_t	ss0;
@@ -32,9 +32,16 @@ typedef struct tss_entry {
 	uint32_t	ldt;
 	uint16_t	trap;
 	uint16_t	iomap_base;
-} __attribute__ ((packed)) tss_entry;
+} __attribute__ ((packed)) tss_entry_32;
 
-void setup_tss(uint32_t num, uint16_t ss0, uint32_t esp0);
-void enable_tss(uint32_t num);
+struct tss_entry_64 {
+	uint32_t _r0;
+	uint64_t rsp[3];
+	uint64_t _r1;
+	uint64_t ist[7];
+	uint64_t _r2;
+	uint16_t _r3;
+	uint16_t iomap_base;
+} __attribute__ ((packed)) tss_entry_32;
 
 #endif

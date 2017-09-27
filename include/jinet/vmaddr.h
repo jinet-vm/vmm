@@ -8,6 +8,8 @@
 #define VMA_TERM_FB_SIZE 0x3f48000llu
 #define VMA_TTY 0x104000000llu
 #define VMA_TTY_SIZE 0x20000 // almost 0xfd20 = 1920/8*1080/16*4 bytes
+#define VMA_VMCS 0x104020000llu
+#define VMA_VMCS_SIZE 0x10000
 #define VMA_BBD_BITMAP 0x4000000000llu
 #define VMA_BBD_BITMAP_SIZE 0x200000llu
 

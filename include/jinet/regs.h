@@ -17,6 +17,12 @@ uint16_t fs_get();
 uint16_t es_get();
 uint16_t gs_get();
 
+void cs_set(uint16_t seg);
+void ds_set(uint16_t seg);
+void fs_set(uint16_t seg);
+void es_set(uint16_t seg);
+void gs_set(uint16_t seg);
+
 uint16_t tr_get();
 void tr_set(uint16_t val);
 uint16_t lar(uint16_t seg);
