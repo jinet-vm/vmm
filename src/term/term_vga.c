@@ -8,14 +8,20 @@
 //MODULE("TERM_VGA");
 
 #define ANSI_ARG_MAX 10
+#define VGA_W 80
+#define VGA_H 25
 
 // todo: it's horrible, make vga buffer great again (not the hardcoded 0x7c00)
 // todo: use term_dev properly
 
 // allocates phys buffer for vga_init
 
+static int x, y;
+static vga_color fg, bg;
+
 int term_vga_init(struct term_dev* t)
 {
+	x = y = 0;
 	pg_map(VMA_TERM_FB, t->addr, 0);
 	vga_init(VMA_TERM_FB);
 	return 0;
@@ -25,8 +31,6 @@ static char ansi_stage = 0;
 static char ansi_mode_a, ansi_mode_b;
 static int ansi_args[ANSI_ARG_MAX];
 static char ansi_args_i;
-
-static vga_color fg, bg;
 
 static void ansi_eval()
 {
@@ -92,7 +96,25 @@ int term_vga_putc(struct term_dev* t, char c)
 		// else: ignore
 	}
 	else if(ansi_stage == 0)
-		tty_putc(c);
+	{
+		if(c != '\n')
+			vga_putc(c, bg, fg, x, y);
+		if(c == '\n')
+		{
+			x = 0;
+			y++;
+		}
+		else
+			x++;
+		if(x >= 80)
+			x = 0, y++;
+		if(y >= VGA_H)
+		{
+			x=0;
+			y = VGA_H - 1;
+			vga_scroll_row(1);
+		}
+	}
 
 	return 0;
 }

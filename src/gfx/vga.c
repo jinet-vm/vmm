@@ -20,13 +20,12 @@ void vga_init(void* buffer)
 
 void vga_scroll_row(int shift)
 {
-	uint16_t gone = VGA_HEIGHT % 16 + shift*16;
 	for(int x = 0; x < VGA_WIDTH; x++)
 	{
 		for(int y = 1; y < VGA_HEIGHT; y++)
 			VGA_BUFFER[(y-1)*VGA_WIDTH+x]=VGA_BUFFER[y*VGA_WIDTH+x];
 	}
-	memset((uint64_t)VGA_BUFFER+2*(VGA_HEIGHT-gone)*VGA_WIDTH,0,2*gone*VGA_WIDTH);
+	memset((uint64_t)VGA_BUFFER+2*(VGA_HEIGHT-1)*VGA_WIDTH,0,2*VGA_WIDTH);
 }
 
 void vga_set_cursor(int row, int col)
@@ -52,8 +51,10 @@ static uint8_t ansi_to_vga(vga_color c)
 
 void vga_putc(unsigned char c, vga_color bg, vga_color fg, int tty_x, int tty_y)
 {
-	uint16_t *t = VGA_BUFFER;
-	t += tty_y*VGA_HEIGHT + tty_x;
+	uint64_t _t = VGA_BUFFER + (tty_x+tty_y*VGA_WIDTH);
+	uint16_t *t = _t;
+	// t += tty_y*VGA_HEIGHT;
+	// t += tty_x;
 	fg = ansi_to_vga(fg);
 	bg = ansi_to_vga(bg);
 	*t = c | (fg << 8) | (bg << 12);

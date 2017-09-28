@@ -129,12 +129,14 @@ void kernel_start()
 	else
 	{
 		vbe.addr = bs.tr_vd_framebuffer;
-		//term_add(vbe);
+		term_add(vbe);
 	}
+	mprint("demo");
+
+	//for(;;);
 
 	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
 	
-	mprint("demo");
 	//pg_map(0x00000, 0, 0);
 
 	//for(;;);
@@ -173,7 +175,11 @@ void kernel_start()
 	// irq_install_handler(4, serial_handler);
 	// asm("xchg %bx, %bx");
 	// //pci_probe();
-	mprint("VIRT INIT");
+	// mprint("VIRT INIT");
+	// mprint("VIRT INIT1");
+	// mprint("VIRT INIT2");
+	// mprint("VIRT INIT3");
+
 	virt_init();
 	for(;;);
 }

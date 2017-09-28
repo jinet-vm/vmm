@@ -177,6 +177,7 @@ int virt_setup_vm();
 uint32_t vmcs_size, revision;
 int virt_init()
 {	
+	mprint("test");
 	VMCS_P = physmm_alloc(4);
 	pg_map_reg(VMA_VMCS, VMCS_P, VMA_VMCS_SIZE);
 	VMCS_L = VMA_VMCS;
@@ -202,6 +203,7 @@ int virt_init()
 
 int virt_setup_vm()
 {
+	mprint("virt setupvm");
 	// vmxon region
 	uint32_t* rev= VMCS_L;
 	*rev = revision;
@@ -537,7 +539,8 @@ extern struct guest_regs gr;
 
 void virt_exit()
 {
-	mprint("ta!");
+	
+	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
 	static const char* vmexit_reasons[] = 
 	{	"Exception or non-maskable interrupt (NMI)",
 		"External interrupt",
@@ -603,6 +606,8 @@ void virt_exit()
 		"XSAVES",
 		"XRSTORS"};
 	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
+	mprint("VMexit (0x%x): %s",res, vmexit_reasons[res]);
+	return;
 	if(res == 18) // vmcall
 	{
 		mprint("ta!");
@@ -622,8 +627,8 @@ void virt_exit()
 	}
 	else
 	{
-		mprint("VMexit (0x%x): ",res);
-		mprint("%s", vmexit_reasons[res]);
+		mprint("VMexit (0x%x): %s",res, vmexit_reasons[res]);
+		//mprint("%s", vmexit_reasons[res]);
 		for(;;);
 	}
 	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
