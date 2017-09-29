@@ -61,7 +61,7 @@ struct vbe_info {
 #define VC_BRIGHT_WHITE 15
  // todo: bg/fg colors (two nibbles)
 
-int VGA_WIDTH, VGA_HEIGHT; // vga_init
+int VBE_WIDTH, VBE_HEIGHT; // vga_init
 
 void vga_init();
 

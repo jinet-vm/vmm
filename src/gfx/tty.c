@@ -37,18 +37,24 @@ static vga_color tty_bg, tty_fg;
 static uint64_t TTY_BUFFER = 0x7c00;
 static int TTY_OFFSET = 0;
 
+int TTY_WIDTH, TTY_HEIGHT;
 
 void tty_clear();
 static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y);
 
-int tty_init(void* tty_fb)
+int tty_init(void* tty_fb, int width, int height)
 {
+	TTY_WIDTH = width / 8;
+	TTY_HEIGHT = height / 16;
 	TTY_BUFFER = tty_fb;
 	tty_clear();
 	tty_reset_color();
 	for(int x = 0; x<TTY_WIDTH; x++)
 		for(int y = 0; y<TTY_MAX_LINES; y++)
-			tty_putsymb(0,tty_bg, tty_fg,x,y);
+		{
+			mprint("%d %d", x, y);
+			tty_putsymb(0, tty_bg, tty_fg, x, y);
+		}
 	return 0;
 }
 
@@ -77,33 +83,35 @@ void tty_refresh_sym(int x, int y)
 
 static void tty_half_mix()
 {
-    if(TTY_OFFSET <= TTY_MAX_LINES / 2) return;
-    tty_char* s = TTY_BUFFER;
-    s += TTY_WIDTH*TTY_MAX_LINES/2;
-    memcpy(TTY_BUFFER, (void *)s, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
-    memset(s, 0, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
-    tty_y -= TTY_MAX_LINES/2;
-    TTY_OFFSET -= TTY_MAX_LINES/2;
-    tty_refresh_all();
+	if(TTY_OFFSET <= TTY_MAX_LINES / 2) return;
+	tty_char* s = TTY_BUFFER;
+	s += TTY_WIDTH*TTY_MAX_LINES/2;
+	memcpy(TTY_BUFFER, (void *)s, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
+	memset(s, 0, sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES/2);
+	tty_y -= TTY_MAX_LINES/2;
+	TTY_OFFSET -= TTY_MAX_LINES/2;
+	tty_refresh_all();
 }
 
 void tty_putc(uint8_t a)
 {
+	// for(int i = 0; i<10000000; i++)
+	// 	tty_refresh_all();
 	if(a == '\n') {tty_y++, tty_x = 0; }
 	if(tty_x > TTY_WIDTH - 1) tty_x = 0, tty_y++;
 	if(a != '\n')
 	{
 		tty_putsymb(a, tty_bg, tty_fg, tty_x, tty_y);
 		tty_refresh_sym(tty_x, tty_y - TTY_OFFSET);
-        tty_x++;
+		tty_x++;
 	}
 	if(tty_y - TTY_OFFSET > TTY_HEIGHT-1)
 	{
-        TTY_OFFSET+=10;
-        tty_refresh_all();
+		TTY_OFFSET+=10;
+		tty_refresh_all();
 	}
-    if(TTY_MAX_LINES - tty_y < 10) // critical
-        tty_half_mix();
+	if(TTY_MAX_LINES - tty_y < 10) // critical
+		tty_half_mix();
 }
 
 void tty_reset_color()
@@ -135,8 +143,8 @@ vga_color tty_getbg()
 
 void tty_refresh_all()
 {
-    //return;
-    for(int i = 0; i < TTY_WIDTH; i++)
-        for(int j = 0; j < TTY_HEIGHT; j++)
-            tty_refresh_sym(i,j);
+	//return;
+	for(int i = 0; i < TTY_WIDTH; i++)
+		for(int j = 0; j < TTY_HEIGHT; j++)
+			tty_refresh_sym(i,j);
 }

@@ -3,13 +3,13 @@
 - [x] grub! booting the multiboot way
 - [ ] memory management (we still need it)
 	+ [x] memory map (E820h? nah, grub) 
-	+ [ ] physical memory management (binary buddy on ~steroids~ bitmaps) [*WIP*]
+	+ [x] physical memory management (binary buddy on ~steroids~ bitmaps)
 	+ [ ] virtual memory management
 	+ [x] heap ~(need a proper algorithm, huh?)~ (let's say it's already done, huh?)
-- [ ] Intel-lpss UART support (PCI: vendor 8086h, device a166h)
+- [ ] Intel-lpss UART support (PCI: vendor 8086h, device a166h) (BK promised to work on that)
 - [ ] ATA PIO
-- [ ] FAT32 (should I use someone's realization?)
-- [ ] GPT
+- [ ] FAT32 (should I use someone's realization?) (as of sep2017, not now: using grub module file ramdisk)
+- [ ] GPT (not now; see FAT32)
 - [ ] ioremap-style MMIO interactions
 - [ ] USB
 	+ [ ] xHCI (?)

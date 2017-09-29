@@ -36,7 +36,7 @@ void vga_set_cursor(int row, int col)
     outb(0x3D5, (unsigned char)(position&0xFF));
 
     outb(0x3D4, 0x0E);
-    outb(0x3D5, (unsigned char )((position>>8)&0xFF));
+    outb(0x3D5, (unsigned char)((position>>8)&0xFF));
 }
 
 static uint8_t ansi_to_vga(vga_color c)
