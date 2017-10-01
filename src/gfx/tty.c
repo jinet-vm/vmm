@@ -52,7 +52,7 @@ int tty_init(void* tty_fb, int width, int height)
 	for(int x = 0; x<TTY_WIDTH; x++)
 		for(int y = 0; y<TTY_MAX_LINES; y++)
 		{
-			mprint("%d %d", x, y);
+			//mprint("%d %d", x, y);
 			tty_putsymb(0, tty_bg, tty_fg, x, y);
 		}
 	return 0;

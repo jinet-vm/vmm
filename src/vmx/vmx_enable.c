@@ -9,6 +9,7 @@
 #include <jinet/memory.h>
 #include <jinet/module.h>
 #include <jinet/paging.h>
+#include <jinet/printf.h>
 #include <jinet/vmaddr.h>
 // TODO: stop being stupid
 // #define VMCS_L 0xffff800000010000
@@ -257,7 +258,8 @@ int virt_setup_vm()
 		pinb = msr_get(IA32_VMX_PINBASED_CTLS);
 		zero = pinb & 0xffffffff, one = pinb >> 32;
 		mprint("0x%x & 0x%x", zero, one);
-		pinbvm = one | (1 << 0);
+		pinbvm = one & ~(1 << 0);
+		pinbvm &= ~(1 << 6);
 
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
@@ -272,6 +274,7 @@ int virt_setup_vm()
 		procbvm |= ~zero;
 		procbvm |= one;
 		vmwrite(VMX_PROCBASED_CTLS_D, procb, VMX_DEBUG);
+		vmwrite(VMX_SEC_PROCBASED_CTLS_D, 0, VMX_DEBUG);
 	}
 	
 	// vm-exit
@@ -431,7 +434,7 @@ int virt_setup_vm()
 	// memcpy(0x7000lu, vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 	// memcpy(0x7100lu, vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
-	//vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 1, VMX_DEBUG);
+	vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
 
 
 
@@ -440,7 +443,7 @@ int virt_setup_vm()
 	//mprint("CS: %04x; es ar: %x", cs_get(), lar(es_get()));
 	//return 0;
 	mprint("");
-	//Gasm("sti");
+	asm("cli");
 	vmlaunch(1);
 }
 
@@ -539,8 +542,8 @@ extern struct guest_regs gr;
 
 void virt_exit()
 {
+	asm("cli");
 	
-	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
 	static const char* vmexit_reasons[] = 
 	{	"Exception or non-maskable interrupt (NMI)",
 		"External interrupt",
@@ -580,6 +583,7 @@ void virt_exit()
 		"Reserved",
 		"MWAIT",
 		"Monitor trap flag",
+		"Reserved",
 		"MONITOR",
 		"PAUSE",
 		"VM-entry failure due to machine-check event",
@@ -606,8 +610,8 @@ void virt_exit()
 		"XSAVES",
 		"XRSTORS"};
 	int res = vmx_vmread(VMX_EXIT_REASON_D) & 0xFFFF;
-	mprint("VMexit (0x%x): %s",res, vmexit_reasons[res]);
-	return;
+	// mprint("VMexit is (0x%x): %s", res, vmexit_reasons[res]);
+	// return;
 	if(res == 18) // vmcall
 	{
 		mprint("ta!");
@@ -618,19 +622,26 @@ void virt_exit()
 		if(ax == 42)
 		{
 			//tty_setcolor(bx);
-			char* s = si;
-			for(int i = 0; i<cx; i++)
-				tty_putc(*s++);
+			// char* s = si;
+			//for(int i = 0; i<10; i++)
+				// printf("%c", *s++);
+			// for(int i = 0; i<cx; i++)
+			// 	tty_putc(*s++);
 			//tty_reset_color();
 		}
 		else mprint("bad request");
+		vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
+	}
+	else if(res == 0x34)
+	{
+		mprint("VMexit (0x%x): %s", res, vmexit_reasons[res]);
+		vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0, VMX_DEBUG);
 	}
 	else
 	{
-		mprint("VMexit (0x%x): %s",res, vmexit_reasons[res]);
-		//mprint("%s", vmexit_reasons[res]);
+		mprint("VMexit (0x%x): %s", res, vmexit_reasons[res]);
 		for(;;);
 	}
-	vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
+	
 	return;
 }

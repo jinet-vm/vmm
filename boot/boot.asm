@@ -91,6 +91,7 @@ extrn future_cr3
 extrn ent
 
 trump: ; 'cause trAmpoline
+	; xchg bx, bx
 	cli
 	cmp eax, 0x36d76289
 	jne $
@@ -98,6 +99,8 @@ trump: ; 'cause trAmpoline
 	push ebx
 	lgdt [GDTR]
 	call enterlm ; enterlm(void* multiboot_table)
+
+	; xchg bx, bx
 
 cr4_pae_bit = 00100000b
 lm_msr = 0xC0000080

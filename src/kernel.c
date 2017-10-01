@@ -85,6 +85,7 @@ MODULE("KERNEL");
 
 void kernel_start()
 {
+	// for(;;);
 	// VGA
 	term_init();
 	term_add(com_port);
@@ -107,21 +108,8 @@ void kernel_start()
 	gs_set(0x10);
 	ss_set(0x10);
 	tr_set(SEG(3));
-	//asm("mov $0x08, %cs");
-	mprint("TSS set");
-
-	mprint("IDT flushed");
 	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
-
 	mprint("phys memmng initialized");
-
-	// for(int i = 0; i<1000; i++)
-	// 	pg_map(0xffff900000000000+0x1000*i, bs.tr_vd_framebuffer+0x1000*i, 0);
-	// uint32_t* s = 0xffff900000000000;
-	// for(int i = 0; ; i++)
-	// 	*s++ = i*(uint32_t)s;
-	// for(;;);
-
 	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
 	{
 		term_add(vga);
@@ -132,17 +120,7 @@ void kernel_start()
 		term_add(vbe);
 	}
 	mprint("demo");
-
-	//for(;;);
-
 	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
-	
-	//pg_map(0x00000, 0, 0);
-
-	//for(;;);
-
-
-	//term_add(vga);
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_probe();
@@ -169,10 +147,12 @@ void kernel_start()
 	pic_disable();
 	ioapic_setup();
 	pit_init();
-	// for(uint8_t i = 0; i<=23; i++)
-	// 	ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
-	// irq_install_handler(1, keyboard_handler);
-	// irq_install_handler(4, serial_handler);
+	for(uint8_t i = 0; i<=23; i++)
+		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
+	irq_install_handler(1, keyboard_handler);
+	//asm("sti");
+	// for(;;);
+	//irq_install_handler(4, serial_handler);
 	// asm("xchg %bx, %bx");
 	// //pci_probe();
 	// mprint("VIRT INIT");
