@@ -21,8 +21,6 @@ consts_ld := consts.ld
 consts_inc := inc/consts.inc
 
 all: $(OBJS)
-	fasm src_bin/vm1.asm bin/vm1.bin
-	fasm src_bin/vm2.asm bin/vm2.bin
 	ld -T $(consts_ld) -T kernel.ld $(OBJS) -M -melf_x86_64 > kernel.map
 
 $(OBJ_DIR)/%.asm.o: %.asm

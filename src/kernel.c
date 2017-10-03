@@ -102,7 +102,9 @@ void kernel_start()
 	gdt_set_tss(5,104,0xffff800000000100); // vm0 tss - 0x20
 	gdt_set_tss(7,104,0xffff800000000200); // vm1 tss - 0x28
 	gdt_flush();
-	es_set(0x08);
+	asm("xchg %bx, %bx");
+	cs_set(0x08);
+	es_set(0x10);
 	ds_set(0x10);
 	fs_set(0x10);
 	gs_set(0x10);
@@ -125,6 +127,7 @@ void kernel_start()
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_probe();
 	mprint("acpi");
+
 	// cpci_init();
 	// pcie_init();
 	// pci_probe();
@@ -150,6 +153,9 @@ void kernel_start()
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
 	irq_install_handler(1, keyboard_handler);
+	ipi_send(0x7,5,0,0,0,0,1);
+	ipi_send(0x7,6,0,0,0,0,1);
+	ipi_send(0x7,6,0,0,0,0,1);
 	//asm("sti");
 	// for(;;);
 	//irq_install_handler(4, serial_handler);
@@ -160,6 +166,6 @@ void kernel_start()
 	// mprint("VIRT INIT2");
 	// mprint("VIRT INIT3");
 
-	virt_init();
+	// virt_init();
 	for(;;);
 }

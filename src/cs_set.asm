@@ -6,8 +6,8 @@ section '.text' executable
 
 cs_set:
 	mov rax, alpha
-	push rax
 	push rdi
+	push rax
 	retf
 	alpha:
 	ret
