@@ -614,20 +614,18 @@ void virt_exit()
 	// return;
 	if(res == 18) // vmcall
 	{
-		mprint("ta!");
 		int ax = gr.rax & 0xffff;
 		int si = gr.rsi & 0xffff;
 		int cx = gr.rcx & 0xffff;
 		int bx = gr.rbx & 0xffff;
+		//mprint("%d %d %d %d", ax, si, cx, bx);
 		if(ax == 42)
 		{
-			//tty_setcolor(bx);
-			// char* s = si;
-			//for(int i = 0; i<10; i++)
-				// printf("%c", *s++);
-			// for(int i = 0; i<cx; i++)
-			// 	tty_putc(*s++);
-			//tty_reset_color();
+			char* s = si;
+			printf("\e[%d;1m", bx+30);
+			for(int i = 0; i<cx; i++)
+				printf("%c", *s++);
+			printf("\n");
 		}
 		else mprint("bad request");
 		vmwrite(VMX_GUEST_RIP_N, vmx_vmread(VMX_GUEST_RIP_N)+3, 0);
