@@ -17,6 +17,7 @@ struct gras // Generic Register Address Structure
 } __attribute__ ((packed));
 
 int dbgp_probe(void* table);
+int dbgp_ok();
 uint64_t dbgp_base_addr();
 
 #endif

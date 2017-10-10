@@ -10,78 +10,41 @@ MODULE("TERM_MMIO");
 
 // todo: make ioremap-like thing
 
-#define LCR_DLAB_BIT 7
-#define RBR_OFF 0x0 // DLAB = 0
-#define THR_OFF 0x0 // DLAB = 0
-#define DLL_OFF 0x0 // DLAB = 1
-#define IER_OFF 0x4 // DLAB = 0
-#define DLH_OFF 0x4 // DLAB = 1
-#define FCR_OFF 0x8
-#define LCR_OFF 0xC
-#define MCR_OFF 0x10
-#define LSR_OFF 0x14
-#define MSR_OFF 0x18
-#define SRR_OFF 0x88
-
-static uint8_t serial_in(uint64_t PORT, uint64_t off)
-{
-	uint8_t *r = 0xef253000+off;
-	return *r;
-}
-
-static void serial_out(uint64_t PORT, uint64_t off, uint8_t val)
-{
-	uint64_t *r = 0xef253000+off;
-	*r = val;
-}
+#define UART_THR		0x00
+#define UART_DLL		0x00
+#define UART_DLM		0x01
+#define UART_LCR        0x03
+#define UART_MCR        0x04
+#define UART_LSR        0x05
+#define UART_USR		0x1F
+uint8_t *pBase;
 
 int term_serial_mmio_init(struct term_dev* t)
 {
-	// bridge first
-	pci_devn b = PCI_SDEVN(0,0,0,0);
-	pci_set_command(b, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
-	pci_dump(b);
-	// power??
-	pci_devn d = pci_find_device((struct pci_device_id){.vendor = 0x8086, 0xA166});
-	if(d == (pci_devn)(~0))
-	{
-		mprint("PCI device not found");
-		return -1;
-	}
-	pci_set_command(d, (1 << PCI_CMD_MM) | (1 << PCI_CMD_BUS_M));
-	pci_write_word(d,0x84,(pci_read_word(d,0x84) & ~3));
-	pci_set_cache_line_size(d, 0x10);
-	pci_dump(d);
-	t->addr = pci_get_bar0(d) & (~0xF);
-	mprint("MMIO addr: %8x", t->addr);
-	uint64_t PORT = 0xef253000; // todo: pci!
-	serial_in(PORT,0xf8);
-	serial_in(PORT,0xf4);
-	serial_out(PORT, 0x10, 0x1); // defines!
-	serial_out(PORT, 0x4, 0x5);
-	serial_out(PORT, 0xc, 0x93);
-	serial_out(PORT, 0x0, 0x80);
-	serial_out(PORT, 0x4, 0x4);
-	serial_out(PORT, 0xc, 0x13);
-	serial_out(PORT, 0x8, 0x1); // resets XMIT and RCVR...
-	serial_out(PORT, 0x8, 0x87);
-	serial_out(PORT, 0x10, 0xB);
-	serial_in(PORT, 0x4);
-	serial_out(PORT, 0x4, 0x0);
+	mprint("addr mmio: %llx", t->addr);
+	pBase = (uint32_t*)t->addr;
+	// set baud rate = 115200
+	pBase[UART_LCR] = 0x80; // set DLAB
+	pBase[UART_DLM] = 0;
+	pBase[UART_DLL] = 1;
+ 	// reset DLAB and set 8-n-1 mode (8 bits, no-Parity, 1 stop bit)
+ 	pBase[UART_LCR] = 3;
+	// switch off H/W Flow control and set RTS
+	pBase[UART_MCR] = 2;
+	mprint("usr: %x", pBase[UART_USR]);
+	mprint("lsr: %x", pBase[UART_LSR]);
 	return 0;
 }
 
-static int is_transmit_empty(uint64_t PORT)
-{
-	return serial_in(0xef253000, LSR_OFF) & 0x20;
-}
+// TODO: more effective string-way
 
 int term_serial_mmio_putc(struct term_dev* t, char c)
 {
-	uint64_t PORT = 0xef253000;
-	while (is_transmit_empty(PORT) == 0);
-	serial_out(PORT, THR_OFF, c);
-	if(c == '\n')
-		term_serial_mmio_putc(t, '\r');
+	while ((pBase[UART_LSR] & 0x20) == 0);
+	pBase[UART_THR] = c;
 	return 0;
 }
+
+// reference:
+// https://download.01.org/future-platform-configuration-hub/skylake/register-definitions/332219-002.pdf
+// https://linux-sunxi.org/images/d/d2/Dw_apb_uart_db.pdf

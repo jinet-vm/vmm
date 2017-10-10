@@ -10,6 +10,8 @@ MODULE("ACPI_DBGP");
 #define INTERFACE_UART16550 0
 #define INTERFACE_UART16550_DBGP_CMPT 1
 
+static int ok = 1;
+
 struct dbgp
 {
 	struct sdt_header h;
@@ -23,6 +25,17 @@ static struct dbgp* DBGP;
 int dbgp_probe(void* table)
 {
 	DBGP = table;
-	mprint("addr: %llx", DBGP->base_addr.addr);
+	mprint("base addr: %llx", DBGP->base_addr.addr);
 	return 0;
+}
+
+uint64_t dbgp_base_addr()
+{
+	return DBGP->base_addr.addr;
+}
+
+int dbgp_ok()
+{
+	ok = 0;
+	return ok;
 }

@@ -127,9 +127,14 @@ void kernel_start()
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_add_driver("DBGP", dbgp_probe);
-
 	acpi_probe();
 	mprint("acpi");
+	if(!dbgp_ok())
+	{
+		dell_serial.addr = dbgp_base_addr();
+		term_add(dell_serial);
+	}
+	mprint("tada");
 	for(;;);
 	// cpci_init();
 	// pcie_init();
