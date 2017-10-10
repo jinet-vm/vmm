@@ -47,14 +47,14 @@ int tty_init(void* tty_fb, int width, int height)
 	TTY_WIDTH = width / 8;
 	TTY_HEIGHT = height / 16;
 	TTY_BUFFER = tty_fb;
+	// for(int x = 0; x<TTY_WIDTH; x++)
+	// 	for(int y = 0; y<TTY_MAX_LINES; y++)
+	// 	{
+	// 		//mprint("%d %d", x, y);
+	// 		tty_putsymb(0, tty_bg, tty_fg, x, y);
+	// 	}
 	tty_clear();
 	tty_reset_color();
-	for(int x = 0; x<TTY_WIDTH; x++)
-		for(int y = 0; y<TTY_MAX_LINES; y++)
-		{
-			//mprint("%d %d", x, y);
-			tty_putsymb(0, tty_bg, tty_fg, x, y);
-		}
 	return 0;
 }
 
@@ -62,7 +62,7 @@ void tty_clear()
 {
 	tty_x = 0;
 	tty_y = 0;
-	memset(TTY_BUFFER,0,sizeof(tty_char)*TTY_WIDTH*TTY_HEIGHT);
+	memset(TTY_BUFFER,0,sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES);
 }
 
 static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y)

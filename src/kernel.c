@@ -22,6 +22,7 @@
 #include <jinet/multiboot2.h>
 #include <jinet/paging.h>
 #include <jinet/vmaddr.h>
+#include <jinet/dbgp.h>
 #define p_entry(addr, f) (addr << 12) | f
 
 #define title_lines 6
@@ -112,14 +113,24 @@ void kernel_start()
 	tr_set(SEG(3));
 	physmm_init((struct multiboot_mmap_entry*)bs.lm_mmap_addr, bs.tr_mmap_len);
 	mprint("phys memmng initialized");
-	
+	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
+	{
+		term_add(vga);
+	}
+	else
+	{
+		vbe.addr = bs.tr_vd_framebuffer;
+		term_add(vbe);
+	}
 	mprint("demo");
 	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
+	acpi_add_driver("DBGP", dbgp_probe);
+
 	acpi_probe();
 	mprint("acpi");
-
+	for(;;);
 	// cpci_init();
 	// pcie_init();
 	// pci_probe();
@@ -145,16 +156,6 @@ void kernel_start()
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
 	irq_install_handler(1, keyboard_handler);
-
-	if(bs.tr_video_type == BTSTR_VDTP_TEXT)
-	{
-		term_add(vga);
-	}
-	else
-	{
-		vbe.addr = bs.tr_vd_framebuffer;
-		term_add(vbe);
-	}
 	// ipi_send(0x7,5,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);
