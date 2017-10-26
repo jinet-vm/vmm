@@ -71,10 +71,9 @@ void pit_irq(struct regs *r)
 
 void pit_sleep(uint64_t ms)
 {
-	count = 0; // one timer only
-	// static uint64_t end;
-	// end = count+ms;
-	while(1){;
-		if(count > ms) break;
+	static uint64_t end;
+	end = count + ms;
+	while(1){
+		if(count >= end) break;
 	}
 }

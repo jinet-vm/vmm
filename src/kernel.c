@@ -132,10 +132,10 @@ void kernel_start()
 	if(!dbgp_ok())
 	{
 		dell_serial.addr = dbgp_base_addr();
-		term_add(dell_serial);
+		//term_add(dell_serial);
 	}
 	mprint("tada");
-	for(;;);
+	//for(;;);
 	// cpci_init();
 	// pcie_init();
 	// pci_probe();
@@ -157,14 +157,14 @@ void kernel_start()
 	pic_enable();
 	pic_disable();
 	ioapic_setup();
-	pit_init();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
-	irq_install_handler(1, keyboard_handler);
+	//irq_install_handler(1, keyboard_handler);
 	// ipi_send(0x7,5,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);
-	//asm("sti");
+	asm("sti");
+	pit_init();
 	// for(;;);
 	//irq_install_handler(4, serial_handler);
 	// asm("xchg %bx, %bx");
@@ -173,7 +173,9 @@ void kernel_start()
 	// mprint("VIRT INIT1");
 	// mprint("VIRT INIT2");
 	// mprint("VIRT INIT3");
-
-	virt_init();
+	mprint("a");
+	pit_sleep(1000);
+	mprint("b");
+	//virt_init();
 	for(;;);
 }
