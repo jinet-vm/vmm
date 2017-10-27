@@ -3,18 +3,11 @@
 #include <jinet/irq.h>
 #include <stdint.h>
 
-// living in a magical world
-// where the first 4 GiB are
-// identity mapped. A bright
-// but quite impossible pic.
-
-// todo: fix it
-
 #define LAPIC_ID *(lapic+LAPIC_ID_R_OFF*REG_S)
 #define EOIR *(lapic+EOIR_N)
 #define SVR *(lapic+SVR_N)
 
-#define APIC_ENABLE 1 << 8
+#define APIC_ENABLE (1 << 8)
 
 #define REG_S 0x10
 
@@ -22,7 +15,7 @@ static void* lapic;
 
 void lapic_setup()
 {
-	pic_disable();
+	//pic_disable();
 	lapic = madt_lapic_base();
 	//printf("LAPIC regs at %08x\n", lapic);
 	uint32_t* reg = lapic+SVR_N*REG_S;
@@ -45,5 +38,6 @@ void lapic_reg_write(int n, uint32_t val)
 // todo: whaaaaat?
 void lapic_eoi_send()
 {
+	//asm("xchg %bx, %bx");
 	lapic_reg_write(0xB,0);
 }
