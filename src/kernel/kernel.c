@@ -165,25 +165,21 @@ void kernel_start()
 		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
 	//irq_install_handler(1, keyboard_handler);
 	asm("xchg %bx, %bx");
-	memcpy(0x7000, &test_bin, 0x1000);
-	asm("sti");
-	pit_init();
+	//memcpy(0x7000, &test_bin, 0x1000);
+	//asm("sti");
+	//pit_init();
 	mprint("test");
-	pit_sleep(500);
+	//pit_sleep(500);
 	mprint("test");
 	//for(;;);
-	ipi_send(0x7,5,0,0,0,0,1);
-	pit_sleep(1);
-	ipi_send(0x7,6,0,0,0,0,1);
-	int i = 0;
-	int *I = 0x7800, *m = 0x7880;
+	//ipi_send(0x7,5,0,0,0,0,1);
+	//pit_sleep(1);
+	//ipi_send(0x7,6,0,0,0,0,1);
+	unsigned char i = 0;
+	//int *I = 0x7800, *m = 0x7880;
 	while(1)
 	{
-		if(*m = 1)
-		{
-			mprint("%d", *I);
-			*m = 0;
-		}
+		mprint("%d",i++);
 	}
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();

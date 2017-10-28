@@ -1,4 +1,4 @@
-org 0x7000
+org 0x4000
 use16
 
 start:
@@ -59,4 +59,4 @@ entry_pm:
 	jmp .lp
 
 finish:
-fill: times 0x1000-finish+start db 0
+fill: times 0x4000-finish+start db 0

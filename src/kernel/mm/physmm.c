@@ -189,6 +189,7 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 			bbd_add_region(mmap[i].addr, mmap[i].len);
 	}
 	mprint("done?");
+	physmm_use(0x4000,0x4000);
 }
 
 uint64_t physmm_alloc(int order)

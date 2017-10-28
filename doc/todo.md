@@ -9,6 +9,18 @@
 	+ [x] physical memory management (binary buddy on ~steroids~ bitmaps)
 	+ [x] virtual memory management
 	+ [x] heap ~(need a proper algorithm, huh?)~ (let's say it's already done, huh?)
+- [ ] multiprocessor stuff **finally**:
+	+ [x] working SIPI
+	+ [x] boot into PM
+	+ [ ] boot into LM
+	+ [ ] vmx init (see `virtualization`)
+- [ ] kernel threads on BSP
+	+ expected processes:
+	+ [ ] kernel_idle
+	+ [ ] logger (execs lower)
+		* [ ] vbe_term/vga_term
+		* [ ] uart_term
+	+ [ ] shell (gui or cli) for VM interactions & settings
 - [x] Intel-lpss UART support ~~(PCI: vendor 8086h, device a166h)~~; it's a 16550 uart (MMIO) with a fifo buffer
 	+ [ ] proper console management for SMP
 	+ [ ] fifo is not rocket science
