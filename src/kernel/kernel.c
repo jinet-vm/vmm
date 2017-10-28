@@ -158,7 +158,7 @@ void kernel_start()
 	//uint32_t madtb = detect_madt();
 	pic_enable();
 	pic_disable();
-	lapic_setup()
+	lapic_setup();
 	mprint("ha!");
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
