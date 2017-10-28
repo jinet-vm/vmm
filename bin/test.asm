@@ -15,7 +15,7 @@ start:
 	db  0eah ; JMP FAR
 	dd  entry_pm ; offset
 	dw  sel_code32 ; selector
-	jmp $
+	jmp $ ; in case something went wrong
 
 GDTTable:   ;таблица GDT
 ; zero seg
