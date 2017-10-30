@@ -177,10 +177,13 @@ void kernel_start()
 	//ipi_send(0x7,6,0,0,0,0,1);
 	unsigned char i = 0;
 	//int *I = 0x7800, *m = 0x7880;
-	while(1)
-	{
-		mprint("%d",i++);
-	}
+	// while(1)
+	// {
+	// 	mprint("%d",i++);
+	// }
+	heap_init();
+	malloc(0x800);
+	heap_show_blocks();
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
 	for(;;);

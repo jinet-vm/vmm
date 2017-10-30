@@ -3,6 +3,8 @@
 
 // todo: this is what pure WRONG looks like
 
+
+// VMAs for kernel
 #define VMA_PHYS_LOW 0x0
 #define VMA_TERM_FB 0x100000000llu
 #define VMA_TERM_FB_SIZE 0x3f48000llu
@@ -12,6 +14,9 @@
 #define VMA_VMCS_SIZE 0x10000
 #define VMA_BBD_BITMAP 0x4000000000llu
 #define VMA_BBD_BITMAP_SIZE 0x200000llu
+#define VMA_HEAP 0x4000200000llu
+#define VMA_HEAP_SIZE 0x10000
+
 
 #define PADDR_AP_TRUMP 0x4000
 #define PADDR_AP_TRUMP_SIZE 0x4000
