@@ -32,7 +32,7 @@ struct tss_entry_32 {
 	uint32_t	ldt;
 	uint16_t	trap;
 	uint16_t	iomap_base;
-} __attribute__ ((packed)) tss_entry_32;
+} __attribute__ ((packed));
 
 struct tss_entry_64 {
 	uint32_t _r0;
@@ -42,6 +42,6 @@ struct tss_entry_64 {
 	uint64_t _r2;
 	uint16_t _r3;
 	uint16_t iomap_base;
-} __attribute__ ((packed)) tss_entry_32;
+} __attribute__ ((packed));
 
 #endif

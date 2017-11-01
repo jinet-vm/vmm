@@ -29,6 +29,7 @@ void idt_set_gate(char i, uint64_t off, uint16_t sel, uint8_t flags)
 	IDT[i].offset_middle = (off >> 16) & 0xffff;
 	IDT[i].offset_high = off >> 32;
 	IDT[i].selector = sel;
-	IDT[i].flags = flags << 8;
+	IDT[i].flags = flags << 8; // present
+	IDT[i].flags |= 1; // IST1
 	IDT[i].always0 = 0;
 }

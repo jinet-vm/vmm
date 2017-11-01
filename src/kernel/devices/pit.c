@@ -39,6 +39,8 @@ void pit_irq();
 
 void pit_init()
 {
+	// TODO: better? hardcoded; I want multitasking badly
+	idt_set_gate(32, (uint64_t)irq_sched, 0x08, 0x8E)
 	irq_install_handler(0, pit_irq);
 	pit_send_command(CMD_MODE3, CMD_RW_BOTH, CMD_COUNTER0);
 	pit_set_freq(1000); // 1 ms

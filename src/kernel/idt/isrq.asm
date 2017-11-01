@@ -414,6 +414,11 @@ irq15:
 	push 47
 	jmp irq_common_stub
 
+irq_sched:
+	cli
+	
+
+
 extrn irq_handler
 
 irq_common_stub:
