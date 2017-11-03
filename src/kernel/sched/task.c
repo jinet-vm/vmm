@@ -6,7 +6,9 @@ MODULE("TASK");
 
 #define MAX_TASK 10
 
-int curTask;
+extern void tasking_enter();
+
+struct task* curTask;
 int proc_n = 0;
 int proc_i = 0;
 
@@ -31,9 +33,14 @@ struct task* task_switch()
 
 int sched_init()
 {
+	mprint("sched_init! start");
 	sched_addt(task_create("task0", task0));
 	sched_addt(task_create("task1", task1));
-	curTask = 0;
+	curTask = T[0];
+	mprint("tasking_enter start");
+	mprint("curTask at 0x%llx", curTask);
+	asm("xchg %bx, %bx");
+	tasking_enter();
 	// waiting for irq_sched
 }
 

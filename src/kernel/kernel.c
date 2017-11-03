@@ -139,15 +139,16 @@ void kernel_start()
 		term_add(vbe);
 	}
 	mprint("demo");
-	pg_map_reg(VMA_PHYS_LOW, 0, 0x100000000);
+	pg_map_reg(0, 0, 0x100000000);
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_add_driver("DBGP", dbgp_probe);
 	acpi_probe();
 	mprint("acpi");
+	asm("xchg %bx, %bx");
 	if(!dbgp_ok()) // TODO: fix
 	{
-		dell_serial.addr = dbgp_base_addr();
+		//dell_serial.addr = dbgp_base_addr();
 		//term_add(dell_serial);
 	}
 	pic_enable();
@@ -162,6 +163,11 @@ void kernel_start()
 	asm("xchg %bx, %bx");
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	asm("sti");
+	//asm("sti");
+	mprint("%llx",malloc(0x100));
+	mprint("%llx",malloc(0x100));
+	mprint("%llx",malloc(0x100));
+	mprint("done");
+	//sched_init();
 	for(;;);
 }
