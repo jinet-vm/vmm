@@ -168,6 +168,18 @@ static void* basic_alloc(uint64_t size);
 extern void *KERNEL_START, *KERNEL_END;
 extern struct bootstruct bs;
 
+
+static uint64_t min(uint64_t a, uint64_t b)
+{
+	return (a < b ? a : b);
+}
+
+static uint64_t max(uint64_t a, uint64_t b)
+{
+	return a + b - min(a,b);
+}
+
+
 void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 {
 	mprint("pi");
@@ -190,6 +202,8 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 	}
 	mprint("done?");
 	physmm_use(0x4000,0x4000);
+	uint64_t pks = min(pg_get_paddr(&KERNEL_START), bs.tr_pgtb_start), pke = max(bs.tr_pgtb_start+0x135000, bs.tr_pgtb_cur);
+	physmm_use(pks, pke-pks);
 }
 
 uint64_t physmm_alloc(int order)
@@ -216,10 +230,14 @@ void physmm_add_region(uint64_t addr, uint64_t size)
 // 1. find physical memory (_size_)
 // 2. map it somewhere, initialize it (?) and return
 
+
 static void *basic_alloc(uint64_t size)
 {
-	uint64_t pks = pg_get_paddr(&KERNEL_START), pke = bs.tr_pgtb_start+0x135000;
+	//uint64_t pks = pg_get_paddr(&KERNEL_START), pke = bs.tr_pgtb_start+0x135000;
+	uint64_t pks = min(pg_get_paddr(&KERNEL_START), bs.tr_pgtb_start), pke = max(bs.tr_pgtb_start+0x135000, bs.tr_pgtb_cur);
 	mprint("%llx %llx", pks, pke);
+
+	uint64_t pgtbs = bs.tr_pgtb_start;
 
 	// 1. physical memory
 	uint64_t paddr = 0;
