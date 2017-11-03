@@ -157,7 +157,7 @@ task_switch: ; reminder: doesn't save RAX
 public irq_sched
 ; TODO: use consts for stack offsets?
 irq_sched:
-	; xchg bx, bx
+	xchg bx, bx
 	cli
 	push rcx ; +8 bytes on stack
 	; it's complicated a bit
@@ -167,6 +167,7 @@ irq_sched:
 	mov [task_save_rip], rcx
 	mov rcx, [rsp+24] 
 	mov [task_save_rflags], rcx
+	or rcx, 0x200
 	mov rcx, [rsp+32]
 	mov [task_save_rsp], rcx
 	pop rcx

@@ -16,14 +16,16 @@ struct task* T[MAX_TASK];
 
 static int task0()
 {
+	mprint("A");
 	while(1)
-		mprint("task0");
+	{
+		asm("sti");
+	}
 }
 
 static int task1()
 {
-	while(1)
-		mprint("task1");
+	mprint("B");
 }
 
 struct task* task_switch()
@@ -41,7 +43,7 @@ int sched_init()
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
 	curTask->next = T[1];
-	curTask->next->next = curTask; // I can go on forever now
+	curTask->next->next = T[0]; // I can go on forever now
 	pit_init();
 	tasking_enter();
 	// waiting for irq_sched
@@ -64,6 +66,7 @@ struct task* task_create(char* name, int (*thread)(void))
 	struct task* T = malloc(sizeof(struct task));
 	memset(T,0,sizeof(struct task));
 	T->rip = thread;
+	//T->rflags = 0x200;
 	T->name = name;
 	// stack setup
 	T->rsp = malloc(0x2000) + 0x2000; // TODO: it's horrible; do it with physmm_alloc in mind

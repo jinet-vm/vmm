@@ -157,7 +157,7 @@ void kernel_start()
 	mprint("ha!");
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
-		ioapic_set_gate(i,32+i,0,0,0,0,0,0); // just to be on a safe side
+		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
 	//ioapic_set_gate(1,33,0,0,0,0,0,0);
 	//irq_install_handler(1, keyboard_handler);
 	asm("xchg %bx, %bx");
