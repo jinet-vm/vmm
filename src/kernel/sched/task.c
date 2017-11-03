@@ -42,6 +42,7 @@ int sched_init()
 	asm("xchg %bx, %bx");
 	curTask->next = T[1];
 	curTask->next->next = curTask; // I can go on forever now
+	pit_init();
 	tasking_enter();
 	// waiting for irq_sched
 }

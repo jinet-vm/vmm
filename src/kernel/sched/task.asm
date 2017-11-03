@@ -34,6 +34,9 @@ struc task
 extrn curTask
 
 
+; todo: use STACK instead of .final_rrax-ish labels
+; see tasking_enter for example
+
 ; ok, here's the magic:
 ; we modify registers in IST (spec. RIP, RSP, RFLAGS - see SDM-3B: p201=6.14.1)
 ; so that they would align with the curTask
@@ -47,7 +50,6 @@ task_load: ; ALMOST load
 	end virtual
 	mov rdx, [.ctask.rrdx]
 	mov rbx, [.ctask.rrbx]
-	mov rsp, [.ctask.rrsp]
 	mov rbp, [.ctask.rrbp]
 	mov rsi, [.ctask.rrsi]
 	mov rdi, [.ctask.rrdi]
@@ -61,7 +63,7 @@ task_load: ; ALMOST load
 	mov r15, [.ctask.rr15]
 	
 	mov rcx, [.ctask.rrax]
-	mov [.final_rrax], rcx ; it's loaded during task_load
+	mov [task_load_rrax], rcx ; it's loaded during task_load
 
 	mov rcx, [.ctask.rrip]
 	mov [task_load_rip], rcx
@@ -74,52 +76,25 @@ task_load: ; ALMOST load
 
 	mov rcx, [.ctask.rrcx]
 
-	mov rax, [.final_rrax]
+	mov rax, [task_load_rrax]
 	ret
-	.final_rrax: dq 0
 
 task_load_rip: dq 0
 task_load_rsp: dq 0
 task_load_rflags: dq 0
+task_load_rrax: dq 0
 
 tasking_enter:
-	mov rax, curTask
-	mov rax, [rax]
-	virtual at rax
-		.ctask task
-	end virtual
-
-	mov rcx, [.ctask.rrflags]
+	xchg bx, bx
+	call task_load
+	push rcx
+	mov rcx, [task_load_rflags]
 	push rcx
 	popf
-
-	mov rsp, [.ctask.rrsp]
-	mov rdx, [.ctask.rrdx]
-	mov rbx, [.ctask.rrbx]
-	mov rsp, [.ctask.rrsp]
-	mov rbp, [.ctask.rrbp]
-	mov rsi, [.ctask.rrsi]
-	mov rdi, [.ctask.rrdi]
-	mov r8, [.ctask.rr8]
-	mov r9, [.ctask.rr9]
-	mov r10, [.ctask.rr10]
-	mov r11, [.ctask.rr11]
-	mov r12, [.ctask.rr12]
-	mov r13, [.ctask.rr13]
-	mov r14, [.ctask.rr14]
-	mov r15, [.ctask.rr15]
-	
-	mov rcx, [.ctask.rrax]
-	mov [.final_rrax], rcx
-	mov rcx, [.ctask.rrip]
-	mov [.final_rrip], rcx
-	mov rcx, [.ctask.rrcx]
-
-	mov rax, [.final_rrax]
-	jmp qword [.final_rrip] ; or jmp far?
-
-	.final_rrip: dq 0
-	.final_rrax: dq 0
+	pop rcx
+	mov rsp, [task_load_rsp]
+	sti ; finally!
+	jmp qword [task_load_rip]
 
 
 ; so we want to save the the task
@@ -127,9 +102,6 @@ tasking_enter:
 ; 2. places it to task_save_{rip,rsp,rflags}
 ; 3. calls task_save (daily reminder: DON'T TOUCH ANYTHING BEFORE THAT)
 
-public task_save_rip
-public task_save_rsp
-public task_save_rflags
 task_save_rip: dq 0
 task_save_rsp: dq 0
 task_save_rflags: dq 0
@@ -170,5 +142,44 @@ task_save:
 
 	mov rax, [.task_rrax]
 	ret
-	.task_rrax: dq 0s
-	
+	.task_rrax: dq 0
+
+task_switch: ; reminder: doesn't save RAX
+	mov rax, curTask
+	mov rax, [rax]
+	virtual at rax
+		.ctask task
+	end virtual
+	mov rcx, [.ctask.next]
+	mov [curTask], rcx
+	ret
+
+public irq_sched
+; TODO: use consts for stack offsets?
+irq_sched:
+	; xchg bx, bx
+	cli
+	push rcx ; +8 bytes on stack
+	; it's complicated a bit
+	; figure 6-8 from 3B demonstrates a stack with an error code
+	; we don't expect PIC IRQ to push an error code (hey, it's not an exception!)
+	mov rcx, [rsp+8]
+	mov [task_save_rip], rcx
+	mov rcx, [rsp+24] 
+	mov [task_save_rflags], rcx
+	mov rcx, [rsp+32]
+	mov [task_save_rsp], rcx
+	pop rcx
+	call task_save
+	call task_switch
+	call task_load
+	push rcx
+	mov rcx, [task_load_rip]
+	mov [rsp+8], rcx
+	mov rcx, [task_load_rflags]
+	mov [rsp+24], rcx
+	mov rcx, [task_load_rsp]
+	mov [rsp+32], rcx
+	pop rcx
+	sti
+	iretq

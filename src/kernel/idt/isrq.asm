@@ -148,7 +148,6 @@ isr14:
 
 ; 15: Reserved Exception
 isr15:
-	iretq
 	cli
 	push 0
 	push 15
@@ -177,7 +176,6 @@ isr18:
 
 ; 19: Reserved
 isr19:
-	iretq
 	cli
 	push 0
 	push 19
@@ -192,7 +190,6 @@ isr20:
 
 ; 21: Reserved
 isr21:
-	iretq
 	cli
 	push 0
 	push 21
@@ -200,7 +197,6 @@ isr21:
 
 ; 22: Reserved
 isr22:
-	iretq
 	cli
 	push 0
 	push 22
@@ -208,7 +204,6 @@ isr22:
 
 ; 23: Reserved
 isr23:
-	iretq
 	cli
 	push 0
 	push 23
@@ -216,7 +211,6 @@ isr23:
 
 ; 24: Reserved
 isr24:
-	iretq
 	cli
 	push 0
 	push 24

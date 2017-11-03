@@ -163,7 +163,6 @@ void kernel_start()
 	asm("xchg %bx, %bx");
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	asm("cli");
 	mprint("%llx",malloc(0x100));
 	mprint("%llx",malloc(0x100));
 	mprint("%llx",malloc(0x100));

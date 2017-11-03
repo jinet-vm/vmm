@@ -35,15 +35,16 @@
 #define CMD_COUNTER2 0x80
 #define CMD_READBACK 0xc0
 
-void pit_irq();
+extern void irq_sched();
 
 void pit_init()
 {
 	// TODO: better? hardcoded; I want multitasking badly
 	//idt_set_gate(32, (uint64_t)irq_sched, 0x08, 0x8E)
-	irq_install_handler(0, pit_irq);
+	//irq_install_handler(0, pit_irq);
+	idt_set_gate(32,(uint64_t)irq_sched,0x08,0x8E);
 	pit_send_command(CMD_MODE3, CMD_RW_BOTH, CMD_COUNTER0);
-	pit_set_freq(1000); // 1 ms
+	pit_set_freq(20000); // 20 ms
 	ioapic_set_gate(2,32,0,0,0,0,0,0);
 }
 
