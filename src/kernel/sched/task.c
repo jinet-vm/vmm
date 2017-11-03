@@ -40,6 +40,8 @@ int sched_init()
 	mprint("tasking_enter start");
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
+	curTask->next = T[1];
+	curTask->next->next = curTask; // I can go on forever now
 	tasking_enter();
 	// waiting for irq_sched
 }
