@@ -16,21 +16,29 @@ struct task* T[MAX_TASK];
 
 static int task0()
 {
-	mprint("A");
 	while(1)
 	{
+	mprint("A");
 		asm("sti");
 	}
 }
 
 static int task1()
 {
+	while(1)
+	{
 	mprint("B");
+		asm("sti");
+	}
 }
 
-struct task* task_switch()
+static int task2()
 {
-	proc_i = 0;
+	while(1)
+	{
+	mprint("C");
+		asm("sti");
+	}
 }
 
 int sched_init()
@@ -43,7 +51,8 @@ int sched_init()
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
 	curTask->next = T[1];
-	curTask->next->next = T[0]; // I can go on forever now
+	T[1]->next = task_create("task2", task2); // I can go on forever now
+	(T[1]->next)->next = T[0];
 	pit_init();
 	tasking_enter();
 	// waiting for irq_sched

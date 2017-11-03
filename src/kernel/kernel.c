@@ -151,7 +151,7 @@ void kernel_start()
 		//dell_serial.addr = dbgp_base_addr();
 		//term_add(dell_serial);
 	}
-	pic_enable();
+	// pic_enable();
 	pic_disable();
 	lapic_setup();
 	mprint("ha!");
@@ -163,10 +163,7 @@ void kernel_start()
 	asm("xchg %bx, %bx");
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	mprint("%llx",malloc(0x100));
-	mprint("%llx",malloc(0x100));
-	mprint("%llx",malloc(0x100));
-	mprint("done");
 	sched_init();
+	//asm("sti");
 	for(;;);
 }

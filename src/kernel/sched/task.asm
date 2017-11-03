@@ -42,6 +42,10 @@ extrn curTask
 ; so that they would align with the curTask
 ; and then we iretq
 
+public task_load
+public task_save
+public task_switch
+
 task_load: ; ALMOST load
 	mov rax, curTask
 	mov rax, [rax]
@@ -155,6 +159,7 @@ task_switch: ; reminder: doesn't save RAX
 	ret
 
 public irq_sched
+extrn lapic_eoi_send
 ; TODO: use consts for stack offsets?
 irq_sched:
 	xchg bx, bx
@@ -172,6 +177,7 @@ irq_sched:
 	mov [task_save_rsp], rcx
 	pop rcx
 	call task_save
+	call lapic_eoi_send
 	call task_switch
 	call task_load
 	push rcx
@@ -184,3 +190,5 @@ irq_sched:
 	pop rcx
 	sti
 	iretq
+
+	; IMMEDIATE TODO: check rip/rflags/rsp
