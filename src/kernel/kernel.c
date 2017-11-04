@@ -151,19 +151,19 @@ void kernel_start()
 		//dell_serial.addr = dbgp_base_addr();
 		//term_add(dell_serial);
 	}
-	// pic_enable();
+	pic_enable();
 	pic_disable();
 	lapic_setup();
 	mprint("ha!");
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
 	asm("xchg %bx, %bx");
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	sched_init();
-	//asm("sti");
+	//sched_init();
+	asm("sti");
 	for(;;);
 }

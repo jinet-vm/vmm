@@ -443,8 +443,18 @@ irq_common_stub:
 	push r14
 	push r15
 
+	mov rcx, 100
+	.lp0:
+	push 0
+	loop .lp0
+
 	mov rdi, [.erc]
 	call irq_handler
+
+	mov rcx, 100
+	.lp:
+	pop r15
+	loop .lp
 
 	pop r15
 	pop r14

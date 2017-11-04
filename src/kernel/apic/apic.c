@@ -11,16 +11,28 @@
 
 #define REG_S 0x10
 
+#define TPR 0x8
+#define LDR 0xD
+#define DFR 0xE
+#define SVR 0xF
+
 static void* lapic;
+
+// checkout https://github.com/pdoane/osdev/blob/master/intr/local_apic.c
 
 void lapic_setup()
 {
 	//pic_disable();
 	lapic = madt_lapic_base();
 	//printf("LAPIC regs at %08x\n", lapic);
-	uint32_t* reg = lapic+SVR_N*REG_S;
-	//printf("reg at %08x\n", reg);
-	*reg = (*reg) | APIC_ENABLE;
+	// uint32_t* reg = lapic+SVR_N*REG_S;
+	// //printf("reg at %08x\n", reg);
+	// *reg = (*reg) | APIC_ENABLE;
+	// spurrious interrupt vector register
+	lapic_reg_write(TPR, 0); 
+	lapic_reg_write(DFR, 0xffffffff);
+	lapic_reg_write(LDR, 0x01000000);
+	lapic_reg_write(SVR, 0x1FF);
 }
 
 uint32_t lapic_reg_read(int n)

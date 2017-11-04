@@ -177,13 +177,28 @@ irq_sched:
 	mov [task_save_rsp], rcx
 	pop rcx
 	call task_save
+
+	mov rcx, 100
+	.lp0:
+	push 0
+	loop .lp0
+
+
 	call lapic_eoi_send
+	in al, 0x60
+
+	mov rcx, 100
+	.lp:
+	pop r15
+	loop .lp
+	
 	call task_switch
 	call task_load
 	push rcx
 	mov rcx, [task_load_rip]
 	mov [rsp+8], rcx
 	mov rcx, [task_load_rflags]
+	or rcx, 0x200
 	mov [rsp+24], rcx
 	mov rcx, [task_load_rsp]
 	mov [rsp+32], rcx
