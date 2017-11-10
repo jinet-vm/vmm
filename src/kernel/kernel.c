@@ -158,13 +158,13 @@ void kernel_start()
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
-	irq_install_handler(1, keyboard_handler);
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
+	//irq_install_handler(1, keyboard_handler);
 	//asm("int $1");
 	//int i = 1/0;
-	asm("sti");
+	//asm("sti");
 	//asm("xchg %bx, %bx");
-	for(;;);
+	//for(;;);
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
 	mprint("%llx",malloc(0x100));
