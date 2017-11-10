@@ -48,7 +48,7 @@ int sched_init()
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
 	curTask->next = T[1];
-	curTask->next->next = T[0]; // I can go on forever now
+	T[1]->next = curTask; // I can go on forever now
 	pit_init();
 	tasking_enter();
 	// waiting for irq_sched

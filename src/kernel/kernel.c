@@ -162,9 +162,9 @@ void kernel_start()
 	irq_install_handler(1, keyboard_handler);
 	//asm("int $1");
 	//int i = 1/0;
-	asm("sti");
+	//asm("sti");
 	//asm("xchg %bx, %bx");
-	for(;;);
+	//for(;;);
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
 	mprint("%llx",malloc(0x100));
