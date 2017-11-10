@@ -103,7 +103,6 @@ isr7:
 
 ;  8: Double Fault Exception (With Error Code!)
 isr8:
-	xchg bx, bx
 	cli
 	push 8
 	jmp isr_common_stub
@@ -141,7 +140,7 @@ isr13:
 
 ; 14: Page Fault Exception (With Error Code!)
 isr14:
-	xchg bx, bx
+	; xchg bx, bx
 	cli
 	push 14
 	jmp isr_common_stub
@@ -277,12 +276,46 @@ isr_common_stub:
 	; mov ax, 0x10
 	; mov fs, ax
 	; mov gs, ax
+	cli
 	mov eax, esp
+
+	xchg bx, bx
+	push rdi
+	push rsi
+	push r15
+	push r14
+	push r13
+	push r12
+	push r11
+	push r10
+	push r9
+	push r8
+	push rbp
+	push rdx
+	push rcx
+	push rbx
+	push rax
 
 	mov rdi, rsp
 	call fault_handler
 
-	add esp, 8*8 ; ss ... int_no
+	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rbp
+	pop r8
+	pop r9
+	pop r10
+	pop r11
+	pop r12
+	pop r13
+	pop r14
+	pop r15
+	pop rsi
+	pop rdi
+
+	add rsp, 8*2 ; ss ... int_no
 	iretq
 
 public irq0
@@ -417,52 +450,42 @@ irq15:
 extrn irq_handler
 
 irq_common_stub:
-	;pushad
-	; push ds
-	; push es
-	
-	; mov ax, 0x10
-	; mov fs, ax
-	; mov gs, ax
-
-	mov [.erc], rsp
-
-	push rax
-	push rcx
-	push rdx
-	push rbx
-	push rbp
-	push rsi
+	xchg bx, bx
 	push rdi
-	push r8
-	push r9
-	push r10
-	push r11
-	push r12
-	push r13
-	push r14
+	push rsi
 	push r15
+	push r14
+	push r13
+	push r12
+	push r11
+	push r10
+	push r9
+	push r8
+	push rbp
+	push rdx
+	push rcx
+	push rbx
+	push rax
 
-	mov rdi, [.erc]
+	mov rdi, rsp
 	call irq_handler
 
-	pop r15
-	pop r14
-	pop r13
-	pop r12
-	pop r11
-	pop r10
-	pop r9
-	pop r8
-	pop rdi
-	pop rsi
-	pop rbp
-	pop rbx
-	pop rdx
-	pop rcx
 	pop rax
+	pop rbx
+	pop rcx
+	pop rdx
+	pop rbp
+	pop r8
+	pop r9
+	pop r10
+	pop r11
+	pop r12
+	pop r13
+	pop r14
+	pop r15
+	pop rsi
+	pop rdi
 
 	add rsp, 8*2 ; clean the pushed error number
-	sti
+	;sti
 	iretq
-	.erc: dq 0

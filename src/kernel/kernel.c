@@ -106,7 +106,7 @@ void kernel_start()
 	pg_map_reg(VMA_IST1, physmm_alloc(4), 0x10000);
 	struct tss_entry_64* kernelTSS = VMA_KERNEL_TSS;
 	memset(kernelTSS, 0, 0x68);
-	kernelTSS->ist[0] = VMA_IST1+0x10000;
+	kernelTSS->ist[0] = VMA_IST1+0x8000; // 2 Kib above
 
 	// GDT
 	initGDTR();
@@ -158,9 +158,13 @@ void kernel_start()
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
-	asm("xchg %bx, %bx");
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
+	//asm("int $1");
+	//int i = 1/0;
+	asm("sti");
+	//asm("xchg %bx, %bx");
+	for(;;);
 	//ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
 	mprint("%llx",malloc(0x100));

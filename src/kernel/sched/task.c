@@ -1,6 +1,7 @@
 #include <jinet/task.h>
 #include <jinet/heap.h>
 #include <jinet/module.h>
+#include <jinet/io.h>
 
 MODULE("TASK");
 
@@ -16,16 +17,20 @@ struct task* T[MAX_TASK];
 
 static int task0()
 {
-	mprint("A");
 	while(1)
 	{
+		//outb(0x3f8, 'a');
+		mprint("a");
 		asm("sti");
 	}
 }
 
 static int task1()
 {
-	mprint("B");
+	while(1)
+	{
+		mprint("b");
+	}
 }
 
 struct task* task_switch()
