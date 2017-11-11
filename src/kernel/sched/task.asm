@@ -155,10 +155,11 @@ task_switch: ; reminder: doesn't save RAX
 	ret
 
 public irq_sched
+extrn lapic_eoi_send
 ; TODO: use consts for stack offsets?
 irq_sched:
-	xchg bx, bx
 	cli
+	xchg bx, bx
 	push rcx ; +8 bytes on stack
 	; it's complicated a bit
 	; figure 6-8 from 3B demonstrates a stack with an error code
@@ -173,6 +174,7 @@ irq_sched:
 	pop rcx
 	call task_save
 	call task_switch
+	call lapic_eoi_send
 	call task_load
 	push rcx
 	mov rcx, [task_load_rip]
@@ -182,5 +184,4 @@ irq_sched:
 	mov rcx, [task_load_rsp]
 	mov [rsp+32], rcx
 	pop rcx
-	sti
 	iretq

@@ -17,21 +17,49 @@ struct task* T[MAX_TASK];
 
 static int task0()
 {
+	int i = 0;
 	while(1)
 	{
 		//outb(0x3f8, 'a');
-		mprint("a");
+		if(i++ > 400000)
+		{
+			mprint("a");
+			i = 0;
+		}
 		asm("sti");
 	}
 }
 
 static int task1()
 {
+	int i = 0;
 	while(1)
 	{
-		mprint("b");
+		if(i++ > 400000)
+		{
+			mprint("b");
+			i = 0;
+		}
+		asm("sti");
 	}
 }
+
+static int task2()
+{
+	int i = 0;
+	while(1)
+	{
+		if(i++ > 400000)
+		{
+			mprint("c");
+			i = 0;
+		}
+		asm("sti");
+	}
+}
+
+static 
+
 
 struct task* task_switch()
 {
@@ -43,12 +71,14 @@ int sched_init()
 	mprint("sched_init! start");
 	sched_addt(task_create("task0", task0));
 	sched_addt(task_create("task1", task1));
-	curTask = T[0];
+	sched_addt(task_create("task2", task2));
 	mprint("tasking_enter start");
+	curTask = T[0];
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
-	curTask->next = T[1];
-	T[1]->next = curTask; // I can go on forever now
+	T[0]->next = T[1];
+	T[1]->next = T[2];
+	T[2]->next = T[0]; // I can go on forever now
 	pit_init();
 	tasking_enter();
 	// waiting for irq_sched
