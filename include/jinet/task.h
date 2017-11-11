@@ -21,9 +21,5 @@ struct task
 int sched_init();
 int sched_addt(struct task* t);
 struct task* task_create(char* name, int (*thread)(void));
-struct task* task_by_id(int id);
-
 extern struct task* curTask;
-// extern int proc_n; // TODO: better!
-// extern int proc_n; // TODO: better!
 #endif

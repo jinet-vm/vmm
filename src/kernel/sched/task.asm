@@ -42,6 +42,10 @@ extrn curTask
 ; so that they would align with the curTask
 ; and then we iretq
 
+public task_load
+public task_save
+public task_switch
+
 task_load: ; ALMOST load
 	mov rax, curTask
 	mov rax, [rax]
@@ -159,7 +163,7 @@ extrn lapic_eoi_send
 ; TODO: use consts for stack offsets?
 irq_sched:
 	cli
-	xchg bx, bx
+	; cxchg bx, bx
 	push rcx ; +8 bytes on stack
 	; it's complicated a bit
 	; figure 6-8 from 3B demonstrates a stack with an error code
@@ -180,6 +184,7 @@ irq_sched:
 	mov rcx, [task_load_rip]
 	mov [rsp+8], rcx
 	mov rcx, [task_load_rflags]
+	or rcx, 0x200
 	mov [rsp+24], rcx
 	mov rcx, [task_load_rsp]
 	mov [rsp+32], rcx

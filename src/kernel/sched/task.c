@@ -2,6 +2,7 @@
 #include <jinet/heap.h>
 #include <jinet/module.h>
 #include <jinet/io.h>
+#include <jinet/printf.h>;
 
 MODULE("TASK");
 
@@ -15,18 +16,25 @@ int proc_i = 0;
 
 struct task* T[MAX_TASK];
 
+static int s1, s2;
+static int p1, p2;
+
 static int task0()
 {
-	int i = 0;
 	while(1)
 	{
-		//outb(0x3f8, 'a');
-		if(i++ > 400000)
+		if(p1)
 		{
-			mprint("a");
-			i = 0;
+			mprint("task1: %d", s1);
+			s1 = 0;
+			p1 = 0;
 		}
-		asm("sti");
+		if(p2)
+		{
+			mprint("task2: %d", s2);
+			s2 = 0;
+			p2 = 0;
+		}
 	}
 }
 
@@ -35,12 +43,12 @@ static int task1()
 	int i = 0;
 	while(1)
 	{
-		if(i++ > 400000)
+		if(!p1)
 		{
-			mprint("b");
-			i = 0;
+			i++;
+			s1 = i;
+			p1 = 1;
 		}
-		asm("sti");
 	}
 }
 
@@ -49,21 +57,13 @@ static int task2()
 	int i = 0;
 	while(1)
 	{
-		if(i++ > 400000)
+		if(!p2)
 		{
-			mprint("c");
-			i = 0;
+			i++;
+			s2 = i;
+			p2 = 1;
 		}
-		asm("sti");
 	}
-}
-
-static 
-
-
-struct task* task_switch()
-{
-	proc_i = 0;
 }
 
 int sched_init()
