@@ -50,7 +50,7 @@ void pit_init()
 	//irq_install_handler(0, pit_irq);
 	idt_set_gate(34,(uint64_t)irq_sched,0x08,0x8E);
 	pit_send_command(CMD_MODE3, CMD_RW_BOTH, CMD_COUNTER0);
-	pit_set_freq(10); // 200 ms
+	pit_set_freq(100); // 200 ms
 	ioapic_set_gate(2,34,0,0,0,0,0,0);
 	//ioapic_set_gate(1,32,0,0,0,0,0,0);
 	idt_flush();

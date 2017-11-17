@@ -30,3 +30,11 @@ int term_serial_io_putc(struct term_dev* t, char c)
 		term_serial_io_putc(t, '\r');
 	return 0;
 }
+
+int COM_putc(char c)
+{
+	unsigned short PORT = 0x3f8;
+	while (is_transmit_empty(PORT) == 0);
+	outb(PORT, c);
+	return 0;
+}

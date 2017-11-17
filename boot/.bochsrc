@@ -3,6 +3,6 @@ ata0-master: type=disk, mode=flat, path=disk.img, translation=lba
 boot: disk
 clock:           sync=realtime, time0=local
 cpu:             count=2
-magic_break: enabled=1
+magic_break: enabled=0
 display_library: sdl, options="gui_debug"
 com1: enabled=1, mode=file, dev=serial.txt

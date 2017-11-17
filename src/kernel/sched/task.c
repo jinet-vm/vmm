@@ -18,23 +18,26 @@ struct task* T[MAX_TASK];
 
 static int s1, s2;
 static int p1, p2;
+int t2i = 0;
 
 static int task0()
 {
 	while(1)
 	{
-		if(p1)
-		{
-			mprint("task1: %d", s1);
-			s1 = 0;
-			p1 = 0;
-		}
-		if(p2)
-		{
-			mprint("task2: %d", s2);
-			s2 = 0;
-			p2 = 0;
-		}
+		COM_putc('0');
+		COM_putc(' ');
+		// if(p1)
+		// {
+		// 	mprint("task1: %d", s1);
+		// 	s1 = 0;
+		// 	p1 = 0;
+		// }
+		// if(p2)
+		// {
+		// 	mprint("task2: %d", s2);
+		// 	s2 = 0;
+		// 	p2 = 0;
+		// }
 	}
 }
 
@@ -43,26 +46,31 @@ static int task1()
 	int i = 0;
 	while(1)
 	{
-		if(!p1)
-		{
-			i++;
-			s1 = i;
-			p1 = 1;
-		}
+		//printf("1");
+		// if(!p1)
+		// {
+		// 	i++;
+		// 	s1 = i;
+		// 	p1 = 1;
+		// }
 	}
 }
 
+
 static int task2()
 {
-	int i = 0;
+	
 	while(1)
 	{
-		if(!p2)
-		{
-			i++;
-			s2 = i;
-			p2 = 1;
-		}
+		t2i++;
+		//printf("2");
+		// mprint("2");
+		// if(!p2)
+		// {
+		// 	i++;
+		// 	s2 = i;
+		// 	p2 = 1;
+		// }
 	}
 }
 
@@ -76,7 +84,7 @@ int sched_init()
 	curTask = T[0];
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
-	T[0]->next = T[1];
+	T[0]->next = T[0];
 	T[1]->next = T[2];
 	T[2]->next = T[0]; // I can go on forever now
 	pit_init();

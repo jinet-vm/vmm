@@ -92,9 +92,10 @@ tasking_enter:
 	xchg bx, bx
 	call task_load
 	push rcx
-	mov rcx, [task_load_rflags]
-	push rcx
-	popf
+		mov rcx, [task_load_rflags]
+
+		push rcx
+		popf
 	pop rcx
 	mov rsp, [task_load_rsp]
 	sti ; finally!
@@ -131,7 +132,7 @@ task_save:
 
 	mov [.ctask.rrdx], rdx
 	mov [.ctask.rrbx], rbx
-	mov [.ctask.rrsp], rsp
+	; mov [.ctask.rrsp], rsp - AAAAAA
 	mov [.ctask.rrbp], rbp
 	mov [.ctask.rrsi], rsi
 	mov [.ctask.rrdi], rdi
@@ -149,6 +150,7 @@ task_save:
 	.task_rrax: dq 0
 
 task_switch: ; reminder: doesn't save RAX
+	xchg bx, bx
 	mov rax, curTask
 	mov rax, [rax]
 	virtual at rax
@@ -163,7 +165,7 @@ extrn lapic_eoi_send
 ; TODO: use consts for stack offsets?
 irq_sched:
 	cli
-	; cxchg bx, bx
+	xchg bx, bx
 	push rcx ; +8 bytes on stack
 	; it's complicated a bit
 	; figure 6-8 from 3B demonstrates a stack with an error code
@@ -174,6 +176,7 @@ irq_sched:
 	mov [task_save_rflags], rcx
 	or rcx, 0x200
 	mov rcx, [rsp+32]
+	nop
 	mov [task_save_rsp], rcx
 	pop rcx
 	call task_save
@@ -187,6 +190,7 @@ irq_sched:
 	or rcx, 0x200
 	mov [rsp+24], rcx
 	mov rcx, [task_load_rsp]
+	nop
 	mov [rsp+32], rcx
 	pop rcx
 	iretq
