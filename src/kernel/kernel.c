@@ -136,7 +136,7 @@ void kernel_start()
 	else
 	{
 		vbe.addr = bs.tr_vd_framebuffer;
-		//term_add(vbe);
+		term_add(vbe);
 	}
 	mprint("demo");
 	pg_map_reg(0, 0, 0x100000000);
@@ -158,9 +158,10 @@ void kernel_start()
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
-	//asm("sti");
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
+	asm("sti");
+	for(;;);
 	// asm("xchg %bx, %bx");
 
 	// while(1)
@@ -174,5 +175,32 @@ void kernel_start()
 	// mprint("%llx",malloc(0x100));
 	mprint("done");
 	sched_init();
+	for(int i = 100; i<150; i++)
+		vbe_put_pixel(i,i,3);
+	while(1);
+	//asm("sti");
+	int x = 0, y = 0, color = 0, t = 0;
+	while(1)
+	{	//printf("abc");
+		t++;
+		x++; 
+		if(x > 100) y++, x=0;
+		if(y > 100) x = 0, y = 0;
+		if(x*y*t % 3 == 0) color = (color + 1) % 16;
+		vbe_put_pixel(x,y,color);
+		// if(p1)
+		// {
+		// 	mprint("task1: %d", s1);
+		// 	s1 = 0;
+		// 	p1 = 0;
+		// }
+		// if(p2)
+		// {
+		// 	mprint("task2: %d", s2);
+		// 	s2 = 0;
+		// 	p2 = 0;
+		// }
+	}
+
 	for(;;);
 }

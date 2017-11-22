@@ -16,7 +16,7 @@
 #define DFR 0xE
 #define SVR 0xF
 
-static void* lapic;
+void* lapic;
 
 // checkout https://github.com/pdoane/osdev/blob/master/intr/local_apic.c
 

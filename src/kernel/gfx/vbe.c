@@ -132,3 +132,14 @@ void vbe_clear()
 	vbe_fill(VC_BLUE);
 	//memset(vbe_buffer,0,VBE_WIDTH*VBE_HEIGHT*vbe_bpp);
 }
+
+static int g = 0;
+int do_smth()
+{
+	uint32_t *s = vbe_buffer+(g++);
+	if(g > 5000) g=0;
+	//asm("xchg %bx, %bx");
+	*s = 0xffffffff+g;
+	//vbe_put_pixel(0,0,8);
+	return 0;
+}

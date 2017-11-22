@@ -134,13 +134,14 @@ isr12:
 
 ; 13: General Protection Fault Exception (With Error Code!)
 isr13:
+	xchg bx, bx
 	cli
 	push 13
 	jmp isr_common_stub
 
 ; 14: Page Fault Exception (With Error Code!)
 isr14:
-	; xchg bx, bx
+	; ; xchg bx, bx
 	cli
 	push 14
 	jmp isr_common_stub
@@ -279,7 +280,7 @@ isr_common_stub:
 	cli
 	mov eax, esp
 
-	xchg bx, bx
+	; xchg bx, bx
 	push rdi
 	push rsi
 	push r15
@@ -450,7 +451,7 @@ irq15:
 extrn irq_handler
 
 irq_common_stub:
-	xchg bx, bx
+	; xchg bx, bx
 	push rdi
 	push rsi
 	push r15
