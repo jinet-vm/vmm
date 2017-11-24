@@ -115,7 +115,7 @@ cr0_bit = 0x80000000
 	mov eax, cr4_pae_bit ; PAE 
 	mov cr4, eax
 
-	xchg bx, bx
+	; xchg bx, bx
 	mov edx, [future_cr3]
 	mov cr3, edx
 

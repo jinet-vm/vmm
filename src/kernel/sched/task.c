@@ -2,7 +2,8 @@
 #include <jinet/heap.h>
 #include <jinet/module.h>
 #include <jinet/io.h>
-#include <jinet/printf.h>;
+#include <jinet/printf.h>
+#include <jinet/vga.h>
 
 MODULE("TASK");
 
@@ -20,8 +21,14 @@ static int s1, s2;
 static int p1, p2;
 int t2i = 0;
 
+
+
 static int task0()
 {
+	//asm("cli");
+	//mprint("a");
+	//while(1){}
+	int x = 0, y = 0, color = 0, t = 0;
 	while(1)
 	{
 		printf("0 ");
@@ -84,7 +91,6 @@ int sched_init()
 	mprint("tasking_enter start");
 	curTask = T[0];
 	mprint("curTask at 0x%llx", curTask);
-	asm("xchg %bx, %bx");
 	T[0]->next = T[1];
 	T[1]->next = T[2];
 	T[2]->next = T[0]; // I can go on forever now

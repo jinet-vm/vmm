@@ -89,7 +89,7 @@ task_load_rflags: dq 0
 task_load_rrax: dq 0
 
 tasking_enter:
-	xchg bx, bx
+	; xchg bx, bx
 	call task_load
 	push rcx
 		mov rcx, [task_load_rflags]
@@ -150,7 +150,7 @@ task_save:
 	.task_rrax: dq 0
 
 task_switch: ; reminder: doesn't save RAX
-	xchg bx, bx
+	; xchg bx, bx
 	mov rax, curTask
 	mov rax, [rax]
 	virtual at rax
@@ -163,34 +163,38 @@ task_switch: ; reminder: doesn't save RAX
 public irq_sched
 extrn lapic_eoi_send
 ; TODO: use consts for stack offsets?
+.srcx: dq 0
 irq_sched:
+	;iretq
 	cli
-	xchg bx, bx
+	; xchg bx, bx
 	push rcx ; +8 bytes on stack
-	; it's complicated a bit
-	; figure 6-8 from 3B demonstrates a stack with an error code
-	; we don't expect PIC IRQ to push an error code (hey, it's not an exception!)
-	mov rcx, [rsp+8]
-	mov [task_save_rip], rcx
-	mov rcx, [rsp+24] 
-	mov [task_save_rflags], rcx
-	or rcx, 0x200
-	mov rcx, [rsp+32]
-	nop
-	mov [task_save_rsp], rcx
+		; it's complicated a bit
+		; figure 6-8 from 3B demonstrates a stack with an error code
+		; we don't expect PIC IRQ to push an error code (hey, it's not an exception!)
+		mov rcx, [rsp+8]
+		mov [task_save_rip], rcx
+		mov rcx, [rsp+24] 
+		mov [task_save_rflags], rcx
+		or rcx, 0x200
+		mov rcx, [rsp+32]
+		nop
+		mov [task_save_rsp], rcx
 	pop rcx
-	call task_save
-	call task_switch
-	call lapic_eoi_send
-	call task_load
 	push rcx
-	mov rcx, [task_load_rip]
-	mov [rsp+8], rcx
-	mov rcx, [task_load_rflags]
-	or rcx, 0x200
-	mov [rsp+24], rcx
-	mov rcx, [task_load_rsp]
-	nop
-	mov [rsp+32], rcx
+		call task_save
+		call task_switch
+		call lapic_eoi_send
+		;call task_load
+	pop rcx
+	push rcx
+		mov rcx, [task_load_rip]
+		;mov [rsp+8], rcx
+		mov rcx, [task_load_rflags]
+		or rcx, 0x200
+		;mov [rsp+24], rcx
+		mov rcx, [task_load_rsp]
+		nop
+		;mov [rsp+32], rcx
 	pop rcx
 	iretq
