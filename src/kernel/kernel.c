@@ -136,16 +136,21 @@ void kernel_start()
 	else
 	{
 		vbe.addr = bs.tr_vd_framebuffer;
-		//term_add(vbe);
+		term_add(vbe);
 	}
 	mprint("demo");
 	pg_map_reg(0, 0, 0x100000000);
+
 	acpi_add_driver("APIC", madt_probe);
 	acpi_add_driver("MCFG", mcfg_probe);
 	acpi_add_driver("DBGP", dbgp_probe);
 	acpi_probe();
 	mprint("acpi");
 	asm("xchg %bx, %bx");
+	// for(;;)
+	// {
+	// 	mprint("a");
+	// }
 	if(!dbgp_ok()) // TODO: fix
 	{
 		//dell_serial.addr = dbgp_base_addr();

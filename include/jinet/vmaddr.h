@@ -6,8 +6,6 @@
 
 // VMAs for kernel
 #define VMA_PHYS_LOW 0x0
-#define VMA_TERM_FB 0x100000000llu
-#define VMA_TERM_FB_SIZE 0x3f48000llu
 #define VMA_TTY 0x104000000llu
 #define VMA_TTY_SIZE 0x10000 // almost 0xfd20 = 1920/8*1080/16*4 bytes
 #define VMA_VMCS 0x104020000llu
@@ -20,6 +18,9 @@
 #define VMA_KERNEL_TSS_SIZE 0x68
 #define VMA_IST1 0x4000300000
 #define VMA_IST1_SIZE 0x10000
+
+#define VMA_TERM_FB 0x600000000llu
+#define VMA_TERM_FB_SIZE 0x3f48000llu
 
 #define PADDR_AP_TRUMP 0x4000
 #define PADDR_AP_TRUMP_SIZE 0x4000

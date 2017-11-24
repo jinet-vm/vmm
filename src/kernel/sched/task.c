@@ -24,8 +24,9 @@ static int task0()
 {
 	while(1)
 	{
-		COM_putc('0');
-		COM_putc(' ');
+		printf("0 ");
+		// COM_putc('0');
+		// COM_putc(' ');
 		// if(p1)
 		// {
 		// 	mprint("task1: %d", s1);
@@ -46,7 +47,7 @@ static int task1()
 	int i = 0;
 	while(1)
 	{
-		//printf("1");
+		printf("1");
 		// if(!p1)
 		// {
 		// 	i++;
@@ -63,7 +64,7 @@ static int task2()
 	while(1)
 	{
 		t2i++;
-		//printf("2");
+		printf("2   ");
 		// mprint("2");
 		// if(!p2)
 		// {
@@ -84,7 +85,7 @@ int sched_init()
 	curTask = T[0];
 	mprint("curTask at 0x%llx", curTask);
 	asm("xchg %bx, %bx");
-	T[0]->next = T[0];
+	T[0]->next = T[1];
 	T[1]->next = T[2];
 	T[2]->next = T[0]; // I can go on forever now
 	pit_init();
