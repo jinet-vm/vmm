@@ -7,7 +7,7 @@ use64
 extrn lapic
 
 ; public lapic_reg_read
-; public lapic_reg_write
+public ls_eoi
 
 ; lapic_reg_read: ; rdi = int n
 ; 	push rsi
@@ -20,15 +20,9 @@ extrn lapic
 ; 	pop rsi
 ; 	ret
 
-; lapic_reg_write: ; rdi = int n, rsi = uint32_t val
-; 	push rsi
-; 	push rdi
-; 	push rcx
-; 	mov rcx, [lapic]
-; 	shl rdi, 4
-; 	add rcx, rdi
-; 	mov [rcx], rsi
-; 	pop rcx
-; 	pop rdi
-; 	pop rsi
-; 	ret
+ls_eoi: ; rdi = int n, rsi = uint32_t val
+	push rsi
+	mov rsi, 0xfee000B0
+	mov dword [rsi], 0
+	pop rsi
+	ret

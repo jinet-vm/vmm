@@ -163,10 +163,10 @@ void kernel_start()
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	ioapic_set_gate(1,33,0,0,0,0,0,0);
-	irq_install_handler(1, keyboard_handler);
-	asm("sti");
-	for(;;);
+	//ioapic_set_gate(1,33,0,0,0,0,0,0);
+	//irq_install_handler(1, keyboard_handler);
+	//asm("sti");
+	//for(;;);
 	// asm("xchg %bx, %bx");
 
 	// while(1)
@@ -178,8 +178,9 @@ void kernel_start()
 	// mprint("%llx",malloc(0x100));
 	// mprint("%llx",malloc(0x100));
 	// mprint("%llx",malloc(0x100));
-	mprint("done");
 	sched_init();
+	mprint("done");
+	//while(1) do_smth();
 	for(int i = 100; i<150; i++)
 		vbe_put_pixel(i,i,3);
 	while(1);

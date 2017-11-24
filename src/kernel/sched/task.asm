@@ -34,7 +34,7 @@ struc task
 extrn curTask
 
 
-; todo: use STACK instead of .final_rrax-ish labels
+; todo: use STACK instead of .final_rrax-ish labels (upd: should we?)
 ; see tasking_enter for example
 
 ; ok, here's the magic:
@@ -47,8 +47,7 @@ public task_save
 public task_switch
 
 task_load: ; ALMOST load
-	mov rax, curTask
-	mov rax, [rax]
+	mov rax, [curTask]
 	virtual at rax
 		.ctask task
 	end virtual
@@ -57,8 +56,8 @@ task_load: ; ALMOST load
 	mov rbp, [.ctask.rrbp]
 	mov rsi, [.ctask.rrsi]
 	mov rdi, [.ctask.rrdi]
-	mov r8, [.ctask.rr8]
-	mov r9, [.ctask.rr9]
+	mov r8,  [.ctask.rr8]
+	mov r9,  [.ctask.rr9]
 	mov r10, [.ctask.rr10]
 	mov r11, [.ctask.rr11]
 	mov r12, [.ctask.rr12]
@@ -112,45 +111,48 @@ task_save_rsp: dq 0
 task_save_rflags: dq 0
 
 task_save:
-	mov [.task_rrax], rax
-	mov rax, curTask
-	mov rax, [rax]
-	virtual at rax
-		.ctask task
-	end virtual
+	push rax
+		mov rax, [curTask]
+		virtual at rax
+			.ctask task
+		end virtual
 
-	mov [.ctask.rrcx], rcx
-	
-	mov rcx, [task_save_rsp]
-	mov [.ctask.rrsp], rcx
+		mov [.ctask.rrcx], rcx
 
-	mov rcx, [task_save_rip]
-	mov [.ctask.rrip], rcx
+		; rsp from irq_sched
+		mov rcx, [task_save_rsp]
+		mov [.ctask.rrsp], rcx
+		; rip from irq_sched
+		mov rcx, [task_save_rip]
+		mov [.ctask.rrip], rcx
+		; rflags from irq_sched
+		mov rcx, [task_save_rflags]
+		mov [.ctask.rrflags], rcx
+		; rax from `push rax`
+		mov rcx, [rsp]
+		mov [.ctask.rrax], rcx
 
-	mov rcx, [task_save_rflags]
-	mov [.ctask.rrflags], rcx
-
-	mov [.ctask.rrdx], rdx
-	mov [.ctask.rrbx], rbx
-	; mov [.ctask.rrsp], rsp - AAAAAA
-	mov [.ctask.rrbp], rbp
-	mov [.ctask.rrsi], rsi
-	mov [.ctask.rrdi], rdi
-	mov [.ctask.rr8], r8
-	mov [.ctask.rr9], r9
-	mov [.ctask.rr10], r10
-	mov [.ctask.rr11], r11
-	mov [.ctask.rr12], r12
-	mov [.ctask.rr13], r13
-	mov [.ctask.rr14], r14
-	mov [.ctask.rr15], r15
-
-	mov rax, [.task_rrax]
+		mov [.ctask.rrdx], rdx
+		mov [.ctask.rrbx], rbx
+		mov [.ctask.rrbp], rbp
+		mov [.ctask.rrsi], rsi
+		mov [.ctask.rrdi], rdi
+		mov [.ctask.rr8], r8
+		mov [.ctask.rr9], r9
+		mov [.ctask.rr10], r10
+		mov [.ctask.rr11], r11
+		mov [.ctask.rr12], r12
+		mov [.ctask.rr13], r13
+		mov [.ctask.rr14], r14
+		mov [.ctask.rr15], r15
+	pop rax
 	ret
 	.task_rrax: dq 0
 
 task_switch: ; reminder: doesn't save RAX
 	; xchg bx, bx
+	push rax
+	push rcx
 	mov rax, curTask
 	mov rax, [rax]
 	virtual at rax
@@ -158,14 +160,18 @@ task_switch: ; reminder: doesn't save RAX
 	end virtual
 	mov rcx, [.ctask.next]
 	mov [curTask], rcx
+	pop rcx
+	pop rax
 	ret
 
 public irq_sched
-extrn lapic_eoi_send
+extrn ls_eoi
 ; TODO: use consts for stack offsets?
 .srcx: dq 0
 irq_sched:
-	;iretq
+	; call ls_eoi
+	; iretq
+
 	cli
 	; xchg bx, bx
 	push rcx ; +8 bytes on stack
@@ -174,27 +180,26 @@ irq_sched:
 		; we don't expect PIC IRQ to push an error code (hey, it's not an exception!)
 		mov rcx, [rsp+8]
 		mov [task_save_rip], rcx
+
 		mov rcx, [rsp+24] 
 		mov [task_save_rflags], rcx
-		or rcx, 0x200
+
 		mov rcx, [rsp+32]
-		nop
 		mov [task_save_rsp], rcx
 	pop rcx
 	push rcx
 		call task_save
 		call task_switch
-		call lapic_eoi_send
-		;call task_load
+		call ls_eoi
+		call task_load
 	pop rcx
 	push rcx
 		mov rcx, [task_load_rip]
-		;mov [rsp+8], rcx
+		mov [rsp+8], rcx
 		mov rcx, [task_load_rflags]
 		or rcx, 0x200
-		;mov [rsp+24], rcx
+		mov [rsp+24], rcx
 		mov rcx, [task_load_rsp]
-		nop
-		;mov [rsp+32], rcx
+		mov [rsp+32], rcx
 	pop rcx
 	iretq

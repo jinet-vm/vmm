@@ -31,7 +31,7 @@ static int task0()
 	int x = 0, y = 0, color = 0, t = 0;
 	while(1)
 	{
-		printf("0 ");
+		printf("0");
 		// COM_putc('0');
 		// COM_putc(' ');
 		// if(p1)
