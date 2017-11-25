@@ -4,17 +4,21 @@
 - [x] grub! booting the multiboot way
 	+ [ ] proper module management (we'll need it for BIOS, DOS ramdisks)
 		* maybe use `tar` for it?
+	+ [ ] get debug console from bootstruct
 - [x] memory management (we still need it)
 	+ [x] memory map (E820h? nah, grub) 
 	+ [x] physical memory management (binary buddy on ~steroids~ bitmaps)
 	+ [x] virtual memory management
-	+ [x] heap ~(need a proper algorithm, huh?)~ (let's say it's already done, huh?)
+		* [ ] virtual memory allocation
+	+ [x] heap ~(need a proper algorithm, huh?)~ (let's say it's already done, huh?)	
 - [ ] multiprocessor stuff **finally**:
 	+ [x] working SIPI
 	+ [x] boot into PM
 	+ [ ] boot into LM
 	+ [ ] vmx init (see `virtualization`)
-- [ ] kernel threads on BSP
+- [x] kernel threads on BSP (scheduling works!)
+	+ the way things *should* work:
+		* VMs and stuff =(via buffers)=> `SHELL` (also listens to keyboard (and serial?) commands) => `LOG_TASK` (basically an interface to...) => `VBE_DRIVER`, `SERIALMMIO_DRIVER`, `COMPORT_DRIVER`, `VGA_DRIVER`
 	+ expected processes:
 	+ [ ] kernel_idle
 	+ [ ] logger (execs lower)
@@ -22,7 +26,7 @@
 		* [ ] uart_term
 	+ [ ] shell (gui or cli) for VM interactions & settings
 - [x] Intel-lpss UART support ~~(PCI: vendor 8086h, device a166h)~~; it's a 16550 uart (MMIO) with a fifo buffer
-	+ [ ] proper console management for SMP
+	+ ~~proper console management for SMP~~ (see previous point)
 	+ [ ] fifo is not rocket science
 - [ ] virtualization
 	+ [x] make it work on revision > 1 (?!)

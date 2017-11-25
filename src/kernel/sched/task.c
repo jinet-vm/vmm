@@ -21,7 +21,8 @@ static int s1, s2;
 static int p1, p2;
 int t2i = 0;
 
-
+char* task1_str;
+char* task2_str;
 
 static int task0()
 {
@@ -31,7 +32,16 @@ static int task0()
 	int x = 0, y = 0, color = 0, t = 0;
 	while(1)
 	{
-		printf("0");
+		if(task1_str)
+			{
+				mprint("t1: %s", task1_str);
+				task1_str = 0;
+			}
+		if(task2_str)
+			{
+				mprint("t2: %s", task2_str);
+				task2_str = 0;
+			}
 		// COM_putc('0');
 		// COM_putc(' ');
 		// if(p1)
@@ -54,7 +64,14 @@ static int task1()
 	int i = 0;
 	while(1)
 	{
-		printf("1");
+		i++;
+		if(!task1_str)
+			if(i % 2 == 0)
+				task1_str = "dddd!";
+			else
+				task1_str = "bbbb!";
+		//printf("1");
+
 		// if(!p1)
 		// {
 		// 	i++;
@@ -67,11 +84,16 @@ static int task1()
 
 static int task2()
 {
-	
+	int i = 0;
 	while(1)
 	{
-		t2i++;
-		printf("2   ");
+		i++;
+		if(!task2_str)
+			if(i % 2 == 1)
+				task2_str = "oooo!!";
+			else
+				task2_str = "aaaa!";
+		//printf("2   ");
 		// mprint("2");
 		// if(!p2)
 		// {

@@ -22,13 +22,7 @@ void* lapic;
 
 void lapic_setup()
 {
-	//pic_disable();
 	lapic = madt_lapic_base();
-	//printf("LAPIC regs at %08x\n", lapic);
-	// uint32_t* reg = lapic+SVR_N*REG_S;
-	// //printf("reg at %08x\n", reg);
-	// *reg = (*reg) | APIC_ENABLE;
-	// spurrious interrupt vector register
 	lapic_reg_write(TPR, 0); 
 	lapic_reg_write(DFR, 0xffffffff);
 	lapic_reg_write(LDR, 0x01000000);
@@ -47,9 +41,8 @@ void lapic_reg_write(int n, uint32_t val)
 	*reg = val;
 }
 
-// todo: whaaaaat?
+// also, see ls_eoi at lapic.asm
 void lapic_eoi_send()
 {
-	//asm("xchg %bx, %bx");
 	lapic_reg_write(0xB,0);
 }

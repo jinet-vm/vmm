@@ -81,7 +81,6 @@ void tty_refresh_sym(int x, int y)
 	vbe_putc(s->symb, s->bg, s->fg, x, y);
 }
 
-// TODO: it stinks, it's broken (half_mix). Should be rethought with a string-based approach
 static void tty_half_mix()
 {
 	if(TTY_OFFSET <= TTY_MAX_LINES / 2) return;
@@ -96,8 +95,6 @@ static void tty_half_mix()
 
 void tty_putc(uint8_t a)
 {
-	// for(int i = 0; i<10000000; i++)
-	// 	tty_refresh_all();
 	if(a == '\n') {tty_y++, tty_x = 0; }
 	if(tty_x > TTY_WIDTH - 1) tty_x = 0, tty_y++;
 	if(a != '\n')
@@ -113,10 +110,6 @@ void tty_putc(uint8_t a)
 	}
 	if(TTY_MAX_LINES - tty_y <= 10) // critical
 	{
-		COM_putc('!');
-		COM_putc('\n');
-		COM_putc('!');
-		COM_putc('\n');
 		tty_half_mix();
 	}
 }

@@ -90,8 +90,6 @@ extern void* test_bin;
 
 void kernel_start()
 {
-	// for(;;);
-	// VGA
 	term_init();
 	term_add(com_port);
 
@@ -149,7 +147,7 @@ void kernel_start()
 	asm("xchg %bx, %bx");
 	// for(;;)
 	// {
-	// 	mprint("a");
+	// 	printf("a");
 	// }
 	if(!dbgp_ok()) // TODO: fix
 	{
@@ -173,40 +171,10 @@ void kernel_start()
 	// {
 	// 	printf("a");
 	// }
-	//ipi_send(0x7,6,0,0,0,0,1);
+	// ipi_send(0x7,5,0,0,0,0,1);
+	// ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	// mprint("%llx",malloc(0x100));
-	// mprint("%llx",malloc(0x100));
-	// mprint("%llx",malloc(0x100));
 	sched_init();
-	mprint("done");
-	//while(1) do_smth();
-	for(int i = 100; i<150; i++)
-		vbe_put_pixel(i,i,3);
-	while(1);
-	//asm("sti");
-	int x = 0, y = 0, color = 0, t = 0;
-	while(1)
-	{	//printf("abc");
-		t++;
-		x++; 
-		if(x > 100) y++, x=0;
-		if(y > 100) x = 0, y = 0;
-		if(x*y*t % 3 == 0) color = (color + 1) % 16;
-		vbe_put_pixel(x,y,color);
-		// if(p1)
-		// {
-		// 	mprint("task1: %d", s1);
-		// 	s1 = 0;
-		// 	p1 = 0;
-		// }
-		// if(p2)
-		// {
-		// 	mprint("task2: %d", s2);
-		// 	s2 = 0;
-		// 	p2 = 0;
-		// }
-	}
-
+	mprint("something went wrong");
 	for(;;);
 }
