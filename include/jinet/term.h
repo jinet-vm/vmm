@@ -29,6 +29,34 @@ struct term_dev
 	int (*putc)(struct term_dev *t, char c);
 };
 
+// runs in own thread: the terminal task
+
+// defines hardware
+struct termdev
+{
+	char name[16];
+	void* private;
+	int (*init)(struct term_dev *t);
+	int (*print)(struct term_dev *t, char* str);
+}
+
+int term_task();
+
+// for other tasks
+
+#define TERMBUF_DEFSIZE 64
+
+struct termbuf
+{
+	uint64_t size;
+	void* base;
+	void* ptr;
+}
+
+struct termbuf* term_get_termbuf();
+
+// defines buffer for a task
+
 int term_init();
 int term_add(struct term_dev t);
 void term_putc(void* s, char c);

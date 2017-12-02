@@ -24,11 +24,8 @@ int t2i = 0;
 char* task1_str;
 char* task2_str;
 
-static int task0()
+static int task0() // terminal task
 {
-	//asm("cli");
-	//mprint("a");
-	//while(1){}
 	int x = 0, y = 0, color = 0, t = 0;
 	while(1)
 	{
@@ -42,20 +39,6 @@ static int task0()
 				mprint("t2: %s", task2_str);
 				task2_str = 0;
 			}
-		// COM_putc('0');
-		// COM_putc(' ');
-		// if(p1)
-		// {
-		// 	mprint("task1: %d", s1);
-		// 	s1 = 0;
-		// 	p1 = 0;
-		// }
-		// if(p2)
-		// {
-		// 	mprint("task2: %d", s2);
-		// 	s2 = 0;
-		// 	p2 = 0;
-		// }
 	}
 }
 
