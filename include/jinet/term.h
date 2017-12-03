@@ -53,7 +53,8 @@ struct termbuf
 	void* ptr;
 }
 
-struct termbuf* term_get_termbuf();
+struct termbuf term_get_termbuf();
+int termbuf_print(struct termbuf t, char* s)
 
 // defines buffer for a task
 
