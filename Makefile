@@ -13,6 +13,10 @@ CC=gcc
 CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive -fno-stack-protector
 AS=fasm
 
+consts_h := include/jinet/consts.h
+consts_ld := consts.ld
+consts_inc := inc/consts.inc
+
 all: ap_trump kernel
 
 kernel: ap_trump
