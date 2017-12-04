@@ -18,6 +18,15 @@
 // lm_* - Long Mode binary filled fields
 // tr_* - Trampoline binary filled fields
 
+
+
+/**
+ * @brief      Structure with boot information that is neccessary for the hypervisor to start.
+ * 
+ * Boot process of the project is a bit complex. The hypervisor is split into two files: `enterlm.bin` and `kernel.img`. `kernel.img` is the hypervisor itself, it is loaded into bootloader (GRUB at the moment) as a ramdisk (grub2 module in terms of GRUB2). `enterlm.bin` is run after GRUB init. It initialises paging, interprets GRUB boot info (from multiboot) and jumps into the Jinet VMM after that.
+ * 
+ * In order to transmit boot data (e.g. about video mode or debug console) a bootstruct structure is placed at the beginning of `kernel.img`. Magic values #BTSTR_LM_MAGIC and #BTSTR_TR_MAGIC are used to maintain consistency.
+ */
 struct bootstruct
 {
 	uint32_t	lm_magic;
@@ -34,5 +43,6 @@ struct bootstruct
 	uint64_t	lm_mmap_addr; // it must be copied there by tr_kernel
 	uint64_t	tr_mmap_len; // number of mmap entries
 } __attribute__((packed));
+
 
 #endif
