@@ -7,6 +7,9 @@ CC=gcc
 CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive -fno-stack-protector
 AS=fasm
 
+# we use it!
+consts_ld := consts.ld
+
 SRC_DIR ?= ./src/kernel
 OBJ_DIR ?= ./obj
 SRCS := $(shell find $(SRC_DIR) -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
