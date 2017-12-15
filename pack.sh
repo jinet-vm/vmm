@@ -9,25 +9,24 @@ fi
 # Get directory of the script
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+echo "Mounting $DISKFILE to $LOOPDRIVE..."
+
 DISKFILE=disk.img
-DISKPATH="$SCRIPTDIR/$DISKFILE"
+DISKPATH="$SCRIPTDIR/boot/$DISKFILE"
 LOOPDRIVE=`losetup --associated $DISKPATH --output NAME --noheadings`
-echo $LOOPDRIVE
 
 if [ -z "$LOOPDRIVE" ]
 then
     LOOPDRIVE=`losetup -f`
     losetup $LOOPDRIVE $DISKPATH
+    echo "OK!"
 else
     echo "Already mounted!"
 fi
 
-echo "Waiting for losetup..."
 sleep 1s
-echo "Resuming!"
 
-echo "Connected $DISKFILE to $LOOPDRIVE"
-
+echo "Mapping loopdrive $LOOPDRIVE to $LOOPMAP partition"
 
 KPARTXMSG=`kpartx -av $DISKPATH`
 # cut output string to new devmapping
@@ -37,18 +36,15 @@ LOOP=${MAPNAME%%p1 *}
 # puiing it in the standard directory
 LOOPMAP=/dev/mapper/${LOOP}p1
 
-echo "Waiting for kpartx..."
 sleep 1s
-echo "Mapped loopdrive $LOOPDRIVE to $LOOPMAP partition"
 
+echo "Mounting $LOOPMAP to /mnt..."
 mount ${LOOPMAP} /mnt
 
+sleep 1s
 
-(cd ..; make clean all)
-
-make clean all
-
-cp boot.elf /mnt/
-cp grub.cfg /mnt/boot/grub/
-cp ../kernel.img /mnt
+echo "Copying files..."
+cp boot/boot.elf /mnt/
+cp boot/grub.cfg /mnt/boot/grub/
+cp kernel.img /mnt
 umount /mnt
