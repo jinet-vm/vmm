@@ -12,10 +12,6 @@ OBJ_DIR ?= ./obj
 SRCS := $(shell find $(SRC_DIR) -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
 OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
 
-consts_h := include/jinet/consts.h
-consts_ld := consts.ld
-consts_inc := inc/consts.inc
-
 all: $(OBJS)
 	ld -T $(consts_ld) -T kernel.ld $(OBJS) -M -melf_x86_64 > kernel.map
 
