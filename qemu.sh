@@ -1,3 +1,3 @@
 #!/bin/bash
 
-qemu-system-x86_64 -hda final.img -enable-kvm -cpu host,+vmx
+qemu-system-x86_64 -hda boot/disk.img -enable-kvm -cpu host,+vmx

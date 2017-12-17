@@ -136,6 +136,7 @@ align 8
 dd 0
 lm:
 
+include 'inc/consts.inc'
 use64
 	; xchg bx, bx
 	; mov rax, [rax]
@@ -143,7 +144,10 @@ use64
 
 	; rsi - rent
 
-	file 'lm.bin'
+	;file 'lm.bin'
+	mov rsp, KERNEL_STACK_VMA_ADDR-0x1000 ; todo: bootstruct way?
+	mov rax, [rax]
+	jmp rax
 	; it's PICy
 
 rent: dq ent ; offset
