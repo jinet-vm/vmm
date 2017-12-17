@@ -1,6 +1,6 @@
 format binary
 
-include '../inc/consts.inc'
+include 'inc/consts.inc'
 
 use64
 
