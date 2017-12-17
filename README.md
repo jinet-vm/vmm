@@ -5,6 +5,7 @@ A VMM (*Virtual Machine Monitor*) of the Jinet hypervisor.
 [**The config file**](doc/config.md)<br>
 [**vmcall-interface draft**](doc/vmcall.md)<br>
 [**TODO list**](doc/todo.md)<br>
+[**Building**](doc/build.md)<br>
 
 ## Credits
 
@@ -13,8 +14,3 @@ This repo is originally cloned from [ilya101010/demos](https://github.com/ilya10
 This project is done under supervision of Boris Baykov and Alexei Potemkin who I owe a debt of gratitude for all the guidance they provided me during work on this project.
 
 [MIT License](license)
-
-## Building
-
-* binutils 2.28 required (building with newer version under archlinux causes *somewhy* segfault)
-* fasm of course
