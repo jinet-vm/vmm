@@ -33,7 +33,7 @@ KPARTXMSG=`kpartx -av $DISKPATH`
 MAPNAME=${KPARTXMSG/add map /}
 # add suffix and cut output string from another side
 LOOP=${MAPNAME%%p1 *}
-# puiing it in the standard directory
+# putting it in the standard directory
 LOOPMAP=/dev/mapper/${LOOP}p1
 
 sleep 1s
@@ -48,3 +48,5 @@ cp boot/boot.elf /mnt/
 cp boot/grub.cfg /mnt/boot/grub/
 cp kernel.img /mnt
 umount /mnt
+
+kpartx -d $DISKPATH
