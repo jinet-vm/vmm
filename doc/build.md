@@ -12,10 +12,7 @@ You also need `gcc`, `binutils` and `fasm`.
 
 Make it: `make clean all pack`
 
-You're
-
-immaculate,
-
-rational,
-
-perfect.
+Now you're<br>
+immaculate,<br>
+rational,<br>
+perfect.<br>
