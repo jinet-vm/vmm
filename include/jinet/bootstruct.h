@@ -3,13 +3,6 @@
  * @brief      Bootstruct definition
  */
 
-
-// structure placed in the very beginning of Long Mode kernel binary
-// telling 32-bit trampoline where to load the kernel
-// 'Hey, ma', I think I have invented an executable format!'
-// there are fields defined by the trampoline kernel
-// and fields defined by the LM-kernel
-
 #ifndef BOOTSTRUCT_H
 #define BOOTSTRUCT_H
 
@@ -42,6 +35,8 @@
  *             console) a bootstruct structure is placed at the beginning of
  *             `kernel.img`. Magic values #BTSTR_LM_MAGIC and #BTSTR_TR_MAGIC
  *             are used to maintain consistency.
+ *
+ *             'Hey, ma', I think I have invented an executable format!'
  *
  * @todo Add support for DBGP recognition in enterlm.bin - *that's* what debug
  * port is supposed to be.
