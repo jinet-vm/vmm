@@ -14,4 +14,4 @@ all: $(SRC_DIR)/boot.asm
 	fasm $(SRC_DIR)/boot.asm $(BIN_DIR)/ap_trump.bin
 
 clean:
-	rm $(BIN_DIR)/boot.bin
+	rm -f $(BIN_DIR)/boot.bin

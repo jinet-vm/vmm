@@ -6,12 +6,16 @@
 
 # Compiled from root of the project
 
-.PHONY: all clean
+.PHONY: all clean kernel ap_trump pack
 
 SHELL=bash
 CC=gcc
 CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive -fno-stack-protector
 AS=fasm
+
+consts_h := include/jinet/consts.h
+consts_ld := consts.ld
+consts_inc := inc/consts.inc
 
 all: ap_trump kernel
 
@@ -21,7 +25,16 @@ kernel: ap_trump
 ap_trump:
 	make -f ap_trump.mk all
 
+boot/boot.elf: # boot is a wrong title; kernel can be theoretically be booted anywhere; it is grub_if that suits grub multiboot2 obly
+	# TODO: change naming
+	make -f boot.mk all
+
+pack: boot/boot.elf boot/grub.cfg
+	sudo ./pack.sh
+
 clean:
+	make -f ap_trump.mk clean
+	make -f boot.mk clean
 	make -f kernel.mk clean
 
 configure: config.json
