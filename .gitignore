@@ -5,3 +5,5 @@
 consts.h
 consts.ld
 bx_enh_dbg.ini
+html/
+doxy/
