@@ -10,13 +10,13 @@ MODULE("TERM_MMIO");
 
 // todo: make ioremap-like thing
 
-#define UART_THR		0x00
-#define UART_DLL		0x00
-#define UART_DLM		0x01
-#define UART_LCR        0x03
-#define UART_MCR        0x04
-#define UART_LSR        0x05
-#define UART_USR		0x1F
+#define UART_THR	0x00
+#define UART_DLL	0x00
+#define UART_DLM	0x01
+#define UART_LCR	0x03
+#define UART_MCR	0x04
+#define UART_LSR	0x05
+#define UART_USR	0x1F
 uint8_t *pBase;
 
 int term_serial_mmio_init(struct term_dev* t)

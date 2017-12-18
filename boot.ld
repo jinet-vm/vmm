@@ -1,5 +1,5 @@
 OUTPUT_FORMAT("elf32-i386")
-OUTPUT("boot.elf")
+OUTPUT("boot/boot.elf")
 ENTRY("trump");
 
 SECTIONS
