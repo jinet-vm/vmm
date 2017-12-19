@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #define MAXTERMS 4
+#define MAXTERMBUFS 42
 
 #define TERM_NONE 0
 #define TERM_VGA 1
@@ -37,7 +38,7 @@ struct termdev
 	char name[16];
 	void* private;
 	int (*init)(struct term_dev *t);
-	int (*print)(struct term_dev *t, char* str);
+	int (*print)(struct term_dev *t, char* str, uint64_t size);
 }
 
 int term_task();
@@ -53,8 +54,7 @@ struct termbuf
 	void* ptr;
 }
 
-struct termbuf term_get_termbuf();
-int termbuf_print(struct termbuf t, char* s)
+struct int term_add_termbuf(struct termbuf* tb);
 
 // defines buffer for a task
 

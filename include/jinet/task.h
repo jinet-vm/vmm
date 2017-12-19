@@ -2,6 +2,7 @@
 #define TASK_H
 
 #include <stdint.h>
+#include <jinet/term.h>
 
 #define PROCESS_STATE_ALIVE 1
 #define PROCESS_STATE_DEAD 0
@@ -13,6 +14,7 @@ struct task
 	uint64_t rflags;
 	char* name;
 	uint64_t pid;
+	struct termbuf tb;
 	//uint64_t cr3; - nah, just threads
 	//uint64_t state;
 	struct task *next;
