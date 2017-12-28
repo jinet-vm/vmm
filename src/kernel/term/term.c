@@ -7,7 +7,7 @@ static struct term_dev terms[MAXTERMS];
 static unsigned char termsI = 0;
 
 struct termbuf* tb[MAXTERMBUFS];
-int tb_i
+int tb_i;
 
 MODULE("TERM");
 
@@ -66,7 +66,12 @@ int term_printk(char *fmt, ...)
 	va_end(va);
 }
 
-struct int term_add_termbuf(struct termbuf* tb)
+int term_add_termbuf(struct termbuf* tb)
 {
 
+}
+
+int term_task()
+{
+	
 }

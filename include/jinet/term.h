@@ -39,7 +39,7 @@ struct termdev
 	void* private;
 	int (*init)(struct term_dev *t);
 	int (*print)(struct term_dev *t, char* str, uint64_t size);
-}
+};
 
 int term_task();
 
@@ -52,9 +52,9 @@ struct termbuf
 	uint64_t size;
 	void* base;
 	void* ptr;
-}
+};
 
-struct int term_add_termbuf(struct termbuf* tb);
+int term_add_termbuf(struct termbuf* tb);
 
 // defines buffer for a task
 

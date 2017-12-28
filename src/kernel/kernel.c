@@ -169,7 +169,7 @@ void kernel_start()
 
 	// while(1)
 	// {
-	// 	printf("a");
+	// 	mprint("a");
 	// }
 	// ipi_send(0x7,5,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);

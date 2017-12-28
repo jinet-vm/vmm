@@ -14,7 +14,7 @@ struct task
 	uint64_t rflags;
 	char* name;
 	uint64_t pid;
-	struct termbuf tb;
+	//struct termbuf* tb;
 	//uint64_t cr3; - nah, just threads
 	//uint64_t state;
 	struct task *next;
