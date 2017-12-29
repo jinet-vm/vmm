@@ -5,6 +5,8 @@
 SHELL=bash
 CC=gcc
 CFLAGS = -std=gnu11 -m64 -o0 -Iinclude -ffreestanding -nostdlib -lgcc -w -mcmodel=large -fno-pic -fpermissive -fno-stack-protector
+# fix for __FILENAME__ mprint:
+CFLAGS += -D__FILENAME__=\"$(notdir $<)\"
 AS=fasm
 
 # we use it!

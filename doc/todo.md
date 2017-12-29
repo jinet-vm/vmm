@@ -18,7 +18,7 @@
 	+ [ ] vmx init (see `virtualization`)
 - [x] kernel threads on BSP (scheduling works!)
 	+ the way things *should* work:
-		* VMs and stuff =(via buffers)=> `SHELL` (also listens to keyboard (and serial?) commands) => `LOG_TASK` (basically an interface to...) => `VBE_DRIVER`, `SERIALMMIO_DRIVER`, `COMPORT_DRIVER`, `VGA_DRIVER`
+		* VMs and stuff =(via buffers `termbuf`)=> `term_task` (also listens to keyboard and (serial?) commands) =(writes to a text buffer in ansi)=> `log_task` (basically an interface to...) => `VBE_DRIVER`, `SERIALMMIO_DRIVER`, `COMPORT_DRIVER`, `VGA_DRIVER`
 	+ expected processes:
 	+ [ ] kernel_idle
 	+ [ ] logger (execs lower)
