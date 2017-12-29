@@ -19,6 +19,7 @@
 // todo: magic numbers?
 // todo: make vga/vesa separate
 
+void *term_buf;
 
 struct term_dev
 {

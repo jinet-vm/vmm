@@ -28,7 +28,7 @@ struc task
 	.rrflags dq ?
 	.name dq ?
 	.pid dq ?
-	;.tb dq ?
+	.tb dq ?
 	.next dq ?
 }
 

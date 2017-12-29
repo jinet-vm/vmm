@@ -7,7 +7,9 @@ static struct term_dev terms[MAXTERMS];
 static unsigned char termsI = 0;
 
 struct termbuf* tb[MAXTERMBUFS];
-int tb_i;
+int tbn = 0;
+
+
 
 MODULE("TERM");
 
@@ -47,7 +49,7 @@ void term_print(char *s)
 		term_putc(NULL, *c++);
 }
 
-void term_putc(void* s, char c)
+void term_putc(void *s, char c)
 {
 	for(unsigned char ti = 0; ti < termsI; ti++)
 		terms[ti].putc(&terms[ti], c);
@@ -66,12 +68,13 @@ int term_printk(char *fmt, ...)
 	va_end(va);
 }
 
-int term_add_termbuf(struct termbuf* tb)
-{
-
-}
-
 int term_task()
 {
-	
+	for(;;)
+	{
+		for(int i = 0; i<tbn; i++)
+		{
+
+		}
+	}
 }
