@@ -50,9 +50,9 @@ int term_task();
 
 struct termbuf
 {
-	uint64_t size;
-	void* base;
-	void* ptr;
+	enum sync_status {FREE, INWIP, INWAIT, OUTWIP} S;
+	void* str;
+	size_t len;
 };
 
 // defines buffer for a task

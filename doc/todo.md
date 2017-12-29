@@ -15,7 +15,7 @@
 	+ [x] working SIPI
 	+ [x] boot into PM
 	+ [ ] boot into LM
-	+ [ ] vmx init (see `virtualization`)
+	+ [ ] vmx init on AP (see `virtualization`)
 - [x] kernel threads on BSP (scheduling works!)
 	+ the way things *should* work:
 		* VMs and stuff =(via buffers `termbuf`)=> `term_task` (also listens to keyboard and (serial?) commands) =(writes to a text buffer in ansi)=> `log_task` (basically an interface to...) => `VBE_DRIVER`, `SERIALMMIO_DRIVER`, `COMPORT_DRIVER`, `VGA_DRIVER`
@@ -32,6 +32,7 @@
 	+ [x] make it work on revision > 1 (?!)
 	+ [ ] EPT 
 	+ [ ] seabios (not so distant future, I hope)
+- [ ] `newlib`, anyone? That'd be very beneficial.
 
 
 ## ...and things we do *after*
