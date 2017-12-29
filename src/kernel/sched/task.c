@@ -39,6 +39,7 @@ static int task0() // terminal task
 				mprint("t2: %s", task2_str);
 				task2_str = 0;
 			}
+		noirq_sched();
 	}
 }
 

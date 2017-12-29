@@ -168,6 +168,7 @@ task_switch: ; reminder: doesn't save RAX
 public irq_sched
 extrn ls_eoi
 ; TODO: use consts for stack offsets?
+
 .srcx: dq 0
 irq_sched:
 	; call ls_eoi
@@ -204,3 +205,10 @@ irq_sched:
 		mov [rsp+32], rcx
 	pop rcx
 	iretq
+
+IRQ_TIMER = 34
+
+public noirq_sched
+noirq_sched:
+	int IRQ_TIMER
+	ret

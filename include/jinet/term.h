@@ -55,8 +55,6 @@ struct termbuf
 	void* ptr;
 };
 
-int term_add_termbuf(struct termbuf* tb);
-
 // defines buffer for a task
 
 int term_init();
@@ -78,5 +76,7 @@ int term_serial_io_putc(struct term_dev* t, char c);
 
 int term_serial_mmio_init(struct term_dev* t);
 int term_serial_mmio_putc(struct term_dev* t, char c);
+
+static struct termbuf* curtb;
 
 #endif

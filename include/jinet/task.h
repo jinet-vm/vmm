@@ -26,4 +26,5 @@ int sched_init();
 int sched_addt(struct task* t);
 struct task* task_create(char* name, int (*thread)(void));
 extern struct task* curTask;
+extern void noirq_sched();
 #endif

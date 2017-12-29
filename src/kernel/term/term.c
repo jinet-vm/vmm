@@ -6,15 +6,14 @@
 static struct term_dev terms[MAXTERMS];
 static unsigned char termsI = 0;
 
-struct termbuf* tb[MAXTERMBUFS];
+static struct termbuf* tb[MAXTERMBUFS];
+static struct termbuf* curtb;
+
 int tbn = 0;
-
-
-
-MODULE("TERM");
 
 int term_init()
 {
+	curtb = tb[0];
 	init_printf(NULL, term_putc);
 	return 0;
 }
