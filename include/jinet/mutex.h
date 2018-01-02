@@ -1,6 +1,8 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
+#include <stdint.h>
+
 /** \typedef Binary semaphore; unlocked = 0; locked = 1 */
 typedef uint8_t mutex;
 
