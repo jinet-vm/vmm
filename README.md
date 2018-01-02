@@ -6,6 +6,7 @@ A VMM (*Virtual Machine Monitor*) of the Jinet hypervisor.
 [**vmcall-interface draft**](doc/vmcall.md)<br>
 [**TODO list**](doc/todo.md)<br>
 [**Building**](doc/build.md)<br>
+[**Coding convention**](doc/coding_convention.md)<br>
 
 ## Credits
 
