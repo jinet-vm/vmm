@@ -1,21 +1,21 @@
 #ifndef CIRCBUF_H
 #define CIRCBUF_H
-
-typedef T uint64_t;
+#include <stdint.h>
+typedef uint64_t Tval;
 
 // TODO: do the private-public seperation?
 struct circbuf
 {
 	int head;
 	int tail;
-	int count;
-	int capacity;
-	T* buffer;
+	unsigned int count;
+	unsigned int capacity;
+	char *buffer;
 };
 
-circbuf circbuf_init();
-int circbuf_push(struct circbuf b, T);
-int circbuf_count(struct circbuf b);
-T circbuf_pop();
+struct circbuf circbuf_init(int capacity);
+int circbuf_push(struct circbuf* b, Tval v);
+int circbuf_count(struct circbuf* b);
+Tval circbuf_pop(struct circbuf* b);
 
 #endif
