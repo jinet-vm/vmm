@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <jinet/term.h>
 
+#define MAX_TASKS 50
+
 #define PROCESS_STATE_ALIVE 1
 #define PROCESS_STATE_DEAD 0
 /**
@@ -15,7 +17,7 @@ struct task
 	uint64_t r8, r9, r10, r11, r12, r13, r14, r15;
 	uint64_t rflags;
 	char* name;
-	uint64_t pid;
+	uint64_t pid; // TODO: hey, guys, 64-bit pid isn't as cool as it sounds
 	struct termbuf *tb;
 	//uint64_t cr3; - nah, just threads
 	//uint64_t state;

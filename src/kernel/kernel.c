@@ -175,16 +175,9 @@ void kernel_start()
 	// ipi_send(0x7,5,0,0,0,0,1);
 	// ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
-	struct circbuf C;
-	C = circbuf_init(10);
-	circbuf_push(&C,0);
-	circbuf_push(&C,1);
-	circbuf_push(&C,2);
-	circbuf_push(&C,3);
-	mprint("%d", circbuf_count(&C));
-	for(int i = 0; i<4; i++)
-		mprint("%d",circbuf_pop(&C));
-	//sched_init();
+	//struct circbuf C;
+
+	sched_init();
 	//mprint("something went wrong");
 	for(;;);
 }

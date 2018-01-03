@@ -10,7 +10,7 @@ struct circbuf
 	int tail;
 	unsigned int count;
 	unsigned int capacity;
-	char *buffer;
+	Tval *buffer;
 };
 
 struct circbuf circbuf_init(int capacity);

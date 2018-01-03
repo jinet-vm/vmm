@@ -1,23 +1,60 @@
 #include <jinet/ipc.h>
+#include <jinet/task.h>
+#include <jinet/circbuf.h>
 
-//static struct circbuf
+// inspiration: http://wiki.osdev.org/Message_Passing_Tutorial
 
-void async_send(struct msg M)
+static struct circbuf msgs[MAX_TASKS];
+
+// todo: inline led to bug
+#define disable_sched() { asm("cli"); }
+#define enable_sched() { asm("sti"); }
+
+void ipc_init()
 {
+	for(int i = 0; i<MAX_TASKS; i++)
+		msgs[i] = circbuf_init(MAX_MSG_BUF);
+}
 
+// TODO: this might heavily depend on one-core configuration, fix?
+
+void async_send(uint64_t body, int dst)
+{
+	// forming msg
+	struct msg *M = malloc(sizeof(struct msg));
+	M->src = curTask->pid;
+	M->dst = dst;
+	M->body = body;
+	disable_sched();
+	while(circbuf_count(&msgs[dst]) == msgs[dst].capacity)
+	{
+		enable_sched();
+		noirq_sched(); // waiting for task_dst to clean things up
+		disable_sched();
+	}
+	circbuf_push(&msgs[dst], M);
+	enable_sched();
 }
 
 struct msg async_recv()
 {
-
+	struct msg out;
+	disable_sched();
+	int pid = curTask->pid;
+	while(circbuf_count(&msgs[pid]) == 0)
+	{
+		enable_sched();
+		noirq_sched(); // waiting for ANYONE to clean things up
+		disable_sched();
+	}
+	// ho-ho, someone wrote me [girl jumping on bed meme]
+	out = *(struct msg*)circbuf_pop(&msgs[pid]);
+	enable_sched();
+	return out;
 }
 
-void sync_send(struct msg M)
+struct msg sync_send(uint64_t body, int dst)
 {
-
+	async_send(body, dst);
+	return async_recv();
 }
-
-struct msg sync_recv()
-{
-
-} 
