@@ -43,6 +43,8 @@ void heap_init()
 	//heap_show_blocks();
 }
 
+
+// TODO: mutex?
 void* malloc(uint16_t size)
 {
 	struct heapblock* hb = heap;
