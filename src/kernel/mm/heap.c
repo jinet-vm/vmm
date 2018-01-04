@@ -3,7 +3,7 @@
 #include <jinet/vmaddr.h>
 #include <jinet/module.h>
 #include <jinet/paging.h>
-
+#include <jinet/mutex.h>
 MODULE("HEAP");
 
 static void* heap; // heap pointer
@@ -43,10 +43,12 @@ void heap_init()
 	//heap_show_blocks();
 }
 
+DEFMUTEX(alloc_mutex);
 
 // TODO: mutex?
 void* malloc(uint16_t size)
 {
+	mutex_lock(&alloc_mutex);
 	struct heapblock* hb = heap;
 	while((hb->flags & HB_USED) && hb < VMA_HEAP+VMA_HEAP_SIZE && hb->size >= size)
 		hb = (struct heapblock*)((char*)hb + sizeof(hb) + hb->size);
@@ -63,14 +65,19 @@ void* malloc(uint16_t size)
 		hb->flags = 0;
 		hb->sig = HB_SIG;
 	}
+	mutex_unlock(&alloc_mutex);
 	return ret;
 }
 
+DEFMUTEX(free_mutex);
+
 void free(void* ptr)
 {
+	//mutex_lock(&free_mutex);
 	struct heapblock* hb = ptr - sizeof(struct heapblock);
 	if(hb->sig != HB_SIG) return;
 	hb->flags &= ~HB_USED;
+	//mutex_unlock(&free_mutex);
 }
 
 void* realloc(void* ptr, uint16_t size)
