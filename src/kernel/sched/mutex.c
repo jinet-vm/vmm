@@ -1,12 +1,12 @@
 #include <jinet/mutex.h>
 
-void mutex_lock(mutex m)
+void mutex_lock(mutex* m)
 {
-	while(m) {;}
-	m = 1;
+	while(MUTEX_IFLOCK(*m)) noirq_sched();
+	MUTEX_LOCK(*m);
 }
 
-void mutex_unlock(mutex m)
+void mutex_unlock(mutex* m)
 {
-	m = 0;
+	MUTEX_UNLOCK(*m);
 }

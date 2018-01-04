@@ -28,6 +28,7 @@ static int task0() // terminal task
 	int x = 0, y = 0, color = 0, t = 0;
 	while(1)
 	{
+		async_send(0, 1);
 		mprint("running %d", curTask->pid);
 		struct msg M = async_recv();
 		mprint("task%d sent %d", M.src, M.body);
@@ -47,7 +48,7 @@ static int task1()
 			t = fib_1 + fib_0;
 			fib_0 = fib_1;
 			fib_1 = t;
-			async_send(0, fib_1);
+			//async_send(0, fib_1);
 		}
 
 		//printf("1");
@@ -68,9 +69,8 @@ static int task2()
 	int i = 0;
 	while(1)
 	{
-		int i = 0;
-		while(1)
-			async_send(0, i++);
+		//int i = 0;
+		//async_send(0, 10);
 	}
 }
 

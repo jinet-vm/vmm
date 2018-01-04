@@ -8,7 +8,7 @@ struct circbuf
 {
 	int head;
 	int tail;
-	unsigned int count;
+	unsigned int count; // todo: manage stuff via (tail-head)-alike approach?
 	unsigned int capacity;
 	Tval *buffer;
 };
@@ -16,6 +16,8 @@ struct circbuf
 struct circbuf circbuf_init(int capacity);
 int circbuf_push(struct circbuf* b, Tval v);
 int circbuf_count(struct circbuf* b);
+int circbuf_empty(struct circbuf* b);
+int circbuf_full(struct circbuf* b);
 Tval circbuf_pop(struct circbuf* b);
 
 #endif
