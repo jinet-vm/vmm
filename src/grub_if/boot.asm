@@ -106,7 +106,8 @@ cr4_pae_bit = 00100000b
 lm_msr = 0xC0000080
 efer_lme = 0x00000100
 cr0_bit = 0x80000000
-
+	; todo: what is happening here? UPD: messing with bootstruct probably
+	; todo: bootstruct fasm struc !
 	mov eax, [ent]
 	mov [rent], eax
 	mov eax, [ent+4]

@@ -86,8 +86,10 @@ struct term_dev dell_serial =
 
 MODULE("KERNEL");
 
-asm("test_bin: .incbin \"bin/test.bin\"");
+asm("test_bin: .incbin \"bin/ap_trump.bin\"");
 extern void* test_bin;
+
+extern void ap_init();
 
 void kernel_start()
 {
@@ -162,8 +164,8 @@ void kernel_start()
 	ioapic_setup();
 	for(uint8_t i = 0; i<=23; i++)
 		ioapic_set_gate(i,32+i,0,0,0,0,1,0); // just to be on a safe side
-	//ioapic_set_gate(1,33,0,0,0,0,0,0);
-	//irq_install_handler(1, keyboard_handler);
+	ioapic_set_gate(1,33,0,0,0,0,0,0);
+	irq_install_handler(1, keyboard_handler);
 	//asm("sti");
 	//for(;;);
 	// asm("xchg %bx, %bx");
@@ -172,12 +174,15 @@ void kernel_start()
 	// {
 	// 	mprint("a");
 	// }
-	// ipi_send(0x7,5,0,0,0,0,1);
-	// ipi_send(0x7,6,0,0,0,0,1);
+	mprint("ipi test");
+	ap_init();
+	memcpy(0x7000, &test_bin, 0x4000);
+	ipi_send(0x7,5,0,0,0,0,1);
+	ipi_send(0x7,6,0,0,0,0,1);
 	//virt_init();
 	//struct circbuf C;
 
-	sched_init();
+	//sched_init();
 	//mprint("something went wrong");
 	for(;;);
 }
