@@ -202,7 +202,7 @@ void physmm_init(struct multiboot_mmap_entry* mmap, int num)
 	}
 	mprint("done?");
 	physmm_use(0x4000,0x4000);
-	uint64_t pks = min(pg_get_paddr(&KERNEL_START), bs.tr_pgtb_start), pke = max(bs.tr_pgtb_start+0x135000, bs.tr_pgtb_cur);
+	uint64_t pks = min(pg_get_paddr(&KERNEL_START), bs.tr_pgtb_start), pke = bs.tr_pgtb_cur;
 	physmm_use(pks, pke-pks);
 }
 

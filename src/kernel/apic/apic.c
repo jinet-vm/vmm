@@ -23,7 +23,7 @@ void* lapic;
 void lapic_setup()
 {
 	lapic = madt_lapic_base();
-	lapic_reg_write(TPR, 0); 
+	lapic_reg_write(TPR, 0);
 	lapic_reg_write(DFR, 0xffffffff);
 	lapic_reg_write(LDR, 0x01000000);
 	lapic_reg_write(SVR, 0x1FF);

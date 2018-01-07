@@ -43,7 +43,7 @@ void heap_init()
 	//heap_show_blocks();
 }
 
-DEFMUTEX(alloc_mutex);
+mutex alloc_mutex;
 
 // TODO: mutex?
 void* malloc(uint16_t size)
