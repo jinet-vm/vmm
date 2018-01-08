@@ -170,15 +170,15 @@ void kernel_start()
 	//for(;;);
 	// asm("xchg %bx, %bx");
 
-	// while(1)
-	// {
-	// 	mprint("a");
-	// }
 	mprint("ipi test");
 	ap_init();
 	memcpy(0x7000, &test_bin, 0x4000);
 	ipi_send(0x7,5,0,0,0,0,1);
 	ipi_send(0x7,6,0,0,0,0,1);
+	while(1)
+	{
+		mprint("a");
+	}
 	//virt_init();
 	//struct circbuf C;
 
