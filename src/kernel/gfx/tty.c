@@ -34,7 +34,7 @@ MODULE("VBE_TTY");
 
 static size_t tty_x, tty_y;
 static vga_color tty_bg, tty_fg;
-static uint64_t TTY_BUFFER = 0x7c00;
+static void* TTY_BUFFER;// = 0x7c00;
 static int TTY_OFFSET = 0;
 
 int TTY_WIDTH, TTY_HEIGHT;
@@ -54,6 +54,10 @@ int tty_init(void* tty_fb, int width, int height)
 	// 		tty_putsymb(0, tty_bg, tty_fg, x, y);
 	// 	}
 	tty_clear();
+
+	COM_putc('t');
+	COM_putc('t');
+	COM_putc('y');
 	tty_reset_color();
 	return 0;
 }
@@ -62,7 +66,8 @@ void tty_clear()
 {
 	tty_x = 0;
 	tty_y = 0;
-	memset(TTY_BUFFER,0,sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES);
+	mprint("%llx", TTY_BUFFER+8);
+	memset(TTY_BUFFER+8,0,sizeof(tty_char)*TTY_WIDTH*TTY_MAX_LINES);
 }
 
 static void tty_putsymb(uint8_t c, vga_color bg, vga_color fg, int x, int y)
