@@ -418,8 +418,8 @@ int virt_setup_vm()
 	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // todo: why?! (just bochs?!!1) go to hell, intel sdm; says not usable
 
-	vmwrite(VMX_GUEST_TR_W, 0x20, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_BASE_N, 0xffff800000000100, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_W, 0x28, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_BASE_N, VMA_VM1_TSS, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_AR_D, 11 | (lar(0x28) & ~0xf), VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_LIMIT_D, 0x68, VMX_DEBUG);
 
@@ -435,8 +435,6 @@ int virt_setup_vm()
 	// memcpy(0x7100lu, vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
 
 	vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
-
-
 
 	asm("xchg %bx, %bx");
 	//uint16_t tmp = lar(es_get());

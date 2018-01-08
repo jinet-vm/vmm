@@ -114,6 +114,7 @@ void kernel_start()
 	gdt_set_code(1); // 0x08
 	gdt_set_data(2); // 0x10
 	gdt_set_tss(3,104,VMA_KERNEL_TSS); // host tss - 0x18
+	gdt_set_tss(5,104,VMA_VM1_TSS); // vm1 tss - 0x28
 	gdt_flush();
 	asm("xchg %bx, %bx");
 	cs_set(0x08);
@@ -173,12 +174,10 @@ void kernel_start()
 	mprint("ipi test");
 	ap_init();
 	memcpy(0x7000, &test_bin, 0x4000);
-	ipi_send(0x7,5,0,0,0,0,1);
-	ipi_send(0x7,6,0,0,0,0,1);
-	while(1)
-	{
-		mprint("a");
-	}
+	//ipi_send(0x7,5,0,0,0,0,1);
+	//ipi_send(0x7,6,0,0,0,0,1);
+	virt_init();
+	virt_setup_vm();
 	//virt_init();
 	//struct circbuf C;
 
