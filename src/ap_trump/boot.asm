@@ -89,6 +89,7 @@ entry_pm:
 	
 use64
 entry_lm:
+	mov rsp, 0x4000
 	mov rax, [AP_START_PTR]
 	jmp rax
 	jmp $
