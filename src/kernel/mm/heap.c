@@ -31,9 +31,9 @@ struct heapblock
 
 void heap_init()
 {
-	uint64_t s = physmm_alloc(4);
+	uint64_t s = physmm_alloc(8);
 	mprint("%llx", s);
-	pg_map_reg(VMA_HEAP, s, 0x10000);
+	pg_map_reg(VMA_HEAP, s, 0x200000);
 	mprint("tada");
 	heap = VMA_HEAP;
 	p = VMA_HEAP;
@@ -46,9 +46,8 @@ void heap_init()
 mutex alloc_mutex;
 
 // TODO: mutex?
-void* malloc(uint16_t size)
+void* malloc(uint64_t size)
 {
-	mutex_lock(&alloc_mutex);
 	struct heapblock* hb = heap;
 	while((hb->flags & HB_USED) && hb < VMA_HEAP+VMA_HEAP_SIZE && hb->size >= size)
 		hb = (struct heapblock*)((char*)hb + sizeof(hb) + hb->size);
@@ -65,7 +64,7 @@ void* malloc(uint16_t size)
 		hb->flags = 0;
 		hb->sig = HB_SIG;
 	}
-	mutex_unlock(&alloc_mutex);
+	mprint("%llx", ret);
 	return ret;
 }
 
@@ -80,12 +79,12 @@ void free(void* ptr)
 	//mutex_unlock(&free_mutex);
 }
 
-void* realloc(void* ptr, uint16_t size)
+void* realloc(void* ptr, uint64_t size)
 {
 	// TODO: not implemented
 }
 
-void* calloc(uint16_t num, uint16_t size)
+void* calloc(uint16_t num, uint64_t size)
 {
 	// TODO: not implemented
 }

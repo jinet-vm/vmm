@@ -5,9 +5,9 @@
 
 void heap_init();
 void heap_show_blocks();
-void* malloc(uint16_t size);
+void* malloc(uint64_t size);
 void free(void* ptr);
-void* realloc(void* ptr, uint16_t size);
-void* calloc(uint16_t num, uint16_t size);
+void* realloc(void* ptr, uint64_t size);
+void* calloc(uint16_t num, uint64_t size);
 
 #endif

@@ -6,6 +6,8 @@
 #include <jinet/printf.h>
 #include <jinet/bootstruct.h>
 #include <jinet/physmm.h>
+#include <jinet/heap.h>
+#include <jinet/tty.h>
 MODULE("TERM_VGA");
 
 #define ANSI_ARG_MAX 10
@@ -20,16 +22,13 @@ int term_vbe_init(struct term_dev* t)
 	// for(int i = 0; i<100; i++)
 	// 	pg_map(VMA_TERM_FB+0x1000*i, t->addr+0x1000*i, 0);
 	pg_map_reg(VMA_TERM_FB, t->addr, VMA_TERM_FB_SIZE);
-	mprint("1");
 	//if(pg_map_reg(VMA_TERM_FB, t->addr, VMA_TERM_FB_SIZE)) return 1;
 	if(vbe_init(VMA_TERM_FB, bs.tr_vd_width*bs.tr_vd_depth/8, bs.tr_vd_width, bs.tr_vd_height, bs.tr_vd_depth)) return 1;
-	mprint("2");
-	// for(int i = 0; i<100; i++)
-	// 	pg_map(VMA_TTY+0x1000*i, physmm_alloc(0), 0);
 	pg_map_reg(VMA_TTY, physmm_alloc(6), 0x40000);
-	mprint("3");
+	memset(VMA_TTY, 0, 0x40000);
+	//void* buf = malloc(0x40000);
+	//mprint("buf = %llx", buf);
 	if(tty_init(VMA_TTY, bs.tr_vd_width, bs.tr_vd_height)) return 1;
-	//mprint("4");
 	return 0;
 }
 
