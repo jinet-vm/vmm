@@ -193,7 +193,7 @@ int virt_init()
 	virt_crinit();
 
 	// IA32_VMX_BASIC: getting revision
-	uint64_t vmxBasic =msr_get(IA32_VMX_BASIC);
+	uint64_t vmxBasic = msr_get(IA32_VMX_BASIC);
 	vmcs_size = (vmxBasic >> 32) & 0x1fff;
 	revision = vmxBasic & 0x7fffffff;
 	mprint("VMX revision: 0x%08x", revision);
@@ -426,15 +426,12 @@ int virt_setup_vm()
 	vmwrite(VMX_GUEST_IA32_SYSENTER_ESP_MSR_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_IA32_SYSENTER_EIP_MSR_N, 0, VMX_DEBUG); // todo: don't use it now
 
-	vmwrite(VMX_GUEST_VMCS_LINK_PTR_Q, 0xFFFFFFFFFFFFFFFF, VMX_DEBUG); // why? f*ck you that's why
+	vmwrite(VMX_GUEST_VMCS_LINK_PTR_Q, 0xFFFFFFFFFFFFFFFF, VMX_DEBUG);
 	vmwrite(VMX_GUEST_PENDING_DBG_EXCEPTIONS_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_ACTIVITY_STATE_D, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_INTERRUPTIBILITY_STATE, 0, VMX_DEBUG);
 
-	// memcpy(0x7000lu, vm1_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
-	// memcpy(0x7100lu, vm2_inside, 0x100); // 'cause compatibility mode; btw, WHY?!
-
-	vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
+	//vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
 
 	asm("xchg %bx, %bx");
 	//uint16_t tmp = lar(es_get());
