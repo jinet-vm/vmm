@@ -23,9 +23,9 @@ int vmx_vmwrite16(uint64_t vmcs_id, uint16_t value);
 uint64_t vmx_vmread(uint64_t vmcs_id);
 int vmwrite(uint64_t vmcs_id, uint64_t value, char debug);
 int vmx_vmlaunch();
-int vmx_vmresum();
+int vmx_vmresume();
 int vmlaunch(char debug);
-int vmresum(char debug);
+int vmresume(char debug);
 void virt_exit();
 
 // >> vmcs fields
@@ -35,6 +35,8 @@ void virt_exit();
 // D - dword (32 bit)
 // Q - qword (64 bit)
 // N - natural width
+
+// todo: enum this thing up!
 
 #define VMX_PINBASED_CTLS_D 0x4000
 #define VMX_PROCBASED_CTLS_D 0x4002
