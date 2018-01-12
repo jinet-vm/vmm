@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+// todo: write @brief-s
+#define EPT_MT_UC 0
+#define EPT_MT_WC 1
+#define EPT_MT_WT 4
+#define EPT_MT_WP 5
+#define EPT_MT_WB 6
+
 typedef struct ept_entry
 {
 	union
@@ -47,7 +54,7 @@ typedef struct eptp
 	/// @brief This value is 1 less than the EPT page-walk length
 	char ept_pw_ln:3;
 	/// @brief Enables (if 1) accessed/dirty flags
-	char :1;
+	char ad:1;
 	/// @brief reserved
 	char _0:5;
 	/// @brief Cut address of referenced PML4
@@ -56,6 +63,10 @@ typedef struct eptp
 	uint16_t _1:16;
 } eptp_t;
 
-eptp_t ept_init();
+void ept_init();
+void ept_map(ept_t e, uint64_t phys, uint64_t guphy, int order);
+uint64_t ept_get_paddr(ept_t e, uint64_t guphy)
+ept_t ept_make();
+
 
 #endif
