@@ -11,6 +11,7 @@
 #include <jinet/paging.h>
 #include <jinet/printf.h>
 #include <jinet/vmaddr.h>
+#include <jinet/ept.h>
 // TODO: stop being stupid
 // #define VMCS_L 0xffff800000010000
 // #define VMCS_P 0x410000
@@ -264,17 +265,19 @@ int virt_setup_vm()
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
 	
+	mprint("sec 1-set: %llx", msr_get(IA32_VMX_PROCBASED_CTLS2));
 	// proc-based
 	{
 		uint64_t procb;
 		uint32_t zero, one, procbvm;
-		procb = msr_get(IA32_VMX_PROCBASED_CTLS);
+		procb = msr_get(IA32_VMX_PROCBASED_CTLS) | (1 << 31); // enabling secondary controlss
 		zero = procb & 0xffffffff, one = procb >> 32;
 		mprint("0x%x & 0x%x", zero, one);
 		procbvm |= ~zero;
 		procbvm |= one;
+		procbvm |= 1 << 31;
 		vmwrite(VMX_PROCBASED_CTLS_D, procb, VMX_DEBUG);
-		vmwrite(VMX_SEC_PROCBASED_CTLS_D, 0, VMX_DEBUG);
+		vmwrite(VMX_SEC_PROCBASED_CTLS_D, 0x2, VMX_DEBUG); // ept
 	}
 	
 	// vm-exit
@@ -433,6 +436,10 @@ int virt_setup_vm()
 
 	//vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
 
+	eptp_t e = ept_make();
+	mprint("%llx", e.raw);
+	vmwrite(VMX_EPTP_Q, e.raw, VMX_DEBUG);
+	ept_invept(e, 0x1);
 	asm("xchg %bx, %bx");
 	//uint16_t tmp = lar(es_get());
 	//mprint("CS: %04x; es ar: %x", cs_get(), lar(es_get()));

@@ -42,31 +42,38 @@ typedef struct ept_entry
 			uint16_t _1:15;
 			/// @brief Suppress #VE 
 			char sve:1;
-		}
+		};
 		uint64_t raw;
 	}
 } ept_entry_t;
 
 typedef struct eptp
 {
-	/// @brief EPT paging structures memory type
-	char ept_ps_mt:3;
-	/// @brief This value is 1 less than the EPT page-walk length
-	char ept_pw_ln:3;
-	/// @brief Enables (if 1) accessed/dirty flags
-	char ad:1;
-	/// @brief reserved
-	char _0:5;
-	/// @brief Cut address of referenced PML4
-	uint64_t addr_cut:36;
-	/// @brief reserved
-	uint16_t _1:16;
+	union
+	{
+		struct
+		{
+			/// @brief EPT paging structures memory type
+			char ept_ps_mt:3;
+			/// @brief This value is 1 less than the EPT page-walk length
+			char ept_pw_ln:3;
+			/// @brief Enables (if 1) accessed/dirty flags
+			char ad:1;
+			/// @brief reserved
+			char _0:5;
+			/// @brief Cut address of referenced EPT PML4
+			uint64_t addr_cut:36;
+			/// @brief reserved
+			uint16_t _1:16;	
+		};
+		uint64_t raw;
+	}
 } eptp_t;
 
 void ept_init();
-void ept_map(ept_t e, uint64_t phys, uint64_t guphy, int order);
-uint64_t ept_get_paddr(ept_t e, uint64_t guphy)
-ept_t ept_make();
-
+void ept_map(eptp_t e, uint64_t phys, uint64_t guphy, int order);
+//uint64_t ept_get_paddr(eptp_t e, uint64_t guphy)
+eptp_t ept_make();
+void ept_invept(eptp_t e, uint64_t type);
 
 #endif

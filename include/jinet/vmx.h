@@ -139,6 +139,8 @@ void virt_exit();
 
 #define VMX_PREEMPTION_TIMER_VALUE_D 0x482E
 
+#define VMX_EPTP_Q 0x201A
+
 struct guest_regs
 {
 	uint64_t rax, rsi, rcx, rbx; // the only things i need
