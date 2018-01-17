@@ -3,6 +3,7 @@
 #include <jinet/vmaddr.h>
 #include <jinet/paging.h>
 #include <jinet/physmm.h>
+#include <jinet/module.h>
 #include <stdint.h>
 
 // todo: omg, how unsecure it is in SMP; multiple vbufs for each core?
@@ -57,13 +58,16 @@ eptp_t ept_make()
 	eptp_t e;
 	e.raw = physmm_alloc(0); 
 	e.ept_ps_mt = EPT_MT_UC;
+	e.ept_pw_ln = 3;
 	e.ad = 1;
 	vbuf_turn(e.raw & ~0xfff);
 	vbuf[0].raw = physmm_alloc(0);
-	vbuf[0].r = vbuf[0].w = 1;
+	vbuf[0].x = vbuf[0].xu = vbuf[0].r = vbuf[0].w = 1;
 	vbuf_turn(vbuf[0].raw & ~0xfff);
 	vbuf[0].raw = 0;
 	vbuf[0].mr = 1; // 1 gib page
+	vbuf[0].x = vbuf[0].xu = vbuf[0].r = vbuf[0].w = 1;
+	mprint("%016llx", vbuf[0].raw);
 	return e;
 }
 

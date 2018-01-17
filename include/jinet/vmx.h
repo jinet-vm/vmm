@@ -141,6 +141,8 @@ void virt_exit();
 
 #define VMX_EPTP_Q 0x201A
 
+#define VMX_GUEST_EFER_Q 0x2806
+
 struct guest_regs
 {
 	uint64_t rax, rsi, rcx, rbx; // the only things i need
