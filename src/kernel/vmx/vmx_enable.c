@@ -178,7 +178,7 @@ extern void (*vmx_return)();
 int virt_setup_vm();
 uint32_t vmcs_size, revision;
 
-struct ar_field
+typedef struct
 {
 	union
 	{
@@ -198,7 +198,7 @@ struct ar_field
 		} __attribute__((packed));
 		uint32_t raw;
 	}
-}
+} ar_t;
 
 int virt_init()
 {	
@@ -364,13 +364,14 @@ int virt_setup_vm()
 
 	//mprint("0x%x",lar(cs_get));
 
-	vmwrite(VMX_GUEST_CS_AR_D, lar(cs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_AR_D, lar(ds_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_ES_AR_D, lar(es_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_AR_D, lar(gs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_AR_D, lar(fs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_AR_D, lar(ss_get()) | 1, VMX_DEBUG);
-
+	{
+		vmwrite(VMX_GUEST_CS_AR_D, (ar_t){.type = 3, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_DS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_ES_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_FS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_SS_AR_D, (ar_t){.type = 3, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+	}
 	// host cr0
 	//vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
 	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
@@ -430,24 +431,27 @@ int virt_setup_vm()
 	}
 
 	vmwrite(VMX_GUEST_DR7_N, 0x400, VMX_DEBUG);
-	vmwrite(VMX_GUEST_ES_W, es_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_CS_W, cs_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_W, ss_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_W, ds_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_W, fs_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_W, gs_get(), VMX_DEBUG);
+	vmwrite(VMX_GUEST_ES_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_CS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_SS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_DS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_FS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_GS_W, 0, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_RSP_N, 0x7200, VMX_DEBUG);
 	vmwrite(VMX_GUEST_RIP_N, 0x7000, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
 
-	vmwrite(VMX_GUEST_ES_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_CS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_LIMIT_D,0xfffff,VMX_DEBUG);
+	{
+		vmwrite(VMX_GUEST_ES_LIMIT_D,0xfffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_CS_LIMIT_D,0xfffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_SS_LIMIT_D,0xfffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_DS_LIMIT_D,0xfffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_FS_LIMIT_D,0xfffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_GS_LIMIT_D,0xfffff,VMX_DEBUG);	
+	}
+	
 
 	{ // guest bases
 		vmwrite(VMX_GUEST_ES_BASE_N, 0, VMX_DEBUG); // flat
@@ -464,11 +468,25 @@ int virt_setup_vm()
 
 	// we are DOOMED - even LDTR is here
 	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
-	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // unusable; see SDM3B: 26.3.1.2
+	vmwrite(VMX_GUEST_LDTR_AR_D, ((ar_t)
+	{
+		.type = 2,
+		.s = 0,
+		.p = 1,
+		.unuse = 1,
+		.g = 0
+	}).raw, VMX_DEBUG); // unusable; see SDM3B: 26.3.1.2
 
 	vmwrite(VMX_GUEST_TR_W, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_BASE_N, 0, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_AR_D, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_AR_D, ((ar_t){
+		.type = 3,
+		.s = 0,
+		.dpl = 3,
+		.p = 1,
+		.g = 0,
+		.unuse = 0
+	}).raw, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_LIMIT_D, 0, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_IA32_SYSENTER_ESP_MSR_N, 0, VMX_DEBUG);
