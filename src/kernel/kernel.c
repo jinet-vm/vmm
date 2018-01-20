@@ -149,6 +149,12 @@ void kernel_start()
 	acpi_probe();
 	mprint("acpi");
 	asm("xchg %bx, %bx");
+	struct multiboot_tag_module* mod = bs.modules;
+	while(mod <= bs.modules + bs.modules_size && bs.modules_size != 0 && mod->size != 0)
+	{
+		mprint("%s : %d bytes", mod->cmdline, mod->size);
+		mod += mod->size;
+	}
 	// for(;;)
 	// {
 	// 	printf("a");

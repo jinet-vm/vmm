@@ -26,6 +26,7 @@ int dbgp_probe(void* table)
 {
 	DBGP = table;
 	mprint("base addr: %llx", DBGP->base_addr.addr);
+	ok = 1;
 	return 0;
 }
 
@@ -36,6 +37,5 @@ uint64_t dbgp_base_addr()
 
 int dbgp_ok()
 {
-	ok = 0;
 	return ok;
 }

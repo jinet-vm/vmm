@@ -299,6 +299,8 @@ int virt_setup_vm()
 		procbvm |= ~zero;
 		procbvm |= one;
 		procbvm |= 1 << 31;
+		mprint("IA32_VMX_PROCBASED_CTLS = %d", msr_get(IA32_VMX_PROCBASED_CTLS));
+		mprint("IA32_VMX_PROCBASED_CTLS2 = %d", msr_get(IA32_VMX_PROCBASED_CTLS2));
 		vmwrite(VMX_PROCBASED_CTLS_D, procb, VMX_DEBUG);
 		vmwrite(VMX_SEC_PROCBASED_CTLS_D, (1 << 1) | (1 << 7), VMX_DEBUG); // ept
 	}
@@ -441,15 +443,13 @@ int virt_setup_vm()
 	vmwrite(VMX_GUEST_RSP_N, 0x7200, VMX_DEBUG);
 	vmwrite(VMX_GUEST_RIP_N, 0x7000, VMX_DEBUG);
 
-	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0xffff, VMX_DEBUG);
-
 	{
-		vmwrite(VMX_GUEST_ES_LIMIT_D,0xfffff,VMX_DEBUG);
-		vmwrite(VMX_GUEST_CS_LIMIT_D,0xfffff,VMX_DEBUG);
-		vmwrite(VMX_GUEST_SS_LIMIT_D,0xfffff,VMX_DEBUG);
-		vmwrite(VMX_GUEST_DS_LIMIT_D,0xfffff,VMX_DEBUG);
-		vmwrite(VMX_GUEST_FS_LIMIT_D,0xfffff,VMX_DEBUG);
-		vmwrite(VMX_GUEST_GS_LIMIT_D,0xfffff,VMX_DEBUG);	
+		vmwrite(VMX_GUEST_ES_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_CS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_SS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_DS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_FS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_GS_LIMIT_D,0xffff,VMX_DEBUG);	
 	}
 	
 
@@ -462,18 +462,18 @@ int virt_setup_vm()
 		vmwrite(VMX_GUEST_GS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GDTR_BASE_N, 0, VMX_DEBUG);
 		vmwrite(VMX_GUEST_IDTR_BASE_N, 0, VMX_DEBUG);
-		vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0xffff, VMX_DEBUG);
-		vmwrite(VMX_GUEST_IDTR_LIMIT_D, 0xffff, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0, VMX_DEBUG);
+		vmwrite(VMX_GUEST_IDTR_LIMIT_D, 0, VMX_DEBUG);
 	}
 
 	// we are DOOMED - even LDTR is here
 	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
-	vmwrite(VMX_GUEST_LDTR_AR_D, (ar_t){.type = 2, .s = 0, .p = 1, .unuse = 0, .g = 0}.raw, VMX_DEBUG); // unusable; see SDM3B: 26.3.1.2
+	vmwrite(VMX_GUEST_LDTR_AR_D, (ar_t){.type = 2, .s = 0, .p = 1, .unuse = 1, .g = 0}.raw, VMX_DEBUG); // unusable; see SDM3B: 26.3.1.2
 
 	vmwrite(VMX_GUEST_TR_W, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_BASE_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_TR_AR_D, (ar_t){.type = 3, .s = 0, .dpl = 0, .p = 1, .g = 0, .unuse = 0}.raw, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_LIMIT_D, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_LIMIT_D, 0xfff, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_IA32_SYSENTER_ESP_MSR_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_IA32_SYSENTER_EIP_MSR_N, 0, VMX_DEBUG); // todo: don't use it now

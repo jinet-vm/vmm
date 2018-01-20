@@ -1,5 +1,6 @@
 #include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
+#include <stddef.h>
 
 uint32_t add_table();
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n);
@@ -9,6 +10,11 @@ uint64_t future_cr3;
 uint64_t ent;
 
 extern void trump();
+
+void * memcpy(void * dest, const void * src, size_t count) {
+	asm volatile ("cld; rep movsb" : "+c" (count), "+S" (src), "+D" (dest) :: "memory");
+	return dest;
+}
 
 void enterlm(void* mb2_info_tags)
 {
@@ -163,7 +169,34 @@ void enterlm(void* mb2_info_tags)
 	bs->tr_pgtb_start = mem_addr_orig;
 	bs->tr_pgtb_cur = mem_addr;
 	ent = bs->lm_entry_addr;
+
+
+	mb2_info_tags = frst+8;
+	void* bsmod = bs->modules;
+	bs->modules_size = 1;
+	while(mb2_info_tags < frst+size)
+	{
+		struct multiboot_tag* tag; tag = mb2_info_tags;
+		switch(tag->type)
+		{			
+			case MULTIBOOT_TAG_TYPE_MODULE:
+			{
+				struct multiboot_tag_module* mod; mod = tag;
+				memcpy(bsmod, tag, tag->size);
+				bsmod += tag->size;
+				bs->modules_size += tag->size;
+				*t++ = 0xFFFF;
+				break;
+			}
+
+			default :
+				break;
+		}
+		mb2_info_tags += (tag->size + 7) & ~7;
+	}
+	
 }
+
 
 int table_count = 0;
 
