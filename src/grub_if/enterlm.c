@@ -194,8 +194,7 @@ void enterlm(void* mb2_info_tags)
 		}
 		mb2_info_tags += (tag->size + 7) & ~7;
 	}
-	
-}
+} 
 
 
 int table_count = 0;
