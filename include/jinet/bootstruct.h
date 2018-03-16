@@ -69,6 +69,8 @@ struct bootstruct
 	uint64_t	lm_mmap_addr;
 	/// @brief Size (in bytes) of memory map.
 	uint64_t	tr_mmap_len;
+	uint64_t modules_size;
+	char modules[512];
 } __attribute__((packed));
 
 

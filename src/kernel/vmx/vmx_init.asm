@@ -37,3 +37,8 @@ vmx_return:
 	mov rcx, [_rcx]
 	mov rbx, [_rbx]
 	vmresume
+
+public _invept
+_invept: ; (uint64_t type, void* dsc)
+	invept rdi, [rsi]
+	ret

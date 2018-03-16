@@ -1,5 +1,8 @@
 #include <jinet/multiboot2.h>
 #include <jinet/bootstruct.h>
+#include "grub_parse.h"
+#include "basicmm.h"
+#include <stddef.h>
 
 uint32_t add_table();
 void map_page_entry(uint32_t vma_low, uint32_t vma_high, uint32_t paddr_low, uint32_t paddr_high, int n);
@@ -10,25 +13,38 @@ uint64_t ent;
 
 extern void trump();
 
+void * memcpy(void * dest, const void * src, size_t count) {
+	asm volatile ("cld; rep movsb" : "+c" (count), "+S" (src), "+D" (dest) :: "memory");
+	return dest;
+}
+
 void enterlm(void* mb2_info_tags)
 {
 	// mb2_info_tags: uint32_t total_size, reserved; tags!
 	uint32_t frst; frst = mb2_info_tags;
+	gp_init(mb2_info_tags);
 	uint32_t size; size = *(uint32_t*)mb2_info_tags;
 	mb2_info_tags += 8;
 	uint16_t *t; t = 0xb8000;
-	*t++ = 0xc040;
-	*t++ = 0xd041;
+	//int I = gp_mod_num();
+	// while(I != 0)
+	// {
+	// 	*t++ = 0xc000+'0'+I % 10;
+	// 	I /= 10;
+	// }
+	
 	*t++ = 0xe042;
 	*t++ = 0xf043;
+
 	uint32_t kernel_start = 0, kernel_end = 0;
 	uint64_t vma_kernel_start;
 	uint32_t vd_fb, vd_wd, vd_ht, vd_bpp, vd_type; 
 	struct multiboot_mmap_entry* mmap;
 	int mmap_num = 0;
 
-	while(mb2_info_tags < frst+size)
+	do
 	{
+		*t++ = 0xd041;
 		struct multiboot_tag* tag; tag = mb2_info_tags;
 		switch(tag->type)
 		{
@@ -47,6 +63,7 @@ void enterlm(void* mb2_info_tags)
 			{
 				struct multiboot_tag_module* mod; mod = tag;
 				struct bootstruct* bs; bs = mod->mod_start;
+				basicmm_add(mod->mod_start, mod->mod_end);
 				if(bs->lm_magic != BTSTR_LM_MAGIC) break;
 				// we found it!
 				vma_kernel_start = bs->lm_load_addr;
@@ -66,9 +83,9 @@ void enterlm(void* mb2_info_tags)
 			default :
 				break;
 		}
-		mb2_info_tags += (tag->size + 7) & ~7;
-	}
+	} while(mb2_info_tags = gp_next_tag(mb2_info_tags));
 
+	for(;;);
 	if(kernel_start == kernel_end || mmap_num == 0)
 	{
 		int i = 1/0; // and the butchery begins
@@ -163,7 +180,33 @@ void enterlm(void* mb2_info_tags)
 	bs->tr_pgtb_start = mem_addr_orig;
 	bs->tr_pgtb_cur = mem_addr;
 	ent = bs->lm_entry_addr;
-}
+
+
+	mb2_info_tags = frst+8;
+	void* bsmod = bs->modules;
+	bs->modules_size = 1;
+	while(mb2_info_tags < frst+size)
+	{
+		struct multiboot_tag* tag; tag = mb2_info_tags;
+		switch(tag->type)
+		{			
+			case MULTIBOOT_TAG_TYPE_MODULE:
+			{
+				struct multiboot_tag_module* mod; mod = tag;
+				memcpy(bsmod, tag, tag->size);
+				bsmod += tag->size;
+				bs->modules_size += tag->size;
+				*t++ = 0xFFFF;
+				break;
+			}
+
+			default :
+				break;
+		}
+		mb2_info_tags += (tag->size + 7) & ~7;
+	}
+} 
+
 
 int table_count = 0;
 

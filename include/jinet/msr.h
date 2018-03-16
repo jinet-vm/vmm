@@ -17,6 +17,7 @@
 #define IA32_VMX_CR4_FIXED1 0x489
 #define IA32_SYSENTER_ESP 0x175
 #define IA32_SYSENTER_EIP 0x176
+#define IA32_VMX_PROCBASED_CTLS2 0x48B
 // if you mess with nonpresent msrs
 // you'll f*ck up everything
 

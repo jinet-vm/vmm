@@ -13,7 +13,7 @@ AS=fasm
 consts_ld := consts.ld
 
 SRC_DIR ?= ./src/kernel
-OBJ_DIR ?= ./obj
+OBJ_DIR ?= ./obj/kernel
 SRCS := $(shell find $(SRC_DIR) -not -path '*/\.*' -and \( -name *.c -or -name *.asm \) ) 
 OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
 

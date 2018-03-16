@@ -1,13 +1,9 @@
-megs: 32
-floppya: 1_44=boot/disk.img, status=inserted
-ata0-master: type=disk, mode=flat, path=boot/disk.img, cylinders=2, heads=1, spt=9
+megs: 2048
+ata0-master: type=disk, mode=flat, path=boot/disk.img, translation=lba
 boot: disk
 clock:           sync=realtime, time0=local
-cpu:             count=1, ips=1000000
-display_library: sdl
-log: bochsout.txt
-debugger_log: bochsdbgout.txt
-debug: action=report
-info: action=report
-error: action=report
-panic: action=ask
+cpu:             count=2
+cpuid: vmx=2, 1g_pages=1
+magic_break: enabled=1
+display_library: sdl, options="gui_debug"
+com1: enabled=1, mode=file, dev=serial.txt

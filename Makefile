@@ -17,7 +17,10 @@ consts_h := include/jinet/consts.h
 consts_ld := consts.ld
 consts_inc := inc/consts.inc
 
-all: ap_trump kernel boot/boot.elf
+all:
+	make -f kernel.mk all
+	make -f ap_trump.mk all
+	make -f boot.mk all
 
 kernel: ap_trump
 	make -f kernel.mk all

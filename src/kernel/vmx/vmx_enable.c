@@ -11,6 +11,7 @@
 #include <jinet/paging.h>
 #include <jinet/printf.h>
 #include <jinet/vmaddr.h>
+#include <jinet/ept.h>
 // TODO: stop being stupid
 // #define VMCS_L 0xffff800000010000
 // #define VMCS_P 0x410000
@@ -176,6 +177,29 @@ extern void (*vmx_return)();
 
 int virt_setup_vm();
 uint32_t vmcs_size, revision;
+
+typedef struct
+{
+	union
+	{
+		struct 
+		{
+			uint8_t type:4;
+			uint8_t s:1;
+			uint8_t dpl:2;
+			uint8_t p:1;
+			uint8_t _0:4;
+			uint8_t avl:1;
+			uint8_t l:1;
+			uint8_t db:1;
+			uint8_t g:1;
+			uint8_t unuse:1;
+			uint16_t _1:15;	
+		} __attribute__((packed));
+		uint32_t raw;
+	}
+} ar_t;
+
 int virt_init()
 {	
 	mprint("test");
@@ -264,17 +288,21 @@ int virt_setup_vm()
 		vmwrite(VMX_PINBASED_CTLS_D, pinbvm, VMX_DEBUG);
 	}
 	
+	mprint("sec 1-set: %llx", msr_get(IA32_VMX_PROCBASED_CTLS2));
 	// proc-based
 	{
 		uint64_t procb;
 		uint32_t zero, one, procbvm;
-		procb = msr_get(IA32_VMX_PROCBASED_CTLS);
+		procb = msr_get(IA32_VMX_PROCBASED_CTLS) | (1 << 31); // enabling secondary controlss
 		zero = procb & 0xffffffff, one = procb >> 32;
 		mprint("0x%x & 0x%x", zero, one);
 		procbvm |= ~zero;
 		procbvm |= one;
+		procbvm |= 1 << 31;
+		mprint("IA32_VMX_PROCBASED_CTLS = %d", msr_get(IA32_VMX_PROCBASED_CTLS));
+		mprint("IA32_VMX_PROCBASED_CTLS2 = %d", msr_get(IA32_VMX_PROCBASED_CTLS2));
 		vmwrite(VMX_PROCBASED_CTLS_D, procb, VMX_DEBUG);
-		vmwrite(VMX_SEC_PROCBASED_CTLS_D, 0, VMX_DEBUG);
+		vmwrite(VMX_SEC_PROCBASED_CTLS_D, (1 << 1) | (1 << 7), VMX_DEBUG); // ept
 	}
 	
 	// vm-exit
@@ -302,17 +330,27 @@ int virt_setup_vm()
 		mprint("0x%x & 0x%x", zero, one);
 		vmenvm = 0;
 		vmenvm |= zero;
-		vmenvm |= (1 << 9); // IA-32e mode guest
-		//vmenvm |= one;
+		vmenvm |= (1 << 15); // load efer
 		vmwrite(VMX_VMENTRY_CTLS_D, vmenvm, VMX_DEBUG);
+	}
+
+	// efer
+	{
+		vmwrite(VMX_GUEST_EFER_Q, 0, VMX_DEBUG);
 	}
 
 	// cr0 bits
 	{
+		// todo: are you sure? why not inverted?
 		uint32_t zero = msr_get(IA32_VMX_CR0_FIXED0);
 		uint32_t one = msr_get(IA32_VMX_CR0_FIXED1);
-		uint64_t vmcr0 = cr0_get() & zero;
-
+		uint64_t flex = ~zero & one;
+		uint64_t vmcr0 = 0;
+		//vmcr0 &= flex;
+		vmcr0 |= zero;
+		vmcr0 &= one;
+		vmcr0 &= ~((1 << 0) | (1 << 31)); // if unrestricted guest is set, these bit are not checked
+		mprint("vmcr0 = %08x", vmcr0);
 		vmwrite(VMX_GUEST_CR0_N, vmcr0, VMX_DEBUG);
 	}
 
@@ -328,13 +366,14 @@ int virt_setup_vm()
 
 	//mprint("0x%x",lar(cs_get));
 
-	vmwrite(VMX_GUEST_CS_AR_D, lar(cs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_AR_D, lar(ds_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_ES_AR_D, lar(es_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_AR_D, lar(gs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_AR_D, lar(fs_get()) | 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_AR_D, lar(ss_get()) | 1, VMX_DEBUG);
-
+	{
+		vmwrite(VMX_GUEST_CS_AR_D, (ar_t){.type = 3, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_DS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_ES_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_FS_AR_D, (ar_t){.type = 1, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+		vmwrite(VMX_GUEST_SS_AR_D, (ar_t){.type = 3, .dpl = 0, .s = 1, .p = 1, .db = 0, .l = 0, .g = 0}.raw, VMX_DEBUG);
+	}
 	// host cr0
 	//vmwrite(VMX_HOST_CR0_N, msr_get(IA32_VMX_CR0_FIXED1), VMX_DEBUG);
 	vmwrite(VMX_HOST_CR0_N, cr0_get(), VMX_DEBUG);
@@ -379,27 +418,40 @@ int virt_setup_vm()
 	}
 
 	vmwrite(VMX_GUEST_RFLAGS_N, 1 << 1, VMX_DEBUG);
-	vmwrite(VMX_GUEST_CR3_N, cr3_get(), VMX_DEBUG); // just pass by... please
-	vmwrite(VMX_GUEST_CR4_N, cr4_get(), VMX_DEBUG); // just pass by... please
+	vmwrite(VMX_GUEST_CR3_N, 0, VMX_DEBUG); // just pass by... please
+
+	{
+		uint32_t zero = msr_get(IA32_VMX_CR4_FIXED0);
+		uint32_t one = msr_get(IA32_VMX_CR4_FIXED1);
+		uint64_t flex = ~zero & one;
+		uint64_t vmcr4 = 0;
+		//vmcr4 &= flex;
+		vmcr4 |= zero;
+		vmcr4 &= one;
+		vmcr4 &= ~(1<<17); // not ia32-e guest => not cr4.pcide
+		vmwrite(VMX_GUEST_CR4_N, vmcr4, VMX_DEBUG);
+	}
+
 	vmwrite(VMX_GUEST_DR7_N, 0x400, VMX_DEBUG);
-	vmwrite(VMX_GUEST_ES_W, es_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_CS_W, cs_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_W, ss_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_W, ds_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_W, fs_get(), VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_W, gs_get(), VMX_DEBUG);
+	vmwrite(VMX_GUEST_ES_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_CS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_SS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_DS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_FS_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_GS_W, 0, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_RSP_N, 0x7200, VMX_DEBUG);
 	vmwrite(VMX_GUEST_RIP_N, 0x7000, VMX_DEBUG);
 
-	vmwrite(VMX_GUEST_GDTR_LIMIT_D, 8*8, VMX_DEBUG);
-
-	vmwrite(VMX_GUEST_ES_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_CS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_SS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_DS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_FS_LIMIT_D,0xfffff,VMX_DEBUG);
-	vmwrite(VMX_GUEST_GS_LIMIT_D,0xfffff,VMX_DEBUG);
+	{
+		vmwrite(VMX_GUEST_ES_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_CS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_SS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_DS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_FS_LIMIT_D,0xffff,VMX_DEBUG);
+		vmwrite(VMX_GUEST_GS_LIMIT_D,0xffff,VMX_DEBUG);	
+	}
+	
 
 	{ // guest bases
 		vmwrite(VMX_GUEST_ES_BASE_N, 0, VMX_DEBUG); // flat
@@ -408,20 +460,20 @@ int virt_setup_vm()
 		vmwrite(VMX_GUEST_DS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_FS_BASE_N, 0, VMX_DEBUG); // flat
 		vmwrite(VMX_GUEST_GS_BASE_N, 0, VMX_DEBUG); // flat
-		vmwrite(VMX_GUEST_GDTR_BASE_N, getGDTP()->off, VMX_DEBUG);
-		vmwrite(VMX_GUEST_IDTR_BASE_N, idtr.base, VMX_DEBUG);
-		vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0xffff, VMX_DEBUG);
-		vmwrite(VMX_GUEST_IDTR_LIMIT_D, 0xffff, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_BASE_N, 0, VMX_DEBUG);
+		vmwrite(VMX_GUEST_IDTR_BASE_N, 0, VMX_DEBUG);
+		vmwrite(VMX_GUEST_GDTR_LIMIT_D, 0, VMX_DEBUG);
+		vmwrite(VMX_GUEST_IDTR_LIMIT_D, 0, VMX_DEBUG);
 	}
 
 	// we are DOOMED - even LDTR is here
 	vmwrite(VMX_GUEST_LDTR_W, 0, VMX_DEBUG);
-	vmwrite(VMX_GUEST_LDTR_AR_D, 1 << 16, VMX_DEBUG); // todo: why?! (just bochs?!!1) go to hell, intel sdm; says not usable
+	vmwrite(VMX_GUEST_LDTR_AR_D, (ar_t){.type = 2, .s = 0, .p = 1, .unuse = 1, .g = 0}.raw, VMX_DEBUG); // unusable; see SDM3B: 26.3.1.2
 
-	vmwrite(VMX_GUEST_TR_W, 0x28, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_BASE_N, VMA_VM1_TSS, VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_AR_D, 11 | (lar(0x28) & ~0xf), VMX_DEBUG);
-	vmwrite(VMX_GUEST_TR_LIMIT_D, 0x68, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_W, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_BASE_N, 0, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_AR_D, (ar_t){.type = 3, .s = 0, .dpl = 0, .p = 1, .g = 0, .unuse = 0}.raw, VMX_DEBUG);
+	vmwrite(VMX_GUEST_TR_LIMIT_D, 0xfff, VMX_DEBUG);
 
 	vmwrite(VMX_GUEST_IA32_SYSENTER_ESP_MSR_N, 0, VMX_DEBUG);
 	vmwrite(VMX_GUEST_IA32_SYSENTER_EIP_MSR_N, 0, VMX_DEBUG); // todo: don't use it now
@@ -432,13 +484,16 @@ int virt_setup_vm()
 	vmwrite(VMX_GUEST_INTERRUPTIBILITY_STATE, 0, VMX_DEBUG);
 
 	//vmwrite(VMX_PREEMPTION_TIMER_VALUE_D, 0xf, VMX_DEBUG);
-
-	asm("xchg %bx, %bx");
+	eptp_t e = ept_make();
+	mprint("%llx", e.raw);
+	vmwrite(VMX_EPTP_Q, e.raw, VMX_DEBUG);
+	ept_invept(e, 0x1);
 	//uint16_t tmp = lar(es_get());
 	//mprint("CS: %04x; es ar: %x", cs_get(), lar(es_get()));
 	//return 0;
 	mprint("");
 	asm("cli");
+	asm("xchg %bx, %bx");
 	vmlaunch(1);
 }
 
